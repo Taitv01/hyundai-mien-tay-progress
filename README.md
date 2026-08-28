@@ -35,7 +35,7 @@ Mở `http://localhost:8501`. Nếu chưa cấu hình Google Sheets, ứng dụn
 - **Supabase Storage:** lưu ảnh trong bucket riêng tư; ảnh chỉ được xem qua URL có thời hạn.
 - **Streamlit secrets:** giữ khóa dịch vụ phía máy chủ, không đưa khóa lên GitHub hay trình duyệt.
 
-Khởi tạo backend một lần bằng cách chạy toàn bộ [supabase_setup.sql](supabase_setup.sql) trong Supabase SQL Editor. Sau đó khai báo nhóm `[supabase]` theo tệp `.streamlit/secrets.toml.example`. Khi đăng nhập lần đầu, hệ thống tự tạo tài khoản quản trị và nạp 16 hạng mục cùng 51 điểm kiểm soát ban đầu.
+Khởi tạo backend một lần bằng cách chạy toàn bộ [supabase_setup.sql](supabase_setup.sql) trong Supabase SQL Editor. Sau đó khai báo `SUPABASE_URL` và `SUPABASE_SERVICE_ROLE_KEY` theo tệp `.streamlit/secrets.toml.example`. Khi đăng nhập lần đầu, hệ thống tự nạp 16 hạng mục cùng 51 điểm kiểm soát ban đầu.
 
 ## Quy trình sử dụng cho đại lý
 
