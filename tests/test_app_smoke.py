@@ -9,4 +9,5 @@ def test_app_starts_without_runtime_exception():
     assert not app.exception
     labels = {metric.label for metric in app.metric}
     assert "Tổng hạng mục" in labels
-    assert "Cốt lõi EV theo QCVN" in labels
+    assert "Checklist QCVN 121" in labels
+    assert "Cốt lõi EV theo QCVN" not in labels
