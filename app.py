@@ -386,20 +386,31 @@ def get_google_sheet_settings():
 def get_online_settings():
     """Đọc cấu hình Supabase từ secrets phía máy chủ."""
     try:
-        config = dict(st.secrets.get("supabase", {}))
+        secrets_root = st.secrets
+        config = dict(secrets_root.get("supabase", {}))
     except Exception:
         return None
-    url = str(config.get("url", "")).strip()
-    service_role_key = str(config.get("service_role_key", "")).strip()
+    url = str(
+        config.get("url") or secrets_root.get("SUPABASE_URL", "")
+    ).strip()
+    service_role_key = str(
+        config.get("service_role_key")
+        or secrets_root.get("SUPABASE_SERVICE_ROLE_KEY", "")
+    ).strip()
     if not url or not service_role_key:
         return None
     return OnlineSettings(
         url=url,
         service_role_key=service_role_key,
-        photos_bucket=str(config.get("photos_bucket", "progress-photos")),
+        photos_bucket=str(
+            config.get("photos_bucket")
+            or secrets_root.get("SUPABASE_PHOTOS_BUCKET", "progress-photos")
+        ),
         bootstrap_username=str(config.get("bootstrap_username", "")),
         bootstrap_password_hash=str(config.get("bootstrap_password_hash", "")),
-        bootstrap_display_name=str(config.get("bootstrap_display_name", "Quản trị hệ thống")),
+        bootstrap_display_name=str(
+            config.get("bootstrap_display_name", "Quản trị hệ thống")
+        ),
     )
 
 
