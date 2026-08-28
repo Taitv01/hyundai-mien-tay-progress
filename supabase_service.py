@@ -158,6 +158,52 @@ class SupabaseService:
             role=row["role"],
         )
 
+    def get_or_create_public_editor(self) -> AppUser:
+        """Tài khoản kỹ thuật dùng cho chế độ truy cập không đăng nhập."""
+
+        username = "dai-ly-online"
+        response = (
+            self.client.table("app_users")
+            .select("id,username,display_name,role,is_active")
+            .eq("username", username)
+            .limit(1)
+            .execute()
+        )
+        if response.data:
+            row = response.data[0]
+            if not row.get("is_active"):
+                self.client.table("app_users").update({"is_active": True}).eq(
+                    "id", row["id"]
+                ).execute()
+        else:
+            try:
+                self.client.table("app_users").insert(
+                    {
+                        "username": username,
+                        "display_name": "Đại lý cập nhật online",
+                        "password_hash": hash_password(secrets.token_urlsafe(32)),
+                        "role": "editor",
+                        "is_active": True,
+                    }
+                ).execute()
+            except Exception:
+                # Hai phiên có thể cùng khởi tạo; truy vấn lại bản ghi đã tạo.
+                pass
+            response = (
+                self.client.table("app_users")
+                .select("id,username,display_name,role,is_active")
+                .eq("username", username)
+                .limit(1)
+                .execute()
+            )
+            row = response.data[0]
+        return AppUser(
+            id=str(row["id"]),
+            username=row["username"],
+            display_name=row["display_name"],
+            role=row["role"],
+        )
+
     def create_user(
         self,
         actor: AppUser,
