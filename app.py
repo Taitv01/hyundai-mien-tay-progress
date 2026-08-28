@@ -19,6 +19,12 @@ from data_service import (
 )
 from supabase_service import AppUser, OnlineSettings, ROLE_LABELS, SupabaseService
 
+
+# Theo yêu cầu vận hành hiện tại: mở link là có thể cập nhật.
+PUBLIC_ACCESS_MODE = True
+# Dữ liệu EV/Hybrid vẫn được giữ trong Supabase và chỉ tạm ẩn khỏi giao diện.
+SHOW_EV_HYBRID_CHECKLIST = False
+
 # ==============================================================================
 # 1. CẤU HÌNH TRANG & GIAO DIỆN
 # ==============================================================================
@@ -435,7 +441,14 @@ ONLINE_MODE = online_settings is not None
 online_service = get_online_service(online_settings) if ONLINE_MODE else None
 CURRENT_USER = st.session_state.get("current_user")
 
-if ONLINE_MODE and CURRENT_USER is None:
+if ONLINE_MODE and PUBLIC_ACCESS_MODE:
+    try:
+        CURRENT_USER = online_service.get_or_create_public_editor()
+        st.session_state.current_user = CURRENT_USER
+    except Exception as exc:
+        st.error(f"Không thể khởi tạo quyền cập nhật công khai: {exc}")
+        st.stop()
+elif ONLINE_MODE and CURRENT_USER is None:
     st.title("Đăng nhập hệ thống tiến độ Hyundai Miền Tây")
     st.caption("Dành cho Ban QLDA, Đại lý và người được cấp quyền.")
     try:
@@ -538,11 +551,16 @@ with st.sidebar:
 
     if ONLINE_MODE:
         st.success("Dữ liệu online đang hoạt động", icon=":material/cloud_done:")
-        st.caption(f"**{CURRENT_USER.display_name}** · {ROLE_LABELS[CURRENT_USER.role]}")
+        if PUBLIC_ACCESS_MODE:
+            st.caption("Mở trực tiếp · Không yêu cầu đăng nhập")
+        else:
+            st.caption(f"**{CURRENT_USER.display_name}** · {ROLE_LABELS[CURRENT_USER.role]}")
         if st.button("Làm mới dữ liệu", icon=":material/refresh:", width="stretch"):
             reload_online_data(online_service, PROJECT_TODAY)
             st.rerun()
-        if st.button("Đăng xuất", icon=":material/logout:", width="stretch"):
+        if not PUBLIC_ACCESS_MODE and st.button(
+            "Đăng xuất", icon=":material/logout:", width="stretch"
+        ):
             st.session_state.clear()
             st.rerun()
     else:
@@ -660,20 +678,20 @@ num_delayed = len(delayed_items)
 num_overdue = len(overdue_items)
 avg_prog = float(df_analyzed["Tiến độ (%)"].mean())
 
-df_q = st.session_state.qcvn_df
+df_q_all = st.session_state.qcvn_df
+df_q = (
+    df_q_all
+    if SHOW_EV_HYBRID_CHECKLIST
+    else df_q_all[df_q_all["Đặc thù EV"] == False].copy()
+)
 total_qcvn = len(df_q)
 qcvn_achieved = len(df_q[df_q["Đánh giá"] == "Đạt"])
-qcvn_ev_total = len(df_q[df_q["Đặc thù EV"] == True])
-qcvn_ev_done = len(df_q[(df_q["Đặc thù EV"] == True) & (df_q["Đánh giá"] == "Đạt")])
-qcvn_ev_core = df_q[df_q["STT"].isin([33, 34, 35])]
-qcvn_ev_core_done = len(qcvn_ev_core[qcvn_ev_core["Đánh giá"] == "Đạt"])
 
 with st.container(horizontal=True):
     st.metric("Tổng hạng mục", f"{total_tasks} đầu việc", f"Tiến độ: {avg_prog:.1f}%", border=True)
     st.metric("Đã hoàn thiện", f"{done_tasks} / {total_tasks}", f"{(done_tasks/total_tasks)*100:.0f}% tổng số", border=True)
     st.metric("Cảnh báo chậm trễ", f"{num_overdue} quá hạn", f"Dời: {num_delayed}", delta_color="inverse", border=True)
     st.metric("Checklist QCVN 121", f"{qcvn_achieved} / {total_qcvn} đạt", f"{(qcvn_achieved/total_qcvn)*100:.0f}% nội bộ", border=True)
-    st.metric("Cốt lõi EV theo QCVN", f"{qcvn_ev_core_done} / 3 đạt", f"{qcvn_ev_done}/{qcvn_ev_total} mục EV nội bộ", border=True)
 
 st.markdown("<br>", unsafe_allow_html=True)
 
@@ -688,7 +706,7 @@ tab_update, tab1, tab2, tab3, tab4, tab_users = st.tabs([
     "⚡ CHECKLIST QCVN 121",
     "📊 BIỂU ĐỒ GANTT",
     "📑 BÁO CÁO",
-    "👤 TÀI KHOẢN",
+    "ℹ️ HƯỚNG DẪN",
 ])
 
 
@@ -880,48 +898,29 @@ with tab1:
 
 
 # ------------------------------------------------------------------------------
-# TAB 2: QUẢN LÝ TIÊU CHUẨN QCVN 121 & XE ĐIỆN (EV)
+# TAB 2: QUẢN LÝ TIÊU CHUẨN QCVN 121
 # ------------------------------------------------------------------------------
 with tab2:
     st.subheader("⚡ Checklist nội bộ tham chiếu QCVN 121:2024/BGTVT")
     st.caption(
-        "51 dòng dưới đây là điểm kiểm soát quản lý nội bộ, không phải 51 điều khoản "
-        "nguyên văn của QCVN. Ba dòng 33–35 bám theo các mục 2.2.2.17–2.2.2.19 "
-        "về xe điện/hybrid; thông số chi tiết phải theo yêu cầu của nhà sản xuất xe. "
+        "Các dòng dưới đây là điểm kiểm soát quản lý nội bộ, không phải "
+        "các điều khoản nguyên văn của QCVN. "
         "[Xem văn bản QCVN 121 chính thức](https://vbpl.vn/FileData/TW/Lists/vbpq/Attachments/173120/VanBanGoc_Th%C3%B4ng%20t%C6%B0%2050.2024.TT-BGTVT.%20QCVN%20121.pdf)"
     )
-
-    # Banner Highlight Xe Điện & Hybrid
-    st.markdown("""
-    <div class="ev-highlight-card">
-        <div style="font-size:1.05rem; font-weight:700; color:#15803D; margin-bottom:0.4rem;">
-            ⚡ BA NHÓM THIẾT BỊ CỐT LÕI CHO DỊCH VỤ XE ĐIỆN & HYBRID:
-        </div>
-        <div style="font-size:0.9rem; color:#166534; line-height:1.6;">
-            QCVN 121:2024/BGTVT, mục 2.2.2.17–2.2.2.19 yêu cầu ba nhóm sau, với cấu hình chi tiết theo yêu cầu hoặc quy định của nhà sản xuất xe:
-            <ol style="margin-top:0.3rem; margin-bottom:0;">
-                <li><strong>Thiết bị, dụng cụ bảo vệ an toàn cách điện</strong> cho kỹ thuật viên.</li>
-                <li><strong>Đồng hồ kiểm tra dòng điện và điện áp cao.</strong></li>
-                <li><strong>Thiết bị, dụng cụ nâng, hạ, di chuyển và sạc pin.</strong></li>
-            </ol>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+    if not SHOW_EV_HYBRID_CHECKLIST:
+        hidden_ev_count = len(df_q_all) - len(df_q)
+        st.info(
+            f"Đang tạm ẩn {hidden_ev_count} điều kiện đặc thù Xe điện/Hybrid. "
+            "Dữ liệu vẫn được bảo lưu để bật lại khi cần."
+        )
 
     # Bộ lọc hiển thị
-    q_col1, q_col2 = st.columns([3, 2])
-    with q_col1:
-        nhom_list = ["Tất cả"] + list(st.session_state.qcvn_df["Nhóm"].unique())
-        selected_nhom = st.selectbox("Lọc theo Nhóm tiêu chuẩn:", options=nhom_list)
-    with q_col2:
-        st.markdown("<div style='height:28px;'></div>", unsafe_allow_html=True)
-        only_ev = st.toggle("⚡ Chỉ hiển thị tiêu chuẩn ĐẶC THÙ XE ĐIỆN / HYBRID", value=False)
+    nhom_list = ["Tất cả"] + list(df_q["Nhóm"].unique())
+    selected_nhom = st.selectbox("Lọc theo Nhóm tiêu chuẩn:", options=nhom_list)
 
-    display_qcvn = st.session_state.qcvn_df.copy()
+    display_qcvn = df_q.copy()
     if selected_nhom != "Tất cả":
         display_qcvn = display_qcvn[display_qcvn["Nhóm"] == selected_nhom]
-    if only_ev:
-        display_qcvn = display_qcvn[display_qcvn["Đặc thù EV"] == True]
 
     qcvn_config = {
         "STT": st.column_config.NumberColumn("STT", width="small", disabled=True),
@@ -942,6 +941,7 @@ with tab2:
         width="stretch",
         hide_index=True,
         num_rows="fixed",
+        column_order=["STT", "Nhóm", "Hạng mục", "Đánh giá", "Ghi chú"],
         disabled=not (ONLINE_MODE and CURRENT_USER.can_edit) if ONLINE_MODE else False,
         key="master_qcvn_editor_v3"
     )
@@ -1132,7 +1132,7 @@ with tab4:
         output = io.BytesIO()
         with pd.ExcelWriter(output, engine='openpyxl') as writer:
             st.session_state.progress_df.to_excel(writer, sheet_name='Tien_Do_Thi_Cong', index=False)
-            st.session_state.qcvn_df.to_excel(writer, sheet_name='QCVN_121_Checklist', index=False)
+            df_q.to_excel(writer, sheet_name='QCVN_121_Checklist', index=False)
         return output.getvalue()
 
     excel_binary = generate_excel()
@@ -1149,8 +1149,14 @@ with tab4:
 # TAB QUẢN LÝ TÀI KHOẢN
 # ------------------------------------------------------------------------------
 with tab_users:
-    st.subheader("Tài khoản và phân quyền")
-    if not ONLINE_MODE:
+    st.subheader("Hướng dẫn truy cập")
+    if PUBLIC_ACCESS_MODE:
+        st.success("Không cần đăng nhập. Mở link là có thể xem và cập nhật.")
+        st.warning(
+            "Hãy chỉ chia sẻ link cho Ban QLDA và Đại lý vì người có link "
+            "có thể thay đổi tiến độ và tải ảnh hiện trường."
+        )
+    elif not ONLINE_MODE:
         st.info("Quản lý tài khoản chỉ có trên bản online.")
     else:
         st.markdown(f"Đang đăng nhập: **{CURRENT_USER.display_name}**")
