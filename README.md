@@ -7,10 +7,10 @@
 - Chỉnh sửa tiến độ, ngày thực hiện, tỷ lệ hoàn thành, người phụ trách và ghi chú.
 - Tự chuẩn hóa tỷ lệ/trạng thái, phát hiện quá hạn và nhắc việc đến hạn trong 7 ngày.
 - Chọn ngày theo dõi để xem lại trạng thái dự án tại một mốc bất kỳ.
-- Checklist nội bộ 51 điểm kiểm soát có tham chiếu QCVN 121:2024/BGTVT và bộ lọc xe điện/hybrid.
+- Checklist nội bộ tham chiếu QCVN 121:2024/BGTVT; 9 điều kiện đặc thù xe điện/hybrid đang tạm ẩn nhưng vẫn được bảo lưu trong dữ liệu.
 - Gantt tương tác, đường mốc ngày theo dõi, biểu đồ trạng thái và tiến độ theo phân khu.
 - Tải báo cáo CSV/XLSX.
-- Đăng nhập theo ba vai trò: quản trị, đại lý cập nhật và chỉ xem.
+- Mở link là xem và cập nhật được ngay, không yêu cầu đăng nhập.
 - Đại lý cập nhật phần trăm, trạng thái, ghi chú và nhiều ảnh hiện trường trực tiếp trên điện thoại.
 - Ảnh được xác thực, xoay theo EXIF, thu nhỏ và nén trước khi lưu trong bucket riêng tư.
 - Dữ liệu online lưu tập trung trên Supabase; Google Sheets chỉ còn là chế độ tùy chọn khi chạy cục bộ.
@@ -35,16 +35,16 @@ Mở `http://localhost:8501`. Nếu chưa cấu hình Google Sheets, ứng dụn
 - **Supabase Storage:** lưu ảnh trong bucket riêng tư; ảnh chỉ được xem qua URL có thời hạn.
 - **Streamlit secrets:** giữ khóa dịch vụ phía máy chủ, không đưa khóa lên GitHub hay trình duyệt.
 
-Khởi tạo backend một lần bằng cách chạy toàn bộ [supabase_setup.sql](supabase_setup.sql) trong Supabase SQL Editor. Sau đó khai báo `SUPABASE_URL` và `SUPABASE_SERVICE_ROLE_KEY` theo tệp `.streamlit/secrets.toml.example`. Khi đăng nhập lần đầu, hệ thống tự nạp 16 hạng mục cùng 51 điểm kiểm soát ban đầu.
+Khởi tạo backend một lần bằng cách chạy toàn bộ [supabase_setup.sql](supabase_setup.sql) trong Supabase SQL Editor. Sau đó khai báo `SUPABASE_URL` và `SUPABASE_SERVICE_ROLE_KEY` theo tệp `.streamlit/secrets.toml.example`. Hệ thống tự nạp 16 hạng mục cùng 51 điểm kiểm soát ban đầu.
 
 ## Quy trình sử dụng cho đại lý
 
-1. Mở link ứng dụng và đăng nhập bằng tài khoản được cấp.
+1. Mở link ứng dụng; không cần tài khoản hay mật khẩu.
 2. Chọn **Cập nhật hiện trường**, chọn hạng mục cần báo cáo.
 3. Chọn tiến độ, trạng thái, nhập nội dung và chọn/chụp ảnh.
 4. Bấm **Lưu cập nhật**. Nhật ký và ảnh xuất hiện ngay bên dưới.
 
-Quản trị tạo, khóa hoặc mở khóa tài khoản trong tab **Tài khoản**. Mỗi người có thể tự đổi mật khẩu.
+Chỉ chia sẻ link cho Ban QLDA và Đại lý vì người có link có thể thay đổi tiến độ và tải ảnh.
 
 ## Google Sheets (tùy chọn khi chạy cục bộ)
 
@@ -79,7 +79,7 @@ Không dán khóa Service Account vào giao diện và không commit `.streamlit
 
 ## Triển khai Streamlit Community Cloud
 
-1. Đẩy nội dung thư mục này lên một kho GitHub riêng tư.
+1. Đẩy nội dung thư mục này lên kho GitHub không chứa secrets.
 2. Chọn entry point `app.py`.
-3. Sao chép cấu hình `[supabase]` vào phần **Advanced settings → Secrets**.
+3. Sao chép `SUPABASE_URL` và `SUPABASE_SERVICE_ROLE_KEY` vào phần **Advanced settings → Secrets**.
 4. Không đưa khóa JSON thật vào kho mã nguồn.
