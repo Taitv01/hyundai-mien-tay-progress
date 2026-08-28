@@ -1,0 +1,11 @@
+[theme]
+primaryColor = "#002C6C"
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#F4F7FB"
+textColor = "#172033"
+linkColor = "#006D9C"
+baseRadius = "medium"
+showWidgetBorder = true
+
+[server]
+headless = true
