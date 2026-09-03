@@ -700,18 +700,279 @@ st.markdown("<br>", unsafe_allow_html=True)
 # 7. CÁC PHÂN HỆ TAB CHỨC NĂNG CHÍNH
 # ==============================================================================
 
-tab_update, tab1, tab2, tab3, tab4, tab_users = st.tabs([
-    "📷 CẬP NHẬT HIỆN TRƯỜNG",
-    "📋 TIẾN ĐỘ CHI TIẾT",
-    "⚡ CHECKLIST QCVN 121",
+tab_gantt, tab_progress, tab_update, tab_qcvn, tab_report, tab_users = st.tabs([
     "📊 BIỂU ĐỒ GANTT",
+    "📋 TIẾN ĐỘ CHI TIẾT",
+    "📷 CẬP NHẬT HIỆN TRƯỜNG",
+    "⚡ CHECKLIST QCVN 121",
     "📑 BÁO CÁO",
     "ℹ️ HƯỚNG DẪN",
 ])
 
 
 # ------------------------------------------------------------------------------
-# TAB CẬP NHẬT HIỆN TRƯỜNG & HÌNH ẢNH
+# TAB 1: BIỂU ĐỒ GANTT CÓ ĐƯỜNG LINE ĐỎ THỜI GIAN THỰC & CHẬM TIẾN ĐỘ
+# ------------------------------------------------------------------------------
+with tab_gantt:
+    st.subheader("📊 Biểu Đồ Gantt Tiến Độ Chi Tiết (Có Đường Line Đỏ Hiện Tại)")
+    st.caption("🔴 **Đường Line đỏ thẳng đứng** thể hiện mốc thời gian thực. Các hạng mục nằm bên trái đường đỏ mà chưa hoàn thành sẽ được cảnh báo chậm tiến độ.")
+
+    gantt_data = st.session_state.progress_df.copy()
+    gantt_data["Bắt đầu_dt"] = pd.to_datetime(gantt_data["Bắt đầu"])
+    gantt_data["Hoàn thành_dt"] = pd.to_datetime(gantt_data["Hoàn thành"])
+
+    # Xác định hạng mục đang trong tiến độ thực hiện tại mốc ngày theo dõi
+    gantt_data["Đang diễn ra"] = gantt_data.apply(
+        lambda r: (r["Bắt đầu"] <= PROJECT_TODAY <= r["Hoàn thành"]),
+        axis=1
+    )
+
+    # Thông báo nổi bật hạng mục đang thực hiện
+    active_tasks = gantt_data[gantt_data["Đang diễn ra"]]
+    if not active_tasks.empty:
+        active_list_str = " · ".join([
+            f"**[{r['Mã']}] {r['Hạng mục công việc']}** ({r['Tiến độ (%)']}%)"
+            for _, r in active_tasks.iterrows()
+        ])
+        st.info(f"🎯 **Hạng mục đang trong tiến độ thực hiện tại mốc ngày theo dõi ({PROJECT_TODAY.strftime('%d/%m/%Y')}):** {active_list_str}", icon="📍")
+    
+    # Số ngày thi công & chuỗi định dạng
+    gantt_data["Số ngày"] = (gantt_data["Hoàn thành_dt"] - gantt_data["Bắt đầu_dt"]).dt.days + 1
+    gantt_data["Bắt đầu_str"] = gantt_data["Bắt đầu"].apply(lambda d: d.strftime('%d/%m/%Y'))
+    gantt_data["Hoàn thành_str"] = gantt_data["Hoàn thành"].apply(lambda d: d.strftime('%d/%m/%Y'))
+    
+    # Nhãn hiển thị trên thanh - Tô đậm nếu đang thực hiện
+    def format_bar_label(r):
+        if r["Đang diễn ra"]:
+            return f"⭐ ĐANG THỰC HIỆN: {r['Số ngày']} ngày ({r['Tiến độ (%)']}%)"
+        return f"{r['Số ngày']} ngày ({r['Tiến độ (%)']}%)"
+
+    gantt_data["Nhãn thanh"] = gantt_data.apply(format_bar_label, axis=1)
+    
+    # Trục Y: hiển thị rõ ngày bắt đầu - hoàn thành ngay bên cạnh tên công việc (Tô đậm nếu đang thực hiện)
+    def format_y_axis(r):
+        base_label = f"[{r['Bắt đầu'].strftime('%d/%m')} ➔ {r['Hoàn thành'].strftime('%d/%m')}] {r['Mã']}: {r['Hạng mục công việc']}"
+        if r["Đang diễn ra"]:
+            return f"👉 <b>{base_label} ◄ [ĐANG THỰC HIỆN]</b>"
+        return base_label
+
+    gantt_data["Trục Y"] = gantt_data.apply(format_y_axis, axis=1)
+
+    # Phân loại màu sắc (đặc biệt đổi màu đỏ rực cho mục Quá hạn / Dời tiến độ)
+    color_scheme = {
+        "Đã hoàn thiện": "#059669",   # Green
+        "Đang thi công": "#0284C7",    # Blue
+        "Chưa thực hiện": "#94A3B8",   # Gray
+        "Dời tiến độ": "#EF4444"      # Red
+    }
+
+    fig_timeline = px.timeline(
+        gantt_data,
+        x_start="Bắt đầu_dt",
+        x_end="Hoàn thành_dt",
+        y="Trục Y",
+        color="Trạng thái",
+        text="Nhãn thanh",
+        color_discrete_map=color_scheme,
+        custom_data=["Bắt đầu_str", "Hoàn thành_str", "Số ngày", "Tiến độ (%)", "Trạng thái", "Người phụ trách", "Ghi chú", "Phân khu", "Cảnh báo Tiến độ"]
+    )
+    
+    # Custom hover template
+    fig_timeline.update_traces(
+        textposition="outside",
+        hovertemplate=(
+            "<b>%{y}</b><br><br>"
+            "📅 <b>Ngày bắt đầu:</b> %{customdata[0]}<br>"
+            "🏁 <b>Ngày hoàn thành:</b> %{customdata[1]}<br>"
+            "⏳ <b>Thời lượng:</b> %{customdata[2]} ngày<br>"
+            "📊 <b>Tiến độ:</b> %{customdata[3]}%<br>"
+            "📌 <b>Trạng thái:</b> %{customdata[4]}<br>"
+            "🚨 <b>Tình trạng:</b> %{customdata[8]}<br>"
+            "🏢 <b>Phân khu:</b> %{customdata[7]}<br>"
+            "👤 <b>Phụ trách:</b> %{customdata[5]}<br>"
+            "📝 <b>Ghi chú:</b> %{customdata[6]}"
+            "<extra></extra>"
+        )
+    )
+
+    # Tô đậm viền thanh tiến độ cho các hạng mục đang thực hiện tại ngày theo dõi
+    for trace in fig_timeline.data:
+        line_colors = []
+        line_widths = []
+        for y_val in trace.y:
+            match = gantt_data[gantt_data["Trục Y"] == y_val]
+            if not match.empty and match.iloc[0]["Đang diễn ra"]:
+                line_colors.append("#F59E0B")  # Viền vàng hổ phách nổi bật
+                line_widths.append(3.5)
+            else:
+                line_colors.append("rgba(0,0,0,0.15)")
+                line_widths.append(1)
+        trace.marker.line.color = line_colors
+        trace.marker.line.width = line_widths
+    
+    # 🔴 THÊM ĐƯỜNG LINE ĐỎ MỐC THỜI GIAN HIỆN TẠI (TODAY LINE)
+    today_dt = pd.to_datetime(PROJECT_TODAY)
+    fig_timeline.add_vline(
+        x=today_dt,
+        line_width=2.5,
+        line_dash="dash",
+        line_color="#DC2626",
+        annotation_text=f"📍 HÔM NAY ({PROJECT_TODAY.strftime('%d/%m/%Y')})",
+        annotation_position="top right",
+        annotation_font=dict(size=12, color="#DC2626", family="Plus Jakarta Sans"),
+        annotation_bgcolor="rgba(254, 242, 242, 0.85)"
+    )
+
+    # Gắn cờ chú thích (Pin callout) ngay tại vị trí thanh đang thực hiện hôm nay
+    for _, row in gantt_data[gantt_data["Đang diễn ra"]].iterrows():
+        fig_timeline.add_annotation(
+            x=today_dt,
+            y=row["Trục Y"],
+            text=f"🎯 ĐANG THỰC HIỆN: {row['Mã']}",
+            showarrow=True,
+            arrowhead=2,
+            arrowsize=1.2,
+            arrowwidth=2,
+            arrowcolor="#DC2626",
+            ax=85,
+            ay=-28,
+            bgcolor="#FEF3C7",
+            bordercolor="#F59E0B",
+            borderwidth=2,
+            borderpad=5,
+            font=dict(size=11, color="#92400E", family="Plus Jakarta Sans"),
+            opacity=0.95
+        )
+
+    fig_timeline.update_yaxes(autorange="reversed", title="", tickfont=dict(size=12))
+    fig_timeline.update_xaxes(
+        title="Dòng Thời Gian Dự Án (Tháng 8/2026 – Tháng 12/2026)",
+        dtick="M1",
+        tickformat="%m/%Y",
+        gridcolor="#E2E8F0"
+    )
+    fig_timeline.update_layout(
+        height=600,
+        margin=dict(l=320, r=40, t=30, b=20),
+        plot_bgcolor="#FFFFFF",
+        paper_bgcolor="#FFFFFF",
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+    )
+    st.plotly_chart(fig_timeline, width="stretch")
+
+    # Bảng Tra cứu Lịch trình Nhanh kèm Cảnh báo
+    st.markdown("##### 📅 Bảng Lịch Trình Chi Tiết Bắt Đầu - Hoàn Thành & Tình Trạng Quá Hạn:")
+    gantt_data["Tình trạng hôm nay"] = gantt_data["Đang diễn ra"].apply(lambda x: "⭐ Đang thực hiện" if x else "—")
+    schedule_table = gantt_data[["Mã", "Hạng mục công việc", "Phân khu", "Bắt đầu_str", "Hoàn thành_str", "Số ngày", "Tiến độ (%)", "Trạng thái", "Tình trạng hôm nay", "Cảnh báo Tiến độ"]].copy()
+    schedule_table.columns = ["Mã CV", "Hạng mục công việc", "Phân khu", "Ngày Bắt Đầu", "Ngày Hoàn Thành", "Thời lượng (ngày)", "Tiến độ (%)", "Trạng thái", "Tiến độ hiện tại", "Tình trạng Cảnh báo"]
+    st.dataframe(schedule_table, width="stretch", hide_index=True)
+
+    # 2 Biểu đồ Phân tích
+    st.markdown("<br>", unsafe_allow_html=True)
+    ch1, ch2 = st.columns(2)
+    with ch1:
+        st.markdown("##### 📌 Tỷ Trọng Trạng Thái Hạng Mục")
+        st_counts = gantt_data["Trạng thái"].value_counts().reset_index()
+        st_counts.columns = ["Trạng thái", "Số lượng"]
+        fig_donut = px.pie(
+            st_counts,
+            names="Trạng thái",
+            values="Số lượng",
+            color="Trạng thái",
+            color_discrete_map=color_scheme,
+            hole=0.45
+        )
+        fig_donut.update_layout(margin=dict(l=10, r=10, t=10, b=10))
+        st.plotly_chart(fig_donut, width="stretch")
+
+    with ch2:
+        st.markdown("##### 📌 Tiến Độ Trung Bình Theo Phân Khu")
+        pk_prog = gantt_data.groupby("Phân khu")["Tiến độ (%)"].mean().reset_index()
+        fig_bar_pk = px.bar(
+            pk_prog,
+            x="Tiến độ (%)",
+            y="Phân khu",
+            orientation="h",
+            color="Tiến độ (%)",
+            color_continuous_scale="Blues",
+            range_x=[0, 100]
+        )
+        fig_bar_pk.update_layout(
+            margin=dict(l=10, r=10, t=10, b=10),
+            yaxis=dict(title="")
+        )
+        st.plotly_chart(fig_bar_pk, width="stretch")
+
+
+# ------------------------------------------------------------------------------
+# TAB 2: BẢNG TIẾN ĐỘ TƯƠNG TÁC CÓ CẢNH BÁO
+# ------------------------------------------------------------------------------
+with tab_progress:
+    st.subheader("📋 Bảng Tiến Độ Thi Công Chi Tiết & Giám Sát Chậm Trễ")
+    st.caption("💡 Cột `Cảnh báo Tiến độ` tự động phát hiện các đầu việc Quá hạn, Sắp đến hạn hoặc Đã hoàn thành so với mốc thời gian thực.")
+
+    col_config = {
+        "Mã": st.column_config.TextColumn("Mã CV", width="small", disabled=True),
+        "Hạng mục công việc": st.column_config.TextColumn("Hạng mục công việc", width="large", required=True),
+        "Phân khu": st.column_config.SelectboxColumn(
+            "Phân khu",
+            options=["Thiết kế & Pháp lý", "Mặt bằng & Pháp lý", "Showroom (XDCB)", "Xưởng Dịch vụ 3S", "Thiết bị QCVN 121", "Trang bị Xe Điện (EV)", "Môi trường & PCCC", "Kiểm định & Chứng nhận", "Vận hành & Khai trương"],
+            required=True
+        ),
+        "Bắt đầu": st.column_config.DateColumn("Ngày bắt đầu", format="YYYY-MM-DD", required=True),
+        "Hoàn thành": st.column_config.DateColumn("Ngày hoàn thành", format="YYYY-MM-DD", required=True),
+        "Tiến độ (%)": st.column_config.ProgressColumn("Tiến độ", min_value=0, max_value=100, format="%d%%"),
+        "Trạng thái": st.column_config.SelectboxColumn(
+            "Trạng thái",
+            options=["Chưa thực hiện", "Đang thi công", "Đã hoàn thiện", "Dời tiến độ"],
+            required=True
+        ),
+        "Cảnh báo Tiến độ": st.column_config.TextColumn("🚨 Cảnh báo Tiến độ", width="medium", disabled=True),
+        "Người phụ trách": st.column_config.TextColumn("Người phụ trách", width="medium"),
+        "Ghi chú": st.column_config.TextColumn("Ghi chú mốc thời gian", width="large")
+    }
+
+    # Bảng Master editor
+    display_cols = ["Mã", "Hạng mục công việc", "Phân khu", "Bắt đầu", "Hoàn thành", "Tiến độ (%)", "Trạng thái", "Cảnh báo Tiến độ", "Người phụ trách", "Ghi chú"]
+    edited_progress = st.data_editor(
+        st.session_state.progress_df[display_cols],
+        column_config=col_config,
+        width="stretch",
+        hide_index=True,
+        num_rows="fixed",
+        disabled=not (ONLINE_MODE and CURRENT_USER.can_edit) if ONLINE_MODE else False,
+        key="master_progress_editor_v3"
+    )
+
+    # Cập nhật khi có thay đổi
+    if not edited_progress[display_cols].equals(st.session_state.progress_df[display_cols]):
+        try:
+            normalized_progress = calculate_progress_alerts(edited_progress, current_date=PROJECT_TODAY)
+            if ONLINE_MODE:
+                online_service.save_progress(normalized_progress, CURRENT_USER)
+                reload_online_data(online_service, PROJECT_TODAY)
+            else:
+                st.session_state.progress_df = normalized_progress
+            st.toast("Đã cập nhật tiến độ.", icon="✅")
+            st.rerun()
+        except Exception as exc:
+            st.error(f"Không thể lưu bảng tiến độ: {exc}")
+
+    # Toolbar xuất dữ liệu
+    col_t1, col_t2 = st.columns([2, 5])
+    with col_t1:
+        csv_prog = st.session_state.progress_df[display_cols].to_csv(index=False).encode('utf-8-sig')
+        st.download_button(
+            "📥 Tải CSV Tiến Độ & Cảnh Báo",
+            data=csv_prog,
+            file_name=f"Tien_Do_HD_Mien_Tay_{datetime.date.today().strftime('%Y%m%d')}.csv",
+            mime="text/csv",
+            width="stretch"
+        )
+
+
+# ------------------------------------------------------------------------------
+# TAB 3: CẬP NHẬT HIỆN TRƯỜNG & HÌNH ẢNH
 # ------------------------------------------------------------------------------
 with tab_update:
     st.subheader("Cập nhật tiến độ và hình ảnh hiện trường")
@@ -831,76 +1092,9 @@ with tab_update:
 
 
 # ------------------------------------------------------------------------------
-# TAB 1: BẢNG TIẾN ĐỘ TƯƠNG TÁC CÓ CẢNH BÁO
+# TAB 4: QUẢN LÝ TIÊU CHUẨN QCVN 121
 # ------------------------------------------------------------------------------
-with tab1:
-    st.subheader("📋 Bảng Tiến Độ Thi Công Chi Tiết & Giám Sát Chậm Trễ")
-    st.caption("💡 Cột `Cảnh báo Tiến độ` tự động phát hiện các đầu việc Quá hạn, Sắp đến hạn hoặc Đã hoàn thành so với mốc thời gian thực.")
-
-    col_config = {
-        "Mã": st.column_config.TextColumn("Mã CV", width="small", disabled=True),
-        "Hạng mục công việc": st.column_config.TextColumn("Hạng mục công việc", width="large", required=True),
-        "Phân khu": st.column_config.SelectboxColumn(
-            "Phân khu",
-            options=["Thiết kế & Pháp lý", "Mặt bằng & Pháp lý", "Showroom (XDCB)", "Xưởng Dịch vụ 3S", "Thiết bị QCVN 121", "Trang bị Xe Điện (EV)", "Môi trường & PCCC", "Kiểm định & Chứng nhận", "Vận hành & Khai trương"],
-            required=True
-        ),
-        "Bắt đầu": st.column_config.DateColumn("Ngày bắt đầu", format="YYYY-MM-DD", required=True),
-        "Hoàn thành": st.column_config.DateColumn("Ngày hoàn thành", format="YYYY-MM-DD", required=True),
-        "Tiến độ (%)": st.column_config.ProgressColumn("Tiến độ", min_value=0, max_value=100, format="%d%%"),
-        "Trạng thái": st.column_config.SelectboxColumn(
-            "Trạng thái",
-            options=["Chưa thực hiện", "Đang thi công", "Đã hoàn thiện", "Dời tiến độ"],
-            required=True
-        ),
-        "Cảnh báo Tiến độ": st.column_config.TextColumn("🚨 Cảnh báo Tiến độ", width="medium", disabled=True),
-        "Người phụ trách": st.column_config.TextColumn("Người phụ trách", width="medium"),
-        "Ghi chú": st.column_config.TextColumn("Ghi chú mốc thời gian", width="large")
-    }
-
-    # Bảng Master editor
-    display_cols = ["Mã", "Hạng mục công việc", "Phân khu", "Bắt đầu", "Hoàn thành", "Tiến độ (%)", "Trạng thái", "Cảnh báo Tiến độ", "Người phụ trách", "Ghi chú"]
-    edited_progress = st.data_editor(
-        st.session_state.progress_df[display_cols],
-        column_config=col_config,
-        width="stretch",
-        hide_index=True,
-        num_rows="fixed",
-        disabled=not (ONLINE_MODE and CURRENT_USER.can_edit) if ONLINE_MODE else False,
-        key="master_progress_editor_v3"
-    )
-
-    # Cập nhật khi có thay đổi
-    if not edited_progress[display_cols].equals(st.session_state.progress_df[display_cols]):
-        try:
-            normalized_progress = calculate_progress_alerts(edited_progress, current_date=PROJECT_TODAY)
-            if ONLINE_MODE:
-                online_service.save_progress(normalized_progress, CURRENT_USER)
-                reload_online_data(online_service, PROJECT_TODAY)
-            else:
-                st.session_state.progress_df = normalized_progress
-            st.toast("Đã cập nhật tiến độ.", icon="✅")
-            st.rerun()
-        except Exception as exc:
-            st.error(f"Không thể lưu bảng tiến độ: {exc}")
-
-    # Toolbar xuất dữ liệu
-    col_t1, col_t2 = st.columns([2, 5])
-    with col_t1:
-        csv_prog = st.session_state.progress_df[display_cols].to_csv(index=False).encode('utf-8-sig')
-        st.download_button(
-            "📥 Tải CSV Tiến Độ & Cảnh Báo",
-            data=csv_prog,
-            file_name=f"Tien_Do_HD_Mien_Tay_{datetime.date.today().strftime('%Y%m%d')}.csv",
-            mime="text/csv",
-            width="stretch"
-        )
-
-
-# ------------------------------------------------------------------------------
-# TAB 2: QUẢN LÝ TIÊU CHUẨN QCVN 121
-# ------------------------------------------------------------------------------
-with tab2:
+with tab_qcvn:
     st.subheader("⚡ Checklist nội bộ tham chiếu QCVN 121:2024/BGTVT")
     st.caption(
         "Các dòng dưới đây là điểm kiểm soát quản lý nội bộ, không phải "
@@ -963,146 +1157,9 @@ with tab2:
 
 
 # ------------------------------------------------------------------------------
-# TAB 3: BIỂU ĐỒ GANTT CÓ ĐƯỜNG LINE ĐỎ THỜI GIAN THỰC & CHẬM TIẾN ĐỘ
+# TAB 5: LỘ TRÌNH CỘT MỐC & XUẤT BÁO CÁO
 # ------------------------------------------------------------------------------
-with tab3:
-    st.subheader("📊 Biểu Đồ Gantt Tiến Độ Chi Tiết (Có Đường Line Đỏ Hiện Tại)")
-    st.caption("🔴 **Đường Line đỏ thẳng đứng** thể hiện mốc thời gian thực. Các hạng mục nằm bên trái đường đỏ mà chưa hoàn thành sẽ được cảnh báo chậm tiến độ.")
-
-    gantt_data = st.session_state.progress_df.copy()
-    gantt_data["Bắt đầu_dt"] = pd.to_datetime(gantt_data["Bắt đầu"])
-    gantt_data["Hoàn thành_dt"] = pd.to_datetime(gantt_data["Hoàn thành"])
-    
-    # Số ngày thi công & chuỗi định dạng
-    gantt_data["Số ngày"] = (gantt_data["Hoàn thành_dt"] - gantt_data["Bắt đầu_dt"]).dt.days + 1
-    gantt_data["Bắt đầu_str"] = gantt_data["Bắt đầu"].apply(lambda d: d.strftime('%d/%m/%Y'))
-    gantt_data["Hoàn thành_str"] = gantt_data["Hoàn thành"].apply(lambda d: d.strftime('%d/%m/%Y'))
-    
-    # Nhãn hiển thị trên thanh
-    gantt_data["Nhãn thanh"] = gantt_data.apply(
-        lambda r: f"{r['Số ngày']} ngày ({r['Tiến độ (%)']}%)",
-        axis=1
-    )
-    
-    # Trục Y: hiển thị rõ ngày bắt đầu - hoàn thành ngay bên cạnh tên công việc
-    gantt_data["Trục Y"] = gantt_data.apply(
-        lambda r: f"[{r['Bắt đầu'].strftime('%d/%m')} ➔ {r['Hoàn thành'].strftime('%d/%m')}] {r['Mã']}: {r['Hạng mục công việc']}",
-        axis=1
-    )
-
-    # Phân loại màu sắc (đặc biệt đổi màu đỏ rực cho mục Quá hạn / Dời tiến độ)
-    color_scheme = {
-        "Đã hoàn thiện": "#059669",   # Green
-        "Đang thi công": "#0284C7",    # Blue
-        "Chưa thực hiện": "#94A3B8",   # Gray
-        "Dời tiến độ": "#EF4444"      # Red
-    }
-
-    fig_timeline = px.timeline(
-        gantt_data,
-        x_start="Bắt đầu_dt",
-        x_end="Hoàn thành_dt",
-        y="Trục Y",
-        color="Trạng thái",
-        text="Nhãn thanh",
-        color_discrete_map=color_scheme,
-        custom_data=["Bắt đầu_str", "Hoàn thành_str", "Số ngày", "Tiến độ (%)", "Trạng thái", "Người phụ trách", "Ghi chú", "Phân khu", "Cảnh báo Tiến độ"]
-    )
-    
-    # Custom hover template
-    fig_timeline.update_traces(
-        textposition="outside",
-        hovertemplate=(
-            "<b>%{y}</b><br><br>"
-            "📅 <b>Ngày bắt đầu:</b> %{customdata[0]}<br>"
-            "🏁 <b>Ngày hoàn thành:</b> %{customdata[1]}<br>"
-            "⏳ <b>Thời lượng:</b> %{customdata[2]} ngày<br>"
-            "📊 <b>Tiến độ:</b> %{customdata[3]}%<br>"
-            "📌 <b>Trạng thái:</b> %{customdata[4]}<br>"
-            "🚨 <b>Tình trạng:</b> %{customdata[8]}<br>"
-            "🏢 <b>Phân khu:</b> %{customdata[7]}<br>"
-            "👤 <b>Phụ trách:</b> %{customdata[5]}<br>"
-            "📝 <b>Ghi chú:</b> %{customdata[6]}"
-            "<extra></extra>"
-        )
-    )
-    
-    # 🔴 THÊM ĐƯỜNG LINE ĐỎ MỐC THỜI GIAN HIỆN TẠI (TODAY LINE)
-    today_dt = pd.to_datetime(PROJECT_TODAY)
-    fig_timeline.add_vline(
-        x=today_dt,
-        line_width=2.5,
-        line_dash="dash",
-        line_color="#DC2626",
-        annotation_text=f"📍 HÔM NAY ({PROJECT_TODAY.strftime('%d/%m/%Y')})",
-        annotation_position="top right",
-        annotation_font=dict(size=12, color="#DC2626", family="Plus Jakarta Sans"),
-        annotation_bgcolor="rgba(254, 242, 242, 0.85)"
-    )
-
-    fig_timeline.update_yaxes(autorange="reversed", title="", tickfont=dict(size=12))
-    fig_timeline.update_xaxes(
-        title="Dòng Thời Gian Dự Án (Tháng 8/2026 – Tháng 12/2026)",
-        dtick="M1",
-        tickformat="%m/%Y",
-        gridcolor="#E2E8F0"
-    )
-    fig_timeline.update_layout(
-        height=600,
-        margin=dict(l=320, r=40, t=30, b=20),
-        plot_bgcolor="#FFFFFF",
-        paper_bgcolor="#FFFFFF",
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
-    )
-    st.plotly_chart(fig_timeline, width="stretch")
-
-    # Bảng Tra cứu Lịch trình Nhanh kèm Cảnh báo
-    st.markdown("##### 📅 Bảng Lịch Trình Chi Tiết Bắt Đầu - Hoàn Thành & Tình Trạng Quá Hạn:")
-    schedule_table = gantt_data[["Mã", "Hạng mục công việc", "Phân khu", "Bắt đầu_str", "Hoàn thành_str", "Số ngày", "Tiến độ (%)", "Trạng thái", "Cảnh báo Tiến độ"]].copy()
-    schedule_table.columns = ["Mã CV", "Hạng mục công việc", "Phân khu", "Ngày Bắt Đầu", "Ngày Hoàn Thành", "Thời lượng (ngày)", "Tiến độ (%)", "Trạng thái", "Tình trạng Cảnh báo"]
-    st.dataframe(schedule_table, width="stretch", hide_index=True)
-
-    # 2 Biểu đồ Phân tích
-    st.markdown("<br>", unsafe_allow_html=True)
-    ch1, ch2 = st.columns(2)
-    with ch1:
-        st.markdown("##### 📌 Tỷ Trọng Trạng Thái Hạng Mục")
-        st_counts = gantt_data["Trạng thái"].value_counts().reset_index()
-        st_counts.columns = ["Trạng thái", "Số lượng"]
-        fig_donut = px.pie(
-            st_counts,
-            names="Trạng thái",
-            values="Số lượng",
-            color="Trạng thái",
-            color_discrete_map=color_scheme,
-            hole=0.45
-        )
-        fig_donut.update_layout(margin=dict(l=10, r=10, t=10, b=10))
-        st.plotly_chart(fig_donut, width="stretch")
-
-    with ch2:
-        st.markdown("##### 📌 Tiến Độ Trung Bình Theo Phân Khu")
-        pk_prog = gantt_data.groupby("Phân khu")["Tiến độ (%)"].mean().reset_index()
-        fig_bar_pk = px.bar(
-            pk_prog,
-            x="Tiến độ (%)",
-            y="Phân khu",
-            orientation="h",
-            color="Tiến độ (%)",
-            color_continuous_scale="Blues",
-            range_x=[0, 100]
-        )
-        fig_bar_pk.update_layout(
-            margin=dict(l=10, r=10, t=10, b=10),
-            yaxis=dict(title="")
-        )
-        st.plotly_chart(fig_bar_pk, width="stretch")
-
-
-# ------------------------------------------------------------------------------
-# TAB 4: LỘ TRÌNH CỘT MỐC & XUẤT BÁO CÁO
-# ------------------------------------------------------------------------------
-with tab4:
+with tab_report:
     st.subheader("📑 Lộ Trình Cột Mốc Trọng Tâm & Xuất Hồ Sơ Báo Cáo")
 
     col_m1, col_m2 = st.columns(2)
@@ -1146,7 +1203,7 @@ with tab4:
 
 
 # ------------------------------------------------------------------------------
-# TAB QUẢN LÝ TÀI KHOẢN
+# TAB 6: HƯỚNG DẪN TRUY CẬP / QUẢN LÝ TÀI KHOẢN
 # ------------------------------------------------------------------------------
 with tab_users:
     st.subheader("Hướng dẫn truy cập")
