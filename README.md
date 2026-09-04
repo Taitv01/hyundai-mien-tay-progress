@@ -11,8 +11,9 @@
 - Gantt tương tác, đường mốc ngày theo dõi, biểu đồ trạng thái và tiến độ theo phân khu.
 - Tải báo cáo CSV/XLSX.
 - Mở link là xem và cập nhật được ngay, không yêu cầu đăng nhập.
-- Đại lý cập nhật phần trăm, trạng thái, ghi chú và nhiều ảnh hiện trường trực tiếp trên điện thoại.
-- Ảnh được xác thực, xoay theo EXIF, thu nhỏ và nén trước khi lưu trong bucket riêng tư.
+- Đại lý cập nhật phần trăm, trạng thái, ghi chú, chụp/chọn nhiều ảnh hiện trường và đính kèm tệp tài liệu PDF (biên bản nghiệm thu, bản vẽ kỹ thuật, chứng chỉ...).
+- Quản lý tệp tập trung: Thư viện hồ sơ hỗ trợ lọc theo hạng mục, lọc theo loại tệp (PDF / Ảnh), tìm kiếm, xem trước trực tiếp (iframe PDF/ảnh), tải về và xóa tệp an toàn.
+- Ảnh được xác thực, xoay theo EXIF, thu nhỏ và nén; tệp PDF được kiểm tra cấu trúc và dung lượng trước khi lưu trong bucket riêng tư.
 - Dữ liệu online lưu tập trung trên Supabase; Google Sheets chỉ còn là chế độ tùy chọn khi chạy cục bộ.
 
 > Lưu ý pháp lý: 51 dòng trong ứng dụng là checklist quản lý nội bộ, không phải 51 điều khoản nguyên văn của QCVN. Theo mục 3.1 của QCVN 121:2024/BGTVT, cơ sở phải công bố hợp quy trước khi hoạt động; việc công bố dựa trên kết quả của tổ chức đánh giá sự phù hợp được chỉ định. Ba nhóm thiết bị cho xe điện/hybrid tại mục 2.2.2.17–2.2.2.19 phải được cấu hình theo yêu cầu hoặc quy định của nhà sản xuất xe. Luôn đối chiếu [văn bản QCVN 121 chính thức](https://vbpl.vn/FileData/TW/Lists/vbpq/Attachments/173120/VanBanGoc_Th%C3%B4ng%20t%C6%B0%2050.2024.TT-BGTVT.%20QCVN%20121.pdf) và tư vấn chuyên môn trước khi dùng checklist cho hồ sơ công bố hợp quy.
@@ -32,7 +33,7 @@ Mở `http://localhost:8501`. Nếu chưa cấu hình Google Sheets, ứng dụn
 
 - **Streamlit Community Cloud:** cung cấp đường link HTTPS để mở trên máy tính hoặc điện thoại.
 - **Supabase Database:** lưu tiến độ, checklist, tài khoản và nhật ký thay đổi.
-- **Supabase Storage:** lưu ảnh trong bucket riêng tư; ảnh chỉ được xem qua URL có thời hạn.
+- **Supabase Storage:** lưu ảnh và tệp PDF trong bucket riêng tư; tệp chỉ được xem qua URL có thời hạn.
 - **Streamlit secrets:** giữ khóa dịch vụ phía máy chủ, không đưa khóa lên GitHub hay trình duyệt.
 
 Khởi tạo backend một lần bằng cách chạy toàn bộ [supabase_setup.sql](supabase_setup.sql) trong Supabase SQL Editor. Sau đó khai báo `SUPABASE_URL` và `SUPABASE_SERVICE_ROLE_KEY` theo tệp `.streamlit/secrets.toml.example`. Hệ thống tự nạp 16 hạng mục cùng 51 điểm kiểm soát ban đầu.
@@ -40,11 +41,12 @@ Khởi tạo backend một lần bằng cách chạy toàn bộ [supabase_setup.
 ## Quy trình sử dụng cho đại lý
 
 1. Mở link ứng dụng; không cần tài khoản hay mật khẩu.
-2. Chọn **Cập nhật hiện trường**, chọn hạng mục cần báo cáo.
-3. Chọn tiến độ, trạng thái, nhập nội dung và chọn/chụp ảnh.
-4. Bấm **Lưu cập nhật**. Nhật ký và ảnh xuất hiện ngay bên dưới.
+2. Chọn **Cập nhật hiện trường & File**, chọn hạng mục cần báo cáo.
+3. Chọn tiến độ, trạng thái, nhập nội dung, chọn/chụp ảnh và đính kèm tệp PDF nếu có.
+4. Bấm **Lưu cập nhật**. Nhật ký, ảnh và file PDF xuất hiện ngay trong nhật ký.
+5. Mở tab con **Quản lý file & Hồ sơ hiện trường** để tra cứu, xem trước, tải về hoặc xóa tệp khi cần.
 
-Chỉ chia sẻ link cho Ban QLDA và Đại lý vì người có link có thể thay đổi tiến độ và tải ảnh.
+Chỉ chia sẻ link cho Ban QLDA và Đại lý vì người có link có thể thay đổi tiến độ và tải ảnh/tệp.
 
 ## Google Sheets (tùy chọn khi chạy cục bộ)
 

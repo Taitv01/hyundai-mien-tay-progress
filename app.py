@@ -703,7 +703,7 @@ st.markdown("<br>", unsafe_allow_html=True)
 tab_gantt, tab_progress, tab_update, tab_qcvn, tab_report, tab_users = st.tabs([
     "📊 BIỂU ĐỒ GANTT",
     "📋 TIẾN ĐỘ CHI TIẾT",
-    "📷 CẬP NHẬT HIỆN TRƯỜNG",
+    "📷 CẬP NHẬT HIỆN TRƯỜNG & FILE",
     "⚡ CHECKLIST QCVN 121",
     "📑 BÁO CÁO",
     "ℹ️ HƯỚNG DẪN",
@@ -972,123 +972,349 @@ with tab_progress:
 
 
 # ------------------------------------------------------------------------------
-# TAB 3: CẬP NHẬT HIỆN TRƯỜNG & HÌNH ẢNH
+# TAB 3: CẬP NHẬT HIỆN TRƯỜNG & QUẢN LÝ FILE
 # ------------------------------------------------------------------------------
 with tab_update:
-    st.subheader("Cập nhật tiến độ và hình ảnh hiện trường")
+    st.subheader("📷 Cập nhật hiện trường & Quản lý file")
+    st.caption("Ghi nhận tiến độ, đính kèm ảnh hiện trường & tệp PDF (bản vẽ, biên bản nghiệm thu) và quản lý thư viện tài liệu dự án.")
+
     if not ONLINE_MODE:
         st.info("Tính năng này sẽ hoạt động sau khi cấu hình Supabase trên bản online.")
-    elif not CURRENT_USER.can_edit:
-        st.info("Tài khoản của bạn có quyền xem. Liên hệ quản trị viên để được cấp quyền cập nhật.")
     else:
+        subtab_form, subtab_files, subtab_log = st.tabs([
+            "📝 Cập nhật tiến độ & Tải tệp",
+            "📂 Quản lý file & Hồ sơ hiện trường",
+            "📜 Nhật ký cập nhật gần đây",
+        ])
+
         progress_source = st.session_state.progress_df
         task_options = progress_source["Mã"].tolist()
-        selected_task_code = st.selectbox(
-            "Chọn hạng mục cần cập nhật",
-            task_options,
-            format_func=lambda code: (
-                f"[{code}] "
-                + progress_source.loc[
-                    progress_source["Mã"] == code, "Hạng mục công việc"
-                ].iloc[0]
-            ),
-            key="field_task_code",
-        )
-        selected_task = progress_source[progress_source["Mã"] == selected_task_code].iloc[0]
-        update_nonce = st.session_state.get("field_update_nonce", 0)
-        status_options = ["Chưa thực hiện", "Đang thi công", "Đã hoàn thiện", "Dời tiến độ"]
 
-        with st.form(f"field_update_form_{selected_task_code}_{update_nonce}", border=True):
-            c_progress, c_status = st.columns(2)
-            with c_progress:
-                field_progress = st.slider(
-                    "Tiến độ hoàn thành",
-                    min_value=0,
-                    max_value=100,
-                    value=int(selected_task["Tiến độ (%)"]),
-                    step=5,
-                    format="%d%%",
+        # ----------------------------------------------------------------------
+        # SUB-TAB 1: CẬP NHẬT TIẾN ĐỘ & TẢI TỆP
+        # ----------------------------------------------------------------------
+        with subtab_form:
+            if not CURRENT_USER.can_edit:
+                st.info("Tài khoản của bạn có quyền xem. Liên hệ quản trị viên để được cấp quyền cập nhật.")
+            else:
+                selected_task_code = st.selectbox(
+                    "Chọn hạng mục cần cập nhật",
+                    task_options,
+                    format_func=lambda code: (
+                        f"[{code}] "
+                        + progress_source.loc[
+                            progress_source["Mã"] == code, "Hạng mục công việc"
+                        ].iloc[0]
+                    ),
+                    key="field_task_code",
                 )
-            with c_status:
-                field_status = st.selectbox(
-                    "Trạng thái",
-                    status_options,
-                    index=status_options.index(selected_task["Trạng thái"]),
-                )
-            field_note = st.text_area(
-                "Nội dung cập nhật",
-                placeholder="Ví dụ: Đã hoàn thành tô trát khu vực tiếp nhận, đang chờ nghiệm thu...",
-                height=100,
-            )
-            uploaded_images = st.file_uploader(
-                "Ảnh hiện trường",
-                type=["jpg", "jpeg", "png", "webp"],
-                accept_multiple_files=True,
-                max_upload_size=12,
-                help="Có thể chọn nhiều ảnh; tối đa 12 MB mỗi ảnh.",
-            )
-            camera_image = st.camera_input(
-                "Hoặc chụp ảnh trực tiếp",
-                resolution="720p",
-            )
-            field_submit = st.form_submit_button(
-                "Lưu cập nhật",
-                type="primary",
-                icon=":material/cloud_upload:",
-                width="stretch",
-            )
+                selected_task = progress_source[progress_source["Mã"] == selected_task_code].iloc[0]
 
-        if field_submit:
-            images = [(image.name, image.getvalue()) for image in uploaded_images]
-            if camera_image is not None:
-                images.append((camera_image.name or "camera.jpg", camera_image.getvalue()))
-            try:
-                with st.spinner("Đang lưu dữ liệu và tải ảnh..."):
-                    online_service.create_field_update(
-                        CURRENT_USER,
-                        selected_task_code,
-                        field_progress,
-                        field_status,
-                        field_note,
-                        images,
-                    )
-                    reload_online_data(online_service, PROJECT_TODAY)
-                st.session_state.field_update_nonce = update_nonce + 1
-                st.toast("Đã lưu cập nhật hiện trường.", icon="✅")
-                st.rerun()
-            except Exception as exc:
-                st.error(f"Không thể lưu cập nhật: {exc}")
-
-    if ONLINE_MODE:
-        st.divider()
-        st.subheader("Nhật ký cập nhật gần đây")
-        try:
-            recent_updates = online_service.recent_updates(limit=20)
-            if not recent_updates:
-                st.caption("Chưa có bản cập nhật hiện trường nào.")
-            for update in recent_updates:
-                created_at = pd.to_datetime(update["created_at"], utc=True).tz_convert(
-                    "Asia/Ho_Chi_Minh"
-                )
+                # Thẻ thông tin nhanh về hạng mục
                 with st.container(border=True):
-                    st.markdown(
-                        f"**[{update['task_code']}] {update['progress']}% · {update['status']}**"
-                    )
-                    st.caption(
-                        f"{update['updated_by_name']} · "
-                        f"{created_at.strftime('%d/%m/%Y %H:%M')}"
-                    )
-                    if update.get("note"):
-                        st.write(update["note"])
-                    photos = update.get("photos", [])
-                    if photos:
-                        st.image(
-                            [photo["url"] for photo in photos if photo.get("url")],
-                            caption=[photo["original_name"] for photo in photos if photo.get("url")],
-                            width=240,
+                    c_m1, c_m2, c_m3, c_m4 = st.columns(4)
+                    c_m1.metric("Phân khu", str(selected_task["Phân khu"]))
+                    c_m2.metric("Tiến độ hiện tại", f"{int(selected_task['Tiến độ (%)'])}%")
+                    c_m3.metric("Hạn hoàn thành", selected_task["Hoàn thành"].strftime("%d/%m/%Y") if hasattr(selected_task["Hoàn thành"], "strftime") else str(selected_task["Hoàn thành"]))
+                    c_m4.metric("Người phụ trách", str(selected_task["Người phụ trách"]) or "Chưa phân công")
+
+                update_nonce = st.session_state.get("field_update_nonce", 0)
+                status_options = ["Chưa thực hiện", "Đang thi công", "Đã hoàn thiện", "Dời tiến độ"]
+
+                with st.form(f"field_update_form_{selected_task_code}_{update_nonce}", border=True):
+                    st.markdown("##### 📌 Thông tin báo cáo hiện trường")
+                    c_progress, c_status = st.columns(2)
+                    with c_progress:
+                        field_progress = st.slider(
+                            "Tiến độ hoàn thành",
+                            min_value=0,
+                            max_value=100,
+                            value=int(selected_task["Tiến độ (%)"]),
+                            step=5,
+                            format="%d%%",
                         )
-        except Exception as exc:
-            st.warning(f"Chưa thể tải nhật ký: {exc}")
+                    with c_status:
+                        curr_status = selected_task["Trạng thái"]
+                        s_idx = status_options.index(curr_status) if curr_status in status_options else 0
+                        field_status = st.selectbox(
+                            "Trạng thái",
+                            status_options,
+                            index=s_idx,
+                        )
+                    field_note = st.text_area(
+                        "Nội dung cập nhật / Ghi chú hiện trường",
+                        placeholder="Ví dụ: Đã hoàn thiện đổ bê tông khu vực sửa chữa nhanh, chuẩn bị nghiệm thu cốt thép...",
+                        height=90,
+                    )
+
+                    st.markdown("##### 📎 Đính kèm tệp & Hình ảnh")
+                    c_img, c_pdf = st.columns(2)
+                    with c_img:
+                        uploaded_images = st.file_uploader(
+                            "🖼️ Ảnh hiện trường (JPG, PNG, WebP)",
+                            type=["jpg", "jpeg", "png", "webp"],
+                            accept_multiple_files=True,
+                            max_upload_size=12,
+                            help="Có thể chọn nhiều ảnh; tối đa 12 MB mỗi ảnh.",
+                            key=f"field_imgs_{update_nonce}",
+                        )
+                        camera_image = st.camera_input(
+                            "Hoặc chụp trực tiếp bằng camera",
+                            resolution="720p",
+                            key=f"field_cam_{update_nonce}",
+                        )
+                    with c_pdf:
+                        uploaded_pdfs = st.file_uploader(
+                            "📄 Tệp PDF đính kèm (Biên bản nghiệm thu, bản vẽ, hồ sơ...)",
+                            type=["pdf"],
+                            accept_multiple_files=True,
+                            max_upload_size=25,
+                            help="Biên bản nghiệm thu, bản vẽ thiết kế, hồ sơ pháp lý, chứng chỉ... Tối đa 25 MB mỗi tệp.",
+                            key=f"field_pdfs_{update_nonce}",
+                        )
+
+                    field_submit = st.form_submit_button(
+                        "Lưu cập nhật & Tải lên tệp",
+                        type="primary",
+                        icon=":material/cloud_upload:",
+                        width="stretch",
+                    )
+
+                if field_submit:
+                    images = [(image.name, image.getvalue()) for image in (uploaded_images or [])]
+                    if camera_image is not None:
+                        images.append((camera_image.name or "camera.jpg", camera_image.getvalue()))
+                    pdfs = [(pdf.name, pdf.getvalue()) for pdf in (uploaded_pdfs or [])]
+
+                    try:
+                        with st.spinner("Đang lưu dữ liệu và tải tệp lên hệ thống..."):
+                            online_service.create_field_update(
+                                CURRENT_USER,
+                                selected_task_code,
+                                field_progress,
+                                field_status,
+                                field_note,
+                                images=images,
+                                pdfs=pdfs,
+                            )
+                            reload_online_data(online_service, PROJECT_TODAY)
+                        st.session_state.field_update_nonce = update_nonce + 1
+                        st.toast("Đã lưu cập nhật hiện trường & tệp thành công.", icon="✅")
+                        st.rerun()
+                    except Exception as exc:
+                        st.error(f"Không thể lưu cập nhật: {exc}")
+
+                # Tiện ích tải nhanh tài liệu mà không cần đổi % tiến độ
+                with st.expander("📎 Tải nhanh tài liệu / PDF bổ sung cho hạng mục này (Không đổi % tiến độ)", expanded=False):
+                    st.caption("Dùng để bổ sung biên bản nghiệm thu, chứng chỉ vật tư hoặc bản vẽ mới cho hạng mục mà không làm thay đổi tiến độ công việc.")
+                    with st.form(f"quick_doc_form_{selected_task_code}", border=False):
+                        q_file = st.file_uploader(
+                            "Chọn tệp cần bổ sung (PDF hoặc Ảnh)",
+                            type=["pdf", "jpg", "jpeg", "png", "webp"],
+                            key=f"quick_file_{selected_task_code}",
+                        )
+                        q_note = st.text_input(
+                            "Ghi chú tài liệu (ví dụ: Biên bản nghiệm thu PCCC, Bản vẽ 3D cập nhật...)",
+                            key=f"quick_note_{selected_task_code}",
+                        )
+                        q_submit = st.form_submit_button("Tải tệp lên", type="secondary", icon=":material/upload_file:")
+
+                    if q_submit:
+                        if q_file is None:
+                            st.warning("Vui lòng chọn tệp cần tải lên.")
+                        else:
+                            try:
+                                with st.spinner("Đang tải tài liệu lên..."):
+                                    online_service.upload_task_document(
+                                        CURRENT_USER,
+                                        selected_task_code,
+                                        q_file.name,
+                                        q_file.getvalue(),
+                                        note=q_note,
+                                    )
+                                    reload_online_data(online_service, PROJECT_TODAY)
+                                st.toast(f"Đã tải tệp '{q_file.name}' lên thành công.", icon="✅")
+                                st.rerun()
+                            except Exception as exc:
+                                st.error(f"Lỗi khi tải tài liệu: {exc}")
+
+        # ----------------------------------------------------------------------
+        # SUB-TAB 2: QUẢN LÝ FILE & HỒ SƠ HIỆN TRƯỜNG
+        # ----------------------------------------------------------------------
+        with subtab_files:
+            try:
+                all_files = online_service.list_all_files(limit=300)
+            except Exception as exc:
+                st.warning(f"Chưa thể tải danh sách tệp: {exc}")
+                all_files = []
+
+            # Thống kê tổng quan
+            total_count = len(all_files)
+            pdf_count = sum(1 for f in all_files if f["file_type"] == "pdf")
+            img_count = sum(1 for f in all_files if f["file_type"] == "image")
+            task_with_files = len(set(f["task_code"] for f in all_files if f.get("task_code")))
+
+            m_col1, m_col2, m_col3, m_col4 = st.columns(4)
+            m_col1.metric("📦 Tổng số tệp", f"{total_count} tệp")
+            m_col2.metric("📄 Tệp tài liệu PDF", f"{pdf_count} tệp")
+            m_col3.metric("🖼️ Hình ảnh hiện trường", f"{img_count} ảnh")
+            m_col4.metric("🏗️ Hạng mục có hồ sơ", f"{task_with_files} hạng mục")
+
+            st.divider()
+
+            # Bộ lọc và tìm kiếm
+            f_col1, f_col2, f_col3 = st.columns([2, 2, 3])
+            with f_col1:
+                filter_task_opts = ["Tất cả hạng mục"] + task_options
+                selected_filter_task = st.selectbox(
+                    "Lọc theo hạng mục",
+                    filter_task_opts,
+                    format_func=lambda code: (
+                        "Tất cả hạng mục" if code == "Tất cả hạng mục"
+                        else f"[{code}] " + progress_source.loc[progress_source["Mã"] == code, "Hạng mục công việc"].iloc[0]
+                    ),
+                    key="mgr_filter_task",
+                )
+            with f_col2:
+                selected_filter_type = st.selectbox(
+                    "Lọc theo loại tệp",
+                    ["Tất cả", "📄 Chỉ tệp PDF", "🖼️ Chỉ hình ảnh"],
+                    key="mgr_filter_type",
+                )
+            with f_col3:
+                search_term = st.text_input(
+                    "🔍 Tìm kiếm tên tệp hoặc ghi chú",
+                    placeholder="Nhập tên tệp (ví dụ: bantin, ngiem_thu, layout...)",
+                    key="mgr_search_term",
+                )
+
+            # Lọc danh sách
+            filtered_files = all_files
+            if selected_filter_task != "Tất cả hạng mục":
+                filtered_files = [f for f in filtered_files if f["task_code"] == selected_filter_task]
+
+            if selected_filter_type == "📄 Chỉ tệp PDF":
+                filtered_files = [f for f in filtered_files if f["file_type"] == "pdf"]
+            elif selected_filter_type == "🖼️ Chỉ hình ảnh":
+                filtered_files = [f for f in filtered_files if f["file_type"] == "image"]
+
+            if search_term.strip():
+                kw = search_term.strip().lower()
+                filtered_files = [
+                    f for f in filtered_files
+                    if kw in f["original_name"].lower()
+                    or kw in f["task_code"].lower()
+                    or kw in f.get("task_name", "").lower()
+                ]
+
+            st.markdown(f"**Danh sách tệp ({len(filtered_files)} kết quả):**")
+
+            if not filtered_files:
+                st.info("Chưa có tệp nào phù hợp với điều kiện tìm kiếm/lọc.")
+            else:
+                for file_item in filtered_files:
+                    is_pdf = file_item["file_type"] == "pdf"
+                    file_id = file_item["id"]
+                    file_name = file_item["original_name"]
+                    file_url = file_item.get("url")
+
+                    created_str = ""
+                    if file_item.get("created_at"):
+                        try:
+                            dt_val = pd.to_datetime(file_item["created_at"], utc=True).tz_convert("Asia/Ho_Chi_Minh")
+                            created_str = dt_val.strftime("%d/%m/%Y %H:%M")
+                        except Exception:
+                            created_str = str(file_item["created_at"])[:16]
+
+                    with st.container(border=True):
+                        row_left, row_meta, row_actions = st.columns([5, 3, 3])
+                        with row_left:
+                            if is_pdf:
+                                st.markdown(f"📄 **{file_name}**")
+                                st.caption(f"🏷️ Loại: `Tài liệu PDF` · Hạng mục: **[{file_item['task_code']}] {file_item.get('task_name', '')}**")
+                            else:
+                                st.markdown(f"🖼️ **{file_name}**")
+                                st.caption(f"🏷️ Loại: `Hình ảnh` · Hạng mục: **[{file_item['task_code']}] {file_item.get('task_name', '')}**")
+
+                        with row_meta:
+                            st.write(f"👤 **Người đăng:** {file_item.get('uploader_name', 'Hệ thống')}")
+                            st.caption(f"🕒 **Ngày tải:** {created_str}")
+
+                        with row_actions:
+                            act_col1, act_col2 = st.columns(2)
+                            with act_col1:
+                                if file_url:
+                                    st.link_button("↗️ Mở tệp", file_url, width="stretch")
+                            with act_col2:
+                                if CURRENT_USER.can_edit:
+                                    with st.popover("🗑️ Xóa", width="stretch"):
+                                        st.markdown(f"**Xác nhận xóa tệp?**")
+                                        st.caption(f"Tệp `{file_name}` sẽ bị xóa vĩnh viễn khỏi hệ thống.")
+                                        if st.button("Xác nhận xóa", type="primary", key=f"del_btn_{file_id}", width="stretch"):
+                                            try:
+                                                online_service.delete_file(CURRENT_USER, file_id)
+                                                st.toast(f"Đã xóa tệp '{file_name}' thành công.", icon="✅")
+                                                st.rerun()
+                                            except Exception as exc:
+                                                st.error(f"Lỗi khi xóa: {exc}")
+
+                        # Vùng xem trước tệp
+                        if file_url:
+                            with st.expander(f"👁️ Xem trước: {file_name}", expanded=False):
+                                if is_pdf:
+                                    st.markdown(
+                                        f'<iframe src="{file_url}#toolbar=1" width="100%" height="520px" style="border: 1px solid #CBD5E1; border-radius: 8px;"></iframe>',
+                                        unsafe_allow_html=True,
+                                    )
+                                    st.link_button("Tải tệp PDF về máy / Mở tab riêng", file_url, icon=":material/download:")
+                                else:
+                                    st.image(file_url, caption=file_name, width="stretch")
+
+        # ----------------------------------------------------------------------
+        # SUB-TAB 3: NHẬT KÝ CẬP NHẬT HIỆN TRƯỜNG
+        # ----------------------------------------------------------------------
+        with subtab_log:
+            try:
+                recent_updates = online_service.recent_updates(limit=30)
+                if not recent_updates:
+                    st.caption("Chưa có bản cập nhật hiện trường nào.")
+                for update in recent_updates:
+                    created_at = pd.to_datetime(update["created_at"], utc=True).tz_convert(
+                        "Asia/Ho_Chi_Minh"
+                    )
+                    with st.container(border=True):
+                        st.markdown(
+                            f"**[{update['task_code']}] {update['progress']}% · {update['status']}**"
+                        )
+                        st.caption(
+                            f"{update['updated_by_name']} · "
+                            f"{created_at.strftime('%d/%m/%Y %H:%M')}"
+                        )
+                        if update.get("note"):
+                            st.write(update["note"])
+
+                        # Hình ảnh hiện trường
+                        photos = update.get("photos", [])
+                        if photos:
+                            st.image(
+                                [photo["url"] for photo in photos if photo.get("url")],
+                                caption=[photo["original_name"] for photo in photos if photo.get("url")],
+                                width=240,
+                            )
+
+                        # Tài liệu PDF đính kèm
+                        documents = update.get("documents", [])
+                        if documents:
+                            st.markdown("###### 📄 Hồ sơ & Bản vẽ PDF đính kèm:")
+                            for doc in documents:
+                                if doc.get("url"):
+                                    c_dname, c_dbtn = st.columns([4, 2])
+                                    with c_dname:
+                                        st.markdown(f"📄 **{doc['original_name']}**")
+                                    with c_dbtn:
+                                        st.link_button("Mở PDF ↗️", doc["url"], width="stretch")
+            except Exception as exc:
+                st.warning(f"Chưa thể tải nhật ký: {exc}")
 
 
 # ------------------------------------------------------------------------------

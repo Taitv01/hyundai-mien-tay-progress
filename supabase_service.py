@@ -105,6 +105,18 @@ def prepare_image(image_bytes: bytes, max_side: int = 1920) -> bytes:
         raise ValueError("Tệp tải lên không phải ảnh hợp lệ.") from exc
 
 
+def prepare_pdf(pdf_bytes: bytes, max_size_mb: int = 25) -> bytes:
+    """Xác thực tệp PDF và kiểm tra kích thước."""
+
+    if not pdf_bytes:
+        raise ValueError("Tệp PDF rỗng.")
+    if len(pdf_bytes) > max_size_mb * 1024 * 1024:
+        raise ValueError(f"Mỗi tệp PDF không được vượt quá {max_size_mb} MB.")
+    if not (pdf_bytes.lstrip().startswith(b"%PDF") or b"%PDF-" in pdf_bytes[:1024]):
+        raise ValueError("Tệp tải lên không phải định dạng PDF hợp lệ.")
+    return pdf_bytes
+
+
 class SupabaseService:
     def __init__(self, settings: OnlineSettings):
         self.settings = settings
@@ -355,7 +367,8 @@ class SupabaseService:
         progress: int,
         status: str,
         note: str,
-        images: list[tuple[str, bytes]],
+        images: list[tuple[str, bytes]] | None = None,
+        pdfs: list[tuple[str, bytes]] | None = None,
     ) -> str:
         if not actor.can_edit:
             raise PermissionError("Tài khoản chỉ có quyền xem.")
@@ -392,27 +405,216 @@ class SupabaseService:
         )
         update_id = str(update_row["id"])
 
-        for original_name, image_bytes in images:
-            prepared = prepare_image(image_bytes)
-            storage_path = (
-                f"{task_code}/{dt.date.today().isoformat()}/"
-                f"{uuid.uuid4().hex}.jpg"
-            )
-            self.client.storage.from_(self.settings.photos_bucket).upload(
-                storage_path,
-                prepared,
-                {"content-type": "image/jpeg", "upsert": "false"},
-            )
-            self.client.table("progress_photos").insert(
-                {
-                    "update_id": update_id,
-                    "task_code": task_code,
-                    "storage_path": storage_path,
-                    "original_name": original_name[:255],
-                    "uploaded_by": actor.id,
-                }
-            ).execute()
+        if images:
+            for original_name, image_bytes in images:
+                prepared = prepare_image(image_bytes)
+                storage_path = (
+                    f"{task_code}/{dt.date.today().isoformat()}/"
+                    f"{uuid.uuid4().hex}.jpg"
+                )
+                self.client.storage.from_(self.settings.photos_bucket).upload(
+                    storage_path,
+                    prepared,
+                    {"content-type": "image/jpeg", "upsert": "false"},
+                )
+                self.client.table("progress_photos").insert(
+                    {
+                        "update_id": update_id,
+                        "task_code": task_code,
+                        "storage_path": storage_path,
+                        "original_name": original_name[:255],
+                        "uploaded_by": actor.id,
+                    }
+                ).execute()
+
+        if pdfs:
+            for original_name, pdf_bytes in pdfs:
+                prepared = prepare_pdf(pdf_bytes)
+                safe_name = "".join(c for c in original_name if c.isalnum() or c in "._-")[:50]
+                if not safe_name.lower().endswith(".pdf"):
+                    safe_name += ".pdf"
+                storage_path = (
+                    f"{task_code}/{dt.date.today().isoformat()}/"
+                    f"{uuid.uuid4().hex}_{safe_name}"
+                )
+                self.client.storage.from_(self.settings.photos_bucket).upload(
+                    storage_path,
+                    prepared,
+                    {"content-type": "application/pdf", "upsert": "false"},
+                )
+                self.client.table("progress_photos").insert(
+                    {
+                        "update_id": update_id,
+                        "task_code": task_code,
+                        "storage_path": storage_path,
+                        "original_name": original_name[:255],
+                        "uploaded_by": actor.id,
+                    }
+                ).execute()
+
         return update_id
+
+    def upload_task_document(
+        self,
+        actor: AppUser,
+        task_code: str,
+        file_name: str,
+        file_bytes: bytes,
+        note: str = "",
+    ) -> str:
+        """Tải tài liệu PDF hoặc ảnh bổ sung cho một hạng mục mà không thay đổi tiến độ hiện tại."""
+        if not actor.can_edit:
+            raise PermissionError("Tài khoản chỉ có quyền xem.")
+        task_res = (
+            self.client.table("tasks")
+            .select("progress,status")
+            .eq("code", task_code)
+            .limit(1)
+            .execute()
+        )
+        current_progress = 0
+        current_status = "Chưa thực hiện"
+        if task_res.data:
+            current_progress = int(task_res.data[0].get("progress", 0))
+            current_status = task_res.data[0].get("status", "Chưa thực hiện")
+
+        is_pdf = file_name.lower().endswith(".pdf") or file_bytes.lstrip().startswith(b"%PDF")
+        if is_pdf:
+            prepared = prepare_pdf(file_bytes)
+            mime = "application/pdf"
+            ext = ".pdf"
+        else:
+            prepared = prepare_image(file_bytes)
+            mime = "image/jpeg"
+            ext = ".jpg"
+
+        update_note = note.strip() or f"Đính kèm tài liệu: {file_name}"
+        update_row = (
+            self.client.table("progress_updates")
+            .insert(
+                {
+                    "task_code": task_code,
+                    "progress": current_progress,
+                    "status": current_status,
+                    "note": update_note,
+                    "updated_by": actor.id,
+                    "updated_by_name": actor.display_name,
+                }
+            )
+            .execute()
+            .data[0]
+        )
+        update_id = str(update_row["id"])
+
+        safe_name = "".join(c for c in file_name if c.isalnum() or c in "._-")[:50]
+        if not safe_name.lower().endswith(ext):
+            safe_name += ext
+        storage_path = (
+            f"{task_code}/{dt.date.today().isoformat()}/"
+            f"{uuid.uuid4().hex}_{safe_name}"
+        )
+        self.client.storage.from_(self.settings.photos_bucket).upload(
+            storage_path,
+            prepared,
+            {"content-type": mime, "upsert": "false"},
+        )
+        self.client.table("progress_photos").insert(
+            {
+                "update_id": update_id,
+                "task_code": task_code,
+                "storage_path": storage_path,
+                "original_name": file_name[:255],
+                "uploaded_by": actor.id,
+            }
+        ).execute()
+        return update_id
+
+    def delete_file(self, actor: AppUser, file_id: str) -> None:
+        """Xóa tệp đính kèm (ảnh hoặc PDF) khỏi storage và database."""
+        if not actor.can_edit:
+            raise PermissionError("Tài khoản chỉ có quyền xem.")
+        res = (
+            self.client.table("progress_photos")
+            .select("id,storage_path")
+            .eq("id", file_id)
+            .limit(1)
+            .execute()
+        )
+        if not res.data:
+            raise ValueError("Không tìm thấy tệp cần xóa.")
+        storage_path = res.data[0].get("storage_path")
+        if storage_path:
+            try:
+                self.client.storage.from_(self.settings.photos_bucket).remove([storage_path])
+            except Exception:
+                pass
+        self.client.table("progress_photos").delete().eq("id", file_id).execute()
+
+    def list_all_files(
+        self,
+        task_code: str | None = None,
+        file_type_filter: str | None = None,
+        limit: int = 200,
+    ) -> list[dict[str, Any]]:
+        """Lấy danh sách tất cả các tệp đính kèm (ảnh & PDF) để quản lý."""
+        query = (
+            self.client.table("progress_photos")
+            .select("id,update_id,task_code,storage_path,original_name,uploaded_by,created_at")
+            .order("created_at", desc=True)
+            .limit(limit)
+        )
+        if task_code:
+            query = query.eq("task_code", task_code)
+        files = query.execute().data
+        if not files:
+            return []
+
+        tasks_res = self.client.table("tasks").select("code,name").execute().data
+        task_names = {t["code"]: t["name"] for t in tasks_res} if tasks_res else {}
+
+        users_res = self.client.table("app_users").select("id,display_name").execute().data
+        user_names = {u["id"]: u["display_name"] for u in users_res} if users_res else {}
+
+        results = []
+        for file in files:
+            fname = file.get("original_name", "")
+            spath = file.get("storage_path", "")
+            is_pdf = fname.lower().endswith(".pdf") or spath.lower().endswith(".pdf")
+            ftype = "pdf" if is_pdf else "image"
+
+            if file_type_filter and file_type_filter.lower() not in ("all", "tất cả"):
+                filter_val = file_type_filter.lower()
+                if filter_val in ("pdf", "tài liệu pdf") and ftype != "pdf":
+                    continue
+                if filter_val in ("image", "hình ảnh", "ảnh") and ftype != "image":
+                    continue
+
+            try:
+                signed = self.client.storage.from_(self.settings.photos_bucket).create_signed_url(
+                    spath, 7200
+                )
+                url = signed.get("signedURL") or signed.get("signedUrl")
+            except Exception:
+                url = None
+
+            uploader_id = file.get("uploaded_by")
+            uploader_name = user_names.get(uploader_id, "Hệ thống") if uploader_id else "Chưa xác định"
+            tcode = file.get("task_code", "")
+
+            results.append({
+                "id": str(file["id"]),
+                "update_id": str(file.get("update_id", "")),
+                "task_code": tcode,
+                "task_name": task_names.get(tcode, tcode),
+                "storage_path": spath,
+                "original_name": fname or ("Tài liệu PDF" if is_pdf else "Ảnh hiện trường"),
+                "file_type": ftype,
+                "url": url,
+                "created_at": file.get("created_at"),
+                "uploaded_by": uploader_id,
+                "uploader_name": uploader_name,
+            })
+        return results
 
     def recent_updates(self, limit: int = 30, task_code: str | None = None) -> list[dict[str, Any]]:
         query = (
@@ -435,13 +637,30 @@ class SupabaseService:
             .execute()
             .data
         )
-        by_update: dict[str, list[dict[str, Any]]] = {}
+        by_update_photos: dict[str, list[dict[str, Any]]] = {}
+        by_update_docs: dict[str, list[dict[str, Any]]] = {}
+        by_update_all: dict[str, list[dict[str, Any]]] = {}
+
         for photo in photos:
+            fname = photo.get("original_name", "")
+            spath = photo.get("storage_path", "")
+            is_pdf = fname.lower().endswith(".pdf") or spath.lower().endswith(".pdf")
+            photo["file_type"] = "pdf" if is_pdf else "image"
             signed = self.client.storage.from_(self.settings.photos_bucket).create_signed_url(
                 photo["storage_path"], 3600
             )
             photo["url"] = signed.get("signedURL") or signed.get("signedUrl")
-            by_update.setdefault(str(photo["update_id"]), []).append(photo)
+            uid = str(photo["update_id"])
+            by_update_all.setdefault(uid, []).append(photo)
+            if is_pdf:
+                by_update_docs.setdefault(uid, []).append(photo)
+            else:
+                by_update_photos.setdefault(uid, []).append(photo)
+
         for update in updates:
-            update["photos"] = by_update.get(str(update["id"]), [])
+            uid = str(update["id"])
+            update["photos"] = by_update_photos.get(uid, [])
+            update["documents"] = by_update_docs.get(uid, [])
+            update["all_files"] = by_update_all.get(uid, [])
         return updates
+

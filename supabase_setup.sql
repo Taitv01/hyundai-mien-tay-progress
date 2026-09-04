@@ -85,8 +85,8 @@ values (
     'progress-photos',
     'progress-photos',
     false,
-    12582912,
-    array['image/jpeg', 'image/png', 'image/webp']
+    26214400,
+    array['image/jpeg', 'image/png', 'image/webp', 'application/pdf']
 )
 on conflict (id) do update set
     public = excluded.public,
