@@ -421,8 +421,12 @@ def get_online_settings():
 
 
 @st.cache_resource(show_spinner=False)
-def get_online_service(settings):
-    return SupabaseService(settings)
+def get_online_service(settings, _build_version: str = "2026.09.04.v3"):
+    import importlib
+    import supabase_service
+    importlib.reload(supabase_service)
+    return supabase_service.SupabaseService(settings)
+
 
 
 def reload_online_data(service, current_date):
@@ -1088,15 +1092,33 @@ with tab_update:
 
                     try:
                         with st.spinner("Đang lưu dữ liệu và tải tệp lên hệ thống..."):
-                            online_service.create_field_update(
-                                CURRENT_USER,
-                                selected_task_code,
-                                field_progress,
-                                field_status,
-                                field_note,
-                                images=images,
-                                pdfs=pdfs,
-                            )
+                            try:
+                                online_service.create_field_update(
+                                    CURRENT_USER,
+                                    selected_task_code,
+                                    field_progress,
+                                    field_status,
+                                    field_note,
+                                    images=images,
+                                    pdfs=pdfs,
+                                )
+                            except TypeError as te:
+                                if "unexpected keyword argument" in str(te) or "pdfs" in str(te):
+                                    import importlib
+                                    import supabase_service
+                                    importlib.reload(supabase_service)
+                                    fresh_service = supabase_service.SupabaseService(online_settings)
+                                    fresh_service.create_field_update(
+                                        CURRENT_USER,
+                                        selected_task_code,
+                                        field_progress,
+                                        field_status,
+                                        field_note,
+                                        images=images,
+                                        pdfs=pdfs,
+                                    )
+                                else:
+                                    raise
                             reload_online_data(online_service, PROJECT_TODAY)
                         st.session_state.field_update_nonce = update_nonce + 1
                         st.toast("Đã lưu cập nhật hiện trường & tệp thành công.", icon="✅")
@@ -1125,13 +1147,26 @@ with tab_update:
                         else:
                             try:
                                 with st.spinner("Đang tải tài liệu lên..."):
-                                    online_service.upload_task_document(
-                                        CURRENT_USER,
-                                        selected_task_code,
-                                        q_file.name,
-                                        q_file.getvalue(),
-                                        note=q_note,
-                                    )
+                                    try:
+                                        online_service.upload_task_document(
+                                            CURRENT_USER,
+                                            selected_task_code,
+                                            q_file.name,
+                                            q_file.getvalue(),
+                                            note=q_note,
+                                        )
+                                    except (AttributeError, TypeError):
+                                        import importlib
+                                        import supabase_service
+                                        importlib.reload(supabase_service)
+                                        fresh_service = supabase_service.SupabaseService(online_settings)
+                                        fresh_service.upload_task_document(
+                                            CURRENT_USER,
+                                            selected_task_code,
+                                            q_file.name,
+                                            q_file.getvalue(),
+                                            note=q_note,
+                                        )
                                     reload_online_data(online_service, PROJECT_TODAY)
                                 st.toast(f"Đã tải tệp '{q_file.name}' lên thành công.", icon="✅")
                                 st.rerun()
@@ -1144,6 +1179,16 @@ with tab_update:
         with subtab_files:
             try:
                 all_files = online_service.list_all_files(limit=300)
+            except (AttributeError, TypeError):
+                try:
+                    import importlib
+                    import supabase_service
+                    importlib.reload(supabase_service)
+                    fresh_service = supabase_service.SupabaseService(online_settings)
+                    all_files = fresh_service.list_all_files(limit=300)
+                except Exception as exc:
+                    st.warning(f"Chưa thể tải danh sách tệp: {exc}")
+                    all_files = []
             except Exception as exc:
                 st.warning(f"Chưa thể tải danh sách tệp: {exc}")
                 all_files = []

@@ -369,9 +369,15 @@ class SupabaseService:
         note: str,
         images: list[tuple[str, bytes]] | None = None,
         pdfs: list[tuple[str, bytes]] | None = None,
+        *args,
+        **kwargs,
     ) -> str:
         if not actor.can_edit:
             raise PermissionError("Tài khoản chỉ có quyền xem.")
+        if pdfs is None and "pdfs" in kwargs:
+            pdfs = kwargs.pop("pdfs")
+        if images is None and "images" in kwargs:
+            images = kwargs.pop("images")
         progress = max(0, min(100, int(progress)))
         if progress == 100:
             status = "Đã hoàn thiện"
