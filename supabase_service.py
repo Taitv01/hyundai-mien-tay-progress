@@ -434,14 +434,12 @@ class SupabaseService:
                 ).execute()
 
         if pdfs:
+            clean_task = "".join(c for c in task_code if c.isascii() and (c.isalnum() or c in "-_")) or "general"
             for original_name, pdf_bytes in pdfs:
                 prepared = prepare_pdf(pdf_bytes)
-                safe_name = "".join(c for c in original_name if c.isalnum() or c in "._-")[:50]
-                if not safe_name.lower().endswith(".pdf"):
-                    safe_name += ".pdf"
                 storage_path = (
-                    f"{task_code}/{dt.date.today().isoformat()}/"
-                    f"{uuid.uuid4().hex}_{safe_name}"
+                    f"{clean_task}/{dt.date.today().isoformat()}/"
+                    f"{uuid.uuid4().hex}.pdf"
                 )
                 self.client.storage.from_(self.settings.photos_bucket).upload(
                     storage_path,
@@ -512,12 +510,10 @@ class SupabaseService:
         )
         update_id = str(update_row["id"])
 
-        safe_name = "".join(c for c in file_name if c.isalnum() or c in "._-")[:50]
-        if not safe_name.lower().endswith(ext):
-            safe_name += ext
+        clean_task = "".join(c for c in task_code if c.isascii() and (c.isalnum() or c in "-_")) or "general"
         storage_path = (
-            f"{task_code}/{dt.date.today().isoformat()}/"
-            f"{uuid.uuid4().hex}_{safe_name}"
+            f"{clean_task}/{dt.date.today().isoformat()}/"
+            f"{uuid.uuid4().hex}{ext}"
         )
         self.client.storage.from_(self.settings.photos_bucket).upload(
             storage_path,
