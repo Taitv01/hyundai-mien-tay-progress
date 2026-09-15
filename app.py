@@ -1451,15 +1451,15 @@ with tab_report:
     pdf_bytes = _find_report_bytes(pdf_filename)
     cur_date_display = PROJECT_TODAY.strftime("%d/%m/%Y")
 
-    # Hàm tạo biểu đồ Gantt SVG trực quan chuẩn in ấn
+    # Hàm tạo biểu đồ Gantt SVG trực quan chuẩn in ấn khổ ngang (Landscape)
     def build_gantt_svg(df, today_d):
         min_d = datetime.date(2026, 8, 15)
         max_d = datetime.date(2026, 12, 31)
         total_days = max((max_d - min_d).days, 1)
-        chart_x = 290
-        chart_w = 700
-        row_h = 24
-        header_h = 38
+        chart_x = 350
+        chart_w = 810
+        row_h = 22
+        header_h = 36
         total_h = header_h + len(df) * row_h + 34
 
         def get_x(d):
@@ -1469,15 +1469,15 @@ with tab_report:
         today_x = get_x(today_d)
 
         months = [
-            ('Tháng 08/26', datetime.date(2026, 8, 15), datetime.date(2026, 8, 31)),
-            ('Tháng 09/26', datetime.date(2026, 9, 1), datetime.date(2026, 9, 30)),
-            ('Tháng 10/26', datetime.date(2026, 10, 1), datetime.date(2026, 10, 31)),
-            ('Tháng 11/26', datetime.date(2026, 11, 1), datetime.date(2026, 11, 30)),
-            ('Tháng 12/26', datetime.date(2026, 12, 1), datetime.date(2026, 12, 31)),
+            ('Tháng 08/2026', datetime.date(2026, 8, 15), datetime.date(2026, 8, 31)),
+            ('Tháng 09/2026', datetime.date(2026, 9, 1), datetime.date(2026, 9, 30)),
+            ('Tháng 10/2026', datetime.date(2026, 10, 1), datetime.date(2026, 10, 31)),
+            ('Tháng 11/2026', datetime.date(2026, 11, 1), datetime.date(2026, 11, 30)),
+            ('Tháng 12/2026', datetime.date(2026, 12, 1), datetime.date(2026, 12, 31)),
         ]
 
         svg_parts = [
-            f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1005 {total_h}" style="width:100%; height:auto; background:#FFFFFF; border:1px solid #E2E8F0; border-radius:8px; font-family:'Segoe UI',Arial,sans-serif;">'''
+            f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 {total_h}" style="width:100%; height:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; font-family:'Segoe UI',Arial,sans-serif;">'''
         ]
 
         # Header tháng và các đường gióng dọc
@@ -1488,27 +1488,27 @@ with tab_report:
             bg = '#F8FAFC' if idx % 2 == 0 else '#FFFFFF'
             svg_parts.append(f'''<rect x="{x1}" y="0" width="{mw}" height="{header_h}" fill="{bg}" stroke="#E2E8F0" stroke-width="1"/>''')
             svg_parts.append(f'''<line x1="{x1}" y1="{header_h}" x2="{x1}" y2="{header_h + len(df) * row_h}" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="3,3"/>''')
-            svg_parts.append(f'''<text x="{x1 + mw/2}" y="24" font-size="11" font-weight="700" fill="#002C6C" text-anchor="middle">{m_label}</text>''')
+            svg_parts.append(f'''<text x="{x1 + mw/2}" y="23" font-size="11" font-weight="700" fill="#002C6C" text-anchor="middle">{m_label}</text>''')
 
         # Header cột tên hạng mục
         svg_parts.append(f'''<rect x="0" y="0" width="{chart_x}" height="{header_h}" fill="#002C6C"/>''')
-        svg_parts.append(f'''<text x="12" y="24" font-size="11.5" font-weight="700" fill="#FFFFFF">MÃ &amp; TÊN HẠNG MỤC (WBS)</text>''')
+        svg_parts.append(f'''<text x="14" y="23" font-size="11.5" font-weight="700" fill="#FFFFFF">MÃ &amp; TÊN HẠNG MỤC (WBS)</text>''')
 
         # Hàng công việc WBS
         for i, (_, r) in enumerate(df.iterrows()):
             ry = header_h + i * row_h
             row_bg = '#FFFFFF' if i % 2 == 0 else '#F8FAFC'
-            svg_parts.append(f'''<rect x="0" y="{ry}" width="1005" height="{row_h}" fill="{row_bg}"/>''')
-            svg_parts.append(f'''<line x1="0" y1="{ry + row_h}" x2="1005" y2="{ry + row_h}" stroke="#F1F5F9" stroke-width="1"/>''')
+            svg_parts.append(f'''<rect x="0" y="{ry}" width="1180" height="{row_h}" fill="{row_bg}"/>''')
+            svg_parts.append(f'''<line x1="0" y1="{ry + row_h}" x2="1180" y2="{ry + row_h}" stroke="#F1F5F9" stroke-width="1"/>''')
 
             code = html.escape(str(r.get('Mã', '')))
             t_name = str(r.get('Hạng mục công việc', ''))
-            if len(t_name) > 34:
-                t_name = t_name[:32] + '...'
+            if len(t_name) > 46:
+                t_name = t_name[:44] + '...'
             name_esc = html.escape(t_name)
 
-            svg_parts.append(f'''<text x="10" y="{ry + 16}" font-size="10.5" font-weight="700" fill="#002C6C">{code}</text>''')
-            svg_parts.append(f'''<text x="52" y="{ry + 16}" font-size="10" fill="#334155">{name_esc}</text>''')
+            svg_parts.append(f'''<text x="12" y="{ry + 15}" font-size="10.5" font-weight="700" fill="#002C6C">{code}</text>''')
+            svg_parts.append(f'''<text x="56" y="{ry + 15}" font-size="10" fill="#334155">{name_esc}</text>''')
 
             # Thanh tiến độ
             start_d = pd.to_datetime(r.get('Bắt đầu')).date()
@@ -1519,7 +1519,7 @@ with tab_report:
             bx1 = get_x(start_d)
             bx2 = get_x(end_d)
             bw = max(bx2 - bx1, 8)
-            by = ry + 4
+            by = ry + 3.5
             bh = 15
 
             is_today = (start_d <= today_d <= end_d)
@@ -1544,27 +1544,27 @@ with tab_report:
         # Vạch đỏ mốc hôm nay
         svg_parts.append(f'''<line x1="{today_x}" y1="{header_h}" x2="{today_x}" y2="{header_h + len(df) * row_h}" stroke="#DC2626" stroke-width="2" stroke-dasharray="4,3"/>''')
         badge_text = f'📍 Hôm nay ({today_d.strftime("%d/%m/%Y")})'
-        svg_parts.append(f'''<rect x="{today_x - 58}" y="3" width="116" height="18" rx="4" fill="#FEF2F2" stroke="#DC2626" stroke-width="1.5"/>''')
+        svg_parts.append(f'''<rect x="{today_x - 62}" y="3" width="124" height="18" rx="4" fill="#FEF2F2" stroke="#DC2626" stroke-width="1.5"/>''')
         svg_parts.append(f'''<text x="{today_x}" y="15.5" font-size="9" font-weight="700" fill="#DC2626" text-anchor="middle">{badge_text}</text>''')
 
         # Chú thích cuối biểu đồ Gantt
         leg_y = header_h + len(df) * row_h + 10
-        svg_parts.append(f'''<rect x="0" y="{header_h + len(df) * row_h}" width="1005" height="34" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1"/>''')
-        svg_parts.append(f'''<rect x="290" y="{leg_y + 1}" width="14" height="10" rx="2" fill="#10B981"/>''')
-        svg_parts.append(f'''<text x="310" y="{leg_y + 9}" font-size="9.5" fill="#334155">Đã hoàn thành</text>''')
-        svg_parts.append(f'''<rect x="410" y="{leg_y + 1}" width="14" height="10" rx="2" fill="#0284C7"/>''')
-        svg_parts.append(f'''<text x="430" y="{leg_y + 9}" font-size="9.5" fill="#334155">Đang thực hiện</text>''')
-        svg_parts.append(f'''<rect x="530" y="{leg_y + 1}" width="14" height="10" rx="2" fill="#CBD5E1"/>''')
-        svg_parts.append(f'''<text x="550" y="{leg_y + 9}" font-size="9.5" fill="#334155">Chưa thực hiện</text>''')
-        svg_parts.append(f'''<line x1="645" y1="{leg_y + 6}" x2="665" y2="{leg_y + 6}" stroke="#DC2626" stroke-width="2" stroke-dasharray="3,2"/>''')
-        svg_parts.append(f'''<text x="672" y="{leg_y + 9}" font-size="9.5" fill="#DC2626" font-weight="600">Mốc hôm nay</text>''')
-        svg_parts.append(f'''<rect x="760" y="{leg_y}" width="16" height="11" rx="2" fill="none" stroke="#F59E0B" stroke-width="2"/>''')
-        svg_parts.append(f'''<text x="782" y="{leg_y + 9}" font-size="9.5" fill="#D97706">Đang trong kỳ</text>''')
+        svg_parts.append(f'''<rect x="0" y="{header_h + len(df) * row_h}" width="1180" height="34" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1"/>''')
+        svg_parts.append(f'''<rect x="350" y="{leg_y + 1}" width="14" height="10" rx="2" fill="#10B981"/>''')
+        svg_parts.append(f'''<text x="370" y="{leg_y + 9}" font-size="9.5" fill="#334155">Đã hoàn thành</text>''')
+        svg_parts.append(f'''<rect x="480" y="{leg_y + 1}" width="14" height="10" rx="2" fill="#0284C7"/>''')
+        svg_parts.append(f'''<text x="500" y="{leg_y + 9}" font-size="9.5" fill="#334155">Đang thực hiện</text>''')
+        svg_parts.append(f'''<rect x="610" y="{leg_y + 1}" width="14" height="10" rx="2" fill="#CBD5E1"/>''')
+        svg_parts.append(f'''<text x="630" y="{leg_y + 9}" font-size="9.5" fill="#334155">Chưa thực hiện</text>''')
+        svg_parts.append(f'''<line x1="740" y1="{leg_y + 6}" x2="760" y2="{leg_y + 6}" stroke="#DC2626" stroke-width="2" stroke-dasharray="3,2"/>''')
+        svg_parts.append(f'''<text x="768" y="{leg_y + 9}" font-size="9.5" fill="#DC2626" font-weight="600">Mốc hôm nay</text>''')
+        svg_parts.append(f'''<rect x="865" y="{leg_y}" width="16" height="11" rx="2" fill="none" stroke="#F59E0B" stroke-width="2"/>''')
+        svg_parts.append(f'''<text x="888" y="{leg_y + 9}" font-size="9.5" fill="#D97706">Đang trong kỳ</text>''')
 
         svg_parts.append('</svg>')
         return '\n'.join(svg_parts)
 
-    # Hàm xây dựng Form HTML in ấn động từ dữ liệu thực tế hiện tại
+    # Hàm xây dựng Form HTML in ấn động từ dữ liệu thực tế hiện tại (Khổ ngang A4)
     def build_dynamic_printable_html(progress_df, report_date_str):
         total_tasks = len(progress_df)
         completed_tasks = int((progress_df["Tiến độ (%)"] >= 100).sum() + ((progress_df["Trạng thái"] == "Đã hoàn thiện") & (progress_df["Tiến độ (%)"] < 100)).sum())
@@ -1609,39 +1609,36 @@ with tab_report:
         wbs_content = "\n".join(wbs_rows)
 
         template = f"""<!doctype html>
-<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Báo cáo tiến độ - HMT-CANTHO-2026</title>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Báo cáo tiến độ - HMT-CANTHO-2026 (Khổ ngang)</title>
 <style>
-  @page {{ size: A4 portrait; margin: 8mm 10mm; }}
+  @page {{ size: A4 landscape; margin: 8mm 12mm; }}
   * {{ box-sizing: border-box; }}
-  body {{ margin: 8px 12px; color: #0F172A; background: #fff; font: 11px/1.3 "Segoe UI", Arial, sans-serif; }}
-  .header {{ display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; border-bottom: 2.5px solid #002C6C; padding-bottom: 6px; }}
-  .header h1 {{ margin: 0; color: #002C6C; font-size: 16.5px; line-height: 1.25; font-weight: 800; text-transform: uppercase; }}
-  .subtitle {{ color: #475569; margin-top: 2px; font-size: 10.5px; }}
-  .meta {{ text-align: right; min-width: 120px; }}
-  .meta-label, .kpi-label {{ color: #64748B; font-size: 9.5px; font-weight: 600; text-transform: uppercase; }}
-  .meta-date {{ color: #002C6C; font-size: 13px; font-weight: 800; margin-top: 1px; }}
-  .meta-brand {{ color: #94A3B8; font-size: 8.5px; margin-top: 1px; }}
-  .kpis {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 8px 0; }}
-  .kpi {{ padding: 5px; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 6px; text-align: center; }}
-  .kpi-value {{ color: #00AAD2; font-size: 18px; font-weight: 800; }}
+  body {{ margin: 6px 10px; color: #0F172A; background: #fff; font: 11.5px/1.35 "Segoe UI", Arial, sans-serif; }}
+  .header {{ display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; border-bottom: 2.5px solid #002C6C; padding-bottom: 6px; }}
+  .header h1 {{ margin: 0; color: #002C6C; font-size: 17px; line-height: 1.25; font-weight: 800; text-transform: uppercase; }}
+  .subtitle {{ color: #475569; margin-top: 2px; font-size: 11px; }}
+  .meta {{ text-align: right; min-width: 140px; }}
+  .meta-label, .kpi-label {{ color: #64748B; font-size: 10px; font-weight: 600; text-transform: uppercase; }}
+  .meta-date {{ color: #002C6C; font-size: 14px; font-weight: 800; margin-top: 1px; }}
+  .meta-brand {{ color: #94A3B8; font-size: 9px; margin-top: 1px; }}
+  .kpis {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 8px 0; }}
+  .kpi {{ padding: 6px; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 6px; text-align: center; }}
+  .kpi-value {{ color: #00AAD2; font-size: 19px; font-weight: 800; }}
   .kpi-value.blue {{ color: #0284C7; }}
   .kpi-value.green {{ color: #10B981; }}
   .kpi-value.amber {{ color: #D97706; }}
-  h2 {{ margin: 10px 0 5px; padding-bottom: 3px; border-bottom: 2px solid #00AAD2; color: #002C6C; font-size: 12px; text-transform: uppercase; }}
-  table {{ width: 100%; border-collapse: collapse; font-size: 9px; line-height: 1.25; }}
-  th, td {{ padding: 3px 5px; border: 1px solid #CBD5E1; vertical-align: middle; }}
-  th {{ background: #002C6C; color: #fff; font-weight: 700; text-align: left; font-size: 9px; }}
+  h2 {{ margin: 10px 0 6px; padding-bottom: 3px; border-bottom: 2px solid #00AAD2; color: #002C6C; font-size: 12.5px; text-transform: uppercase; }}
+  table {{ width: 100%; border-collapse: collapse; font-size: 10px; line-height: 1.35; }}
+  th, td {{ padding: 4.5px 7px; border: 1px solid #CBD5E1; vertical-align: middle; }}
+  th {{ background: #002C6C; color: #fff; font-weight: 700; text-align: left; font-size: 10px; }}
   tbody tr:nth-child(even) {{ background: #F8FAFC; }}
   .center {{ text-align: center; }}
   .strong {{ font-weight: 800; }}
   .code {{ font-family: Consolas, monospace; font-weight: 800; color: #002C6C; }}
-  .pill {{ display: inline-block; padding: 1.5px 5px; border-radius: 5px; color: #fff; font-size: 8px; white-space: nowrap; font-weight: 600; }}
-  .note-text {{ font-size: 8px; color: #1E293B; line-height: 1.2; }}
-  .signatures {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 12px; break-inside: avoid; text-align: center; font-size: 10px; }}
-  .signatures small {{ color: #64748B; font-size: 8.5px; }}
-  .signature-line {{ height: 42px; border-bottom: 1px solid #94A3B8; margin: 0 10px 3px; }}
+  .pill {{ display: inline-block; padding: 2px 6px; border-radius: 6px; color: #fff; font-size: 9px; white-space: nowrap; font-weight: 600; }}
+  .note-text {{ font-size: 9.5px; color: #1E293B; line-height: 1.3; }}
   .btn-print {{ position: fixed; top: 15px; right: 15px; background: #002C6C; color: #fff; padding: 8px 16px; border-radius: 6px; font-weight: 700; border: none; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }}
-  .section-break {{ break-before: page; margin-top: 6px; }}
+  .section-break {{ break-before: page; margin-top: 8px; }}
   @media print {{
     body {{ margin: 0; }}
     .no-print {{ display: none !important; }}
@@ -1663,7 +1660,7 @@ with tab_report:
     <div class="meta-brand">Hệ thống QLDA Streamlit<br>Hyundai Miền Tây</div>
   </div>
 </header>
-<p class="subtitle" style="margin-top:6px; margin-bottom:8px;">
+<p class="subtitle" style="margin-top:6px; margin-bottom:6px;">
   Số liệu trích xuất thời gian thực từ hệ thống. Tiến độ các hạng mục được đối soát theo nhật ký hiện trường mới nhất.
 </p>
 <section class="kpis">
@@ -1686,13 +1683,13 @@ with tab_report:
     <thead>
       <tr>
         <th style="width:55px; text-align:center">Mã</th>
-        <th>Tên hạng mục công việc</th>
-        <th style="width:120px">Phân khu</th>
-        <th style="width:130px; text-align:center">Thời gian thực hiện</th>
-        <th style="width:55px; text-align:center">Tiến độ</th>
-        <th style="width:85px; text-align:center">Trạng thái</th>
-        <th style="width:230px">Ghi chú thực tế</th>
-        <th style="width:125px">Phụ trách</th>
+        <th style="width:250px">Tên hạng mục công việc</th>
+        <th style="width:130px">Phân khu</th>
+        <th style="width:140px; text-align:center">Thời gian thực hiện</th>
+        <th style="width:60px; text-align:center">Tiến độ</th>
+        <th style="width:90px; text-align:center">Trạng thái</th>
+        <th>Ghi chú thực tế</th>
+        <th style="width:130px">Phụ trách</th>
       </tr>
     </thead>
     <tbody>
@@ -1716,12 +1713,12 @@ with tab_report:
             <div>
                 <h4 style="color:#002C6C; margin:0 0 8px 0;">📑 Báo Cáo Điều Hành (.PDF)</h4>
                 <p style="font-size:0.85rem; color:#475569; margin-bottom:8px;">
-                    Báo cáo điều hành 2 trang chuẩn A4: Mục 1 Biểu đồ Gantt trực quan, Mục 2 Danh mục WBS chi tiết kèm ghi chú thực tế.
+                    Báo cáo điều hành chuẩn A4 khổ ngang (Landscape): Mục 1 Biểu đồ Gantt trực quan, Mục 2 Danh mục WBS chi tiết kèm ghi chú thực tế.
                 </p>
                 <div style="font-size:0.8rem; color:#64748B;">
                     • Tiến độ cập nhật: <b>{cur_overall_pct}% ({cur_completed}/16 việc)</b><br>
                     • Mốc cập nhật: <b>{cur_date_display}</b><br>
-                    • Định dạng: <b>PDF 2 trang khổ in A4</b>
+                    • Định dạng: <b>PDF 2 trang khổ ngang A4</b>
                 </div>
             </div>
         </div>
@@ -1744,11 +1741,11 @@ with tab_report:
             <div>
                 <h4 style="color:#002C6C; margin:0 0 8px 0;">🌐 Bản In Chủ Đầu Tư (.HTML)</h4>
                 <p style="font-size:0.85rem; color:#475569; margin-bottom:8px;">
-                    Form báo cáo tiến độ A4 chuẩn in ấn, tích hợp Mục 1: Biểu đồ Gantt, Mục 2: WBS 16 việc kèm ghi chú thực tế.
+                    Form báo cáo tiến độ A4 khổ ngang chuẩn in ấn, tích hợp Mục 1: Biểu đồ Gantt, Mục 2: WBS 16 việc kèm ghi chú thực tế.
                 </p>
                 <div style="font-size:0.8rem; color:#64748B;">
                     • Dữ liệu: <b>Thời gian thực (Live 100%)</b><br>
-                    • Khổ in: <b>A4 chuẩn in ấn (2 trang)</b><br>
+                    • Khổ in: <b>A4 khổ ngang (Landscape)</b><br>
                     • In ấn: <b>Có nút In ngay (Ctrl + P)</b>
                 </div>
             </div>
@@ -1800,9 +1797,9 @@ with tab_report:
 
     st.markdown("<br>", unsafe_allow_html=True)
     with st.expander("👁️ Xem Trước Bản In A4 Trực Tiếp (Print Preview)", expanded=True):
-        st.caption(f"Trình xem trước bản in A4 đồng bộ trực tiếp theo dữ liệu hệ thống (Mốc ngày: **{cur_date_display}** | Tiến độ: **{cur_overall_pct}%** | Hoàn thành: **{cur_completed}/16** hạng mục).")
+        st.caption(f"Trình xem trước bản in A4 khổ ngang (Landscape) đồng bộ trực tiếp theo dữ liệu hệ thống (Mốc ngày: **{cur_date_display}** | Tiến độ: **{cur_overall_pct}%** | Hoàn thành: **{cur_completed}/16** hạng mục).")
         components.html(live_printable_html, height=650, scrolling=True)
-        st.caption("💡 **Mẹo in ấn**: Mở tệp HTML tải về bằng Chrome hoặc Edge, bấm **Ctrl + P**, chọn khổ giấy **A4** và **Save as PDF** để có bản in đẹp nhất.")
+        st.caption("💡 **Mẹo in ấn**: Bấm nút **In Báo Cáo** (hoặc mở tệp tải về bấm **Ctrl + P**), chọn khổ giấy **A4**, hướng giấy **Ngang (Landscape)** để có bản in chuẩn đẹp nhất.")
 
 
 # ------------------------------------------------------------------------------

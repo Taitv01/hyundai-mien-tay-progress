@@ -1,37 +1,34 @@
 <!doctype html>
-<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Báo cáo tiến độ - HMT-CANTHO-2026</title>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Báo cáo tiến độ - HMT-CANTHO-2026 (Khổ ngang)</title>
 <style>
-  @page { size: A4 portrait; margin: 8mm 10mm; }
+  @page { size: A4 landscape; margin: 8mm 12mm; }
   * { box-sizing: border-box; }
-  body { margin: 8px 12px; color: #0F172A; background: #fff; font: 11px/1.3 "Segoe UI", Arial, sans-serif; }
-  .header { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; border-bottom: 2.5px solid #002C6C; padding-bottom: 6px; }
-  .header h1 { margin: 0; color: #002C6C; font-size: 16.5px; line-height: 1.25; font-weight: 800; text-transform: uppercase; }
-  .subtitle { color: #475569; margin-top: 2px; font-size: 10.5px; }
-  .meta { text-align: right; min-width: 120px; }
-  .meta-label, .kpi-label { color: #64748B; font-size: 9.5px; font-weight: 600; text-transform: uppercase; }
-  .meta-date { color: #002C6C; font-size: 13px; font-weight: 800; margin-top: 1px; }
-  .meta-brand { color: #94A3B8; font-size: 8.5px; margin-top: 1px; }
-  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 8px 0; }
-  .kpi { padding: 5px; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 6px; text-align: center; }
-  .kpi-value { color: #00AAD2; font-size: 18px; font-weight: 800; }
+  body { margin: 6px 10px; color: #0F172A; background: #fff; font: 11.5px/1.35 "Segoe UI", Arial, sans-serif; }
+  .header { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; border-bottom: 2.5px solid #002C6C; padding-bottom: 6px; }
+  .header h1 { margin: 0; color: #002C6C; font-size: 17px; line-height: 1.25; font-weight: 800; text-transform: uppercase; }
+  .subtitle { color: #475569; margin-top: 2px; font-size: 11px; }
+  .meta { text-align: right; min-width: 140px; }
+  .meta-label, .kpi-label { color: #64748B; font-size: 10px; font-weight: 600; text-transform: uppercase; }
+  .meta-date { color: #002C6C; font-size: 14px; font-weight: 800; margin-top: 1px; }
+  .meta-brand { color: #94A3B8; font-size: 9px; margin-top: 1px; }
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 8px 0; }
+  .kpi { padding: 6px; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 6px; text-align: center; }
+  .kpi-value { color: #00AAD2; font-size: 19px; font-weight: 800; }
   .kpi-value.blue { color: #0284C7; }
   .kpi-value.green { color: #10B981; }
   .kpi-value.amber { color: #D97706; }
-  h2 { margin: 10px 0 5px; padding-bottom: 3px; border-bottom: 2px solid #00AAD2; color: #002C6C; font-size: 12px; text-transform: uppercase; }
-  table { width: 100%; border-collapse: collapse; font-size: 9px; line-height: 1.25; }
-  th, td { padding: 3px 5px; border: 1px solid #CBD5E1; vertical-align: middle; }
-  th { background: #002C6C; color: #fff; font-weight: 700; text-align: left; font-size: 9px; }
+  h2 { margin: 10px 0 6px; padding-bottom: 3px; border-bottom: 2px solid #00AAD2; color: #002C6C; font-size: 12.5px; text-transform: uppercase; }
+  table { width: 100%; border-collapse: collapse; font-size: 10px; line-height: 1.35; }
+  th, td { padding: 4.5px 7px; border: 1px solid #CBD5E1; vertical-align: middle; }
+  th { background: #002C6C; color: #fff; font-weight: 700; text-align: left; font-size: 10px; }
   tbody tr:nth-child(even) { background: #F8FAFC; }
   .center { text-align: center; }
   .strong { font-weight: 800; }
   .code { font-family: Consolas, monospace; font-weight: 800; color: #002C6C; }
-  .pill { display: inline-block; padding: 1.5px 5px; border-radius: 5px; color: #fff; font-size: 8px; white-space: nowrap; font-weight: 600; }
-  .note-text { font-size: 8px; color: #1E293B; line-height: 1.2; }
-  .signatures { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 12px; break-inside: avoid; text-align: center; font-size: 10px; }
-  .signatures small { color: #64748B; font-size: 8.5px; }
-  .signature-line { height: 42px; border-bottom: 1px solid #94A3B8; margin: 0 10px 3px; }
+  .pill { display: inline-block; padding: 2px 6px; border-radius: 6px; color: #fff; font-size: 9px; white-space: nowrap; font-weight: 600; }
+  .note-text { font-size: 9.5px; color: #1E293B; line-height: 1.3; }
   .btn-print { position: fixed; top: 15px; right: 15px; background: #002C6C; color: #fff; padding: 8px 16px; border-radius: 6px; font-weight: 700; border: none; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
-  .section-break { break-before: page; margin-top: 6px; }
+  .section-break { break-before: page; margin-top: 8px; }
   @media print {
     body { margin: 0; }
     .no-print { display: none !important; }
@@ -53,7 +50,7 @@
     <div class="meta-brand">Hệ thống QLDA Streamlit<br>Hyundai Miền Tây</div>
   </div>
 </header>
-<p class="subtitle" style="margin-top:6px; margin-bottom:10px;">
+<p class="subtitle" style="margin-top:6px; margin-bottom:6px;">
   Số liệu trích xuất thời gian thực từ hệ thống. Tiến độ các hạng mục được đối soát theo nhật ký hiện trường mới nhất.
 </p>
 <section class="kpis">
@@ -65,135 +62,135 @@
 
 <section>
   <h2>1. TIẾN ĐỘ HÌNH ẢNH GANTT (GANTT CHART)</h2>
-  <div style="margin-top:8px;">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1005 456" style="width:100%; height:auto; background:#FFFFFF; border:1px solid #E2E8F0; border-radius:8px; font-family:'Segoe UI',Arial,sans-serif;">
-<rect x="290.0" y="0" width="86.19999999999999" height="38" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1"/>
-<line x1="290.0" y1="38" x2="290.0" y2="422" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="3,3"/>
-<text x="333.1" y="24" font-size="11" font-weight="700" fill="#002C6C" text-anchor="middle">Tháng 08/26</text>
-<rect x="376.2" y="0" width="152.2" height="38" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1"/>
-<line x1="376.2" y1="38" x2="376.2" y2="422" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="3,3"/>
-<text x="452.29999999999995" y="24" font-size="11" font-weight="700" fill="#002C6C" text-anchor="middle">Tháng 09/26</text>
-<rect x="528.4" y="0" width="157.30000000000007" height="38" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1"/>
-<line x1="528.4" y1="38" x2="528.4" y2="422" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="3,3"/>
-<text x="607.05" y="24" font-size="11" font-weight="700" fill="#002C6C" text-anchor="middle">Tháng 10/26</text>
-<rect x="685.7" y="0" width="152.0999999999999" height="38" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1"/>
-<line x1="685.7" y1="38" x2="685.7" y2="422" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="3,3"/>
-<text x="761.75" y="24" font-size="11" font-weight="700" fill="#002C6C" text-anchor="middle">Tháng 11/26</text>
-<rect x="837.8" y="0" width="152.20000000000005" height="38" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1"/>
-<line x1="837.8" y1="38" x2="837.8" y2="422" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="3,3"/>
-<text x="913.9" y="24" font-size="11" font-weight="700" fill="#002C6C" text-anchor="middle">Tháng 12/26</text>
-<rect x="0" y="0" width="290" height="38" fill="#002C6C"/>
-<text x="12" y="24" font-size="11.5" font-weight="700" fill="#FFFFFF">MÃ &amp; TÊN HẠNG MỤC (WBS)</text>
-<rect x="0" y="38" width="1005" height="24" fill="#FFFFFF"/>
-<line x1="0" y1="62" x2="1005" y2="62" stroke="#F1F5F9" stroke-width="1"/>
-<text x="10" y="54" font-size="10.5" font-weight="700" fill="#002C6C">PL-01</text>
-<text x="52" y="54" font-size="10" fill="#334155">Lên bản vẽ chi tiết (dựa trên BV...</text>
-<rect x="290.0" y="42" width="71.0" height="15" rx="3" fill="#10B981"/>
-<text x="325.5" y="53" font-size="9" font-weight="700" fill="#FFFFFF" text-anchor="middle">100%</text>
-<rect x="0" y="62" width="1005" height="24" fill="#F8FAFC"/>
-<line x1="0" y1="86" x2="1005" y2="86" stroke="#F1F5F9" stroke-width="1"/>
-<text x="10" y="78" font-size="10.5" font-weight="700" fill="#002C6C">PL-02</text>
-<text x="52" y="78" font-size="10" fill="#334155">Hoàn thiện thiết kế chi tiết &amp; h...</text>
-<rect x="315.4" y="66" width="50.700000000000045" height="15" rx="3" fill="#10B981"/>
-<text x="340.75" y="77" font-size="9" font-weight="700" fill="#FFFFFF" text-anchor="middle">100%</text>
-<rect x="0" y="86" width="1005" height="24" fill="#FFFFFF"/>
-<line x1="0" y1="110" x2="1005" y2="110" stroke="#F1F5F9" stroke-width="1"/>
-<text x="10" y="102" font-size="10.5" font-weight="700" fill="#002C6C">PL-03</text>
-<text x="52" y="102" font-size="10" fill="#334155">Ký hợp đồng thuê mặt bằng (chưa ...</text>
-<rect x="376.2" y="90" width="55.80000000000001" height="15" rx="3" fill="#10B981"/>
-<text x="404.1" y="101" font-size="9" font-weight="700" fill="#FFFFFF" text-anchor="middle">100%</text>
-<rect x="0" y="110" width="1005" height="24" fill="#F8FAFC"/>
-<line x1="0" y1="134" x2="1005" y2="134" stroke="#F1F5F9" stroke-width="1"/>
-<text x="10" y="126" font-size="10.5" font-weight="700" fill="#002C6C">PL-04</text>
-<text x="52" y="126" font-size="10" fill="#334155">Đặt cọc thuê đất mặt bằng đại lý</text>
-<rect x="437.1" y="114" width="30.399999999999977" height="15" rx="3" fill="#CBD5E1" stroke="#F59E0B" stroke-width="2"/>
-<text x="471.5" y="125" font-size="9" font-weight="600" fill="#64748B">0%</text>
-<rect x="0" y="134" width="1005" height="24" fill="#FFFFFF"/>
-<line x1="0" y1="158" x2="1005" y2="158" stroke="#F1F5F9" stroke-width="1"/>
-<text x="10" y="150" font-size="10.5" font-weight="700" fill="#002C6C">SR-01</text>
-<text x="52" y="150" font-size="10" fill="#334155">Showroom: Xây, trát tường bao &amp; ...</text>
-<rect x="472.6" y="138" width="126.79999999999995" height="15" rx="3" fill="#CBD5E1"/>
-<text x="603.4" y="149" font-size="9" font-weight="600" fill="#64748B">0%</text>
-<rect x="0" y="158" width="1005" height="24" fill="#F8FAFC"/>
-<line x1="0" y1="182" x2="1005" y2="182" stroke="#F1F5F9" stroke-width="1"/>
-<text x="10" y="174" font-size="10.5" font-weight="700" fill="#002C6C">SR-02</text>
-<text x="52" y="174" font-size="10" fill="#334155">Showroom: Ốp lát gạch nền granit...</text>
-<rect x="604.5" y="162" width="101.39999999999998" height="15" rx="3" fill="#CBD5E1"/>
-<text x="709.9" y="173" font-size="9" font-weight="600" fill="#64748B">0%</text>
-<rect x="0" y="182" width="1005" height="24" fill="#FFFFFF"/>
-<line x1="0" y1="206" x2="1005" y2="206" stroke="#F1F5F9" stroke-width="1"/>
-<text x="10" y="198" font-size="10.5" font-weight="700" fill="#002C6C">SR-03</text>
-<text x="52" y="198" font-size="10" fill="#334155">Showroom: Gia công lắp dựng vách...</text>
-<rect x="685.7" y="186" width="96.29999999999995" height="15" rx="3" fill="#CBD5E1"/>
-<text x="786.0" y="197" font-size="9" font-weight="600" fill="#64748B">0%</text>
-<rect x="0" y="206" width="1005" height="24" fill="#F8FAFC"/>
-<line x1="0" y1="230" x2="1005" y2="230" stroke="#F1F5F9" stroke-width="1"/>
-<text x="10" y="222" font-size="10.5" font-weight="700" fill="#002C6C">SR-04</text>
-<text x="52" y="222" font-size="10" fill="#334155">Showroom: Bả matit, sơn nước tro...</text>
-<rect x="731.3" y="210" width="101.5" height="15" rx="3" fill="#CBD5E1"/>
-<text x="836.8" y="221" font-size="9" font-weight="600" fill="#64748B">0%</text>
-<rect x="0" y="230" width="1005" height="24" fill="#FFFFFF"/>
-<line x1="0" y1="254" x2="1005" y2="254" stroke="#F1F5F9" stroke-width="1"/>
-<text x="10" y="246" font-size="10.5" font-weight="700" fill="#002C6C">SR-05</text>
-<text x="52" y="246" font-size="10" fill="#334155">Showroom: Lắp đặt hệ thống Điện,...</text>
-<rect x="599.4" y="234" width="208.0" height="15" rx="3" fill="#CBD5E1"/>
-<text x="811.4" y="245" font-size="9" font-weight="600" fill="#64748B">0%</text>
-<rect x="0" y="254" width="1005" height="24" fill="#F8FAFC"/>
-<line x1="0" y1="278" x2="1005" y2="278" stroke="#F1F5F9" stroke-width="1"/>
-<text x="10" y="270" font-size="10.5" font-weight="700" fill="#002C6C">WS-01</text>
-<text x="52" y="270" font-size="10" fill="#334155">Xưởng dịch vụ: Nền bê tông chịu ...</text>
-<rect x="498.0" y="258" width="177.5" height="15" rx="3" fill="#CBD5E1"/>
-<text x="679.5" y="269" font-size="9" font-weight="600" fill="#64748B">0%</text>
-<rect x="0" y="278" width="1005" height="24" fill="#FFFFFF"/>
-<line x1="0" y1="302" x2="1005" y2="302" stroke="#F1F5F9" stroke-width="1"/>
-<text x="10" y="294" font-size="10.5" font-weight="700" fill="#002C6C">WS-02</text>
-<text x="52" y="294" font-size="10" fill="#334155">Lắp đặt hệ thống cầu nâng tải tr...</text>
-<rect x="685.7" y="282" width="96.29999999999995" height="15" rx="3" fill="#CBD5E1"/>
-<text x="786.0" y="293" font-size="9" font-weight="600" fill="#64748B">0%</text>
-<rect x="0" y="302" width="1005" height="24" fill="#F8FAFC"/>
-<line x1="0" y1="326" x2="1005" y2="326" stroke="#F1F5F9" stroke-width="1"/>
-<text x="10" y="318" font-size="10.5" font-weight="700" fill="#002C6C">WS-03</text>
-<text x="52" y="318" font-size="10" fill="#334155">Lắp đặt dây chuyền kiểm định KCS...</text>
-<rect x="756.7" y="306" width="101.39999999999998" height="15" rx="3" fill="#CBD5E1"/>
-<text x="862.1" y="317" font-size="9" font-weight="600" fill="#64748B">0%</text>
-<rect x="0" y="326" width="1005" height="24" fill="#FFFFFF"/>
-<line x1="0" y1="350" x2="1005" y2="350" stroke="#F1F5F9" stroke-width="1"/>
-<text x="10" y="342" font-size="10.5" font-weight="700" fill="#002C6C">WS-04</text>
-<text x="52" y="342" font-size="10" fill="#334155">Trang bị dụng cụ bảo hộ cách điệ...</text>
-<rect x="782.0" y="330" width="101.5" height="15" rx="3" fill="#CBD5E1"/>
-<text x="887.5" y="341" font-size="9" font-weight="600" fill="#64748B">0%</text>
-<rect x="0" y="350" width="1005" height="24" fill="#F8FAFC"/>
-<line x1="0" y1="374" x2="1005" y2="374" stroke="#F1F5F9" stroke-width="1"/>
-<text x="10" y="366" font-size="10.5" font-weight="700" fill="#002C6C">WS-05</text>
-<text x="52" y="366" font-size="10" fill="#334155">Nghiệm thu PCCC &amp; Hệ thống xử lý...</text>
-<rect x="807.4" y="354" width="101.39999999999998" height="15" rx="3" fill="#CBD5E1"/>
-<text x="912.8" y="365" font-size="9" font-weight="600" fill="#64748B">0%</text>
-<rect x="0" y="374" width="1005" height="24" fill="#FFFFFF"/>
-<line x1="0" y1="398" x2="1005" y2="398" stroke="#F1F5F9" stroke-width="1"/>
-<text x="10" y="390" font-size="10.5" font-weight="700" fill="#002C6C">OP-01</text>
-<text x="52" y="390" font-size="10" fill="#334155">Đánh giá cấp Chứng nhận cơ sở bả...</text>
-<rect x="883.5" y="378" width="76.10000000000002" height="15" rx="3" fill="#CBD5E1"/>
-<text x="963.6" y="389" font-size="9" font-weight="600" fill="#64748B">0%</text>
-<rect x="0" y="398" width="1005" height="24" fill="#F8FAFC"/>
-<line x1="0" y1="422" x2="1005" y2="422" stroke="#F1F5F9" stroke-width="1"/>
-<text x="10" y="414" font-size="10.5" font-weight="700" fill="#002C6C">OP-02</text>
-<text x="52" y="414" font-size="10" fill="#334155">HTCV nghiệm thu tiêu chuẩn đại l...</text>
-<rect x="934.2" y="402" width="55.799999999999955" height="15" rx="3" fill="#CBD5E1"/>
-<text x="994.0" y="413" font-size="9" font-weight="600" fill="#64748B">0%</text>
-<line x1="447.2" y1="38" x2="447.2" y2="422" stroke="#DC2626" stroke-width="2" stroke-dasharray="4,3"/>
-<rect x="389.2" y="3" width="116" height="18" rx="4" fill="#FEF2F2" stroke="#DC2626" stroke-width="1.5"/>
-<text x="447.2" y="15.5" font-size="9" font-weight="700" fill="#DC2626" text-anchor="middle">📍 Hôm nay (15/09/2026)</text>
-<rect x="0" y="422" width="1005" height="34" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1"/>
-<rect x="290" y="433" width="14" height="10" rx="2" fill="#10B981"/>
-<text x="310" y="441" font-size="9.5" fill="#334155">Đã hoàn thành</text>
-<rect x="410" y="433" width="14" height="10" rx="2" fill="#0284C7"/>
-<text x="430" y="441" font-size="9.5" fill="#334155">Đang thực hiện</text>
-<rect x="530" y="433" width="14" height="10" rx="2" fill="#CBD5E1"/>
-<text x="550" y="441" font-size="9.5" fill="#334155">Chưa thực hiện</text>
-<line x1="645" y1="438" x2="665" y2="438" stroke="#DC2626" stroke-width="2" stroke-dasharray="3,2"/>
-<text x="672" y="441" font-size="9.5" fill="#DC2626" font-weight="600">Mốc hôm nay</text>
-<rect x="760" y="432" width="16" height="11" rx="2" fill="none" stroke="#F59E0B" stroke-width="2"/>
-<text x="782" y="441" font-size="9.5" fill="#D97706">Đang trong kỳ</text>
+  <div style="margin-top:6px;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 422" style="width:100%; height:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; font-family:'Segoe UI',Arial,sans-serif;">
+<rect x="350.0" y="0" width="99.80000000000001" height="36" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1"/>
+<line x1="350.0" y1="36" x2="350.0" y2="388" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="3,3"/>
+<text x="399.9" y="23" font-size="11" font-weight="700" fill="#002C6C" text-anchor="middle">Tháng 08/2026</text>
+<rect x="449.8" y="0" width="176.09999999999997" height="36" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1"/>
+<line x1="449.8" y1="36" x2="449.8" y2="388" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="3,3"/>
+<text x="537.85" y="23" font-size="11" font-weight="700" fill="#002C6C" text-anchor="middle">Tháng 09/2026</text>
+<rect x="625.9" y="0" width="181.89999999999998" height="36" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1"/>
+<line x1="625.9" y1="36" x2="625.9" y2="388" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="3,3"/>
+<text x="716.8499999999999" y="23" font-size="11" font-weight="700" fill="#002C6C" text-anchor="middle">Tháng 10/2026</text>
+<rect x="807.8" y="0" width="176.10000000000002" height="36" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1"/>
+<line x1="807.8" y1="36" x2="807.8" y2="388" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="3,3"/>
+<text x="895.8499999999999" y="23" font-size="11" font-weight="700" fill="#002C6C" text-anchor="middle">Tháng 11/2026</text>
+<rect x="983.9" y="0" width="176.10000000000002" height="36" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1"/>
+<line x1="983.9" y1="36" x2="983.9" y2="388" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="3,3"/>
+<text x="1071.95" y="23" font-size="11" font-weight="700" fill="#002C6C" text-anchor="middle">Tháng 12/2026</text>
+<rect x="0" y="0" width="350" height="36" fill="#002C6C"/>
+<text x="14" y="23" font-size="11.5" font-weight="700" fill="#FFFFFF">MÃ &amp; TÊN HẠNG MỤC (WBS)</text>
+<rect x="0" y="36" width="1180" height="22" fill="#FFFFFF"/>
+<line x1="0" y1="58" x2="1180" y2="58" stroke="#F1F5F9" stroke-width="1"/>
+<text x="12" y="51" font-size="10.5" font-weight="700" fill="#002C6C">PL-01</text>
+<text x="56" y="51" font-size="10" fill="#334155">Lên bản vẽ chi tiết (dựa trên BV layout và 3D)</text>
+<rect x="350.0" y="39.5" width="82.19999999999999" height="15" rx="3" fill="#10B981"/>
+<text x="391.1" y="50.5" font-size="9" font-weight="700" fill="#FFFFFF" text-anchor="middle">100%</text>
+<rect x="0" y="58" width="1180" height="22" fill="#F8FAFC"/>
+<line x1="0" y1="80" x2="1180" y2="80" stroke="#F1F5F9" stroke-width="1"/>
+<text x="12" y="73" font-size="10.5" font-weight="700" fill="#002C6C">PL-02</text>
+<text x="56" y="73" font-size="10" fill="#334155">Hoàn thiện thiết kế chi tiết &amp; hồ sơ xin phép</text>
+<rect x="379.3" y="61.5" width="58.69999999999999" height="15" rx="3" fill="#10B981"/>
+<text x="408.65" y="72.5" font-size="9" font-weight="700" fill="#FFFFFF" text-anchor="middle">100%</text>
+<rect x="0" y="80" width="1180" height="22" fill="#FFFFFF"/>
+<line x1="0" y1="102" x2="1180" y2="102" stroke="#F1F5F9" stroke-width="1"/>
+<text x="12" y="95" font-size="10.5" font-weight="700" fill="#002C6C">PL-03</text>
+<text x="56" y="95" font-size="10" fill="#334155">Ký hợp đồng thuê mặt bằng (chưa công chứng)</text>
+<rect x="449.8" y="83.5" width="64.49999999999994" height="15" rx="3" fill="#10B981"/>
+<text x="482.04999999999995" y="94.5" font-size="9" font-weight="700" fill="#FFFFFF" text-anchor="middle">100%</text>
+<rect x="0" y="102" width="1180" height="22" fill="#F8FAFC"/>
+<line x1="0" y1="124" x2="1180" y2="124" stroke="#F1F5F9" stroke-width="1"/>
+<text x="12" y="117" font-size="10.5" font-weight="700" fill="#002C6C">PL-04</text>
+<text x="56" y="117" font-size="10" fill="#334155">Đặt cọc thuê đất mặt bằng đại lý</text>
+<rect x="520.2" y="105.5" width="35.19999999999993" height="15" rx="3" fill="#CBD5E1" stroke="#F59E0B" stroke-width="2"/>
+<text x="559.4" y="116.5" font-size="9" font-weight="600" fill="#64748B">0%</text>
+<rect x="0" y="124" width="1180" height="22" fill="#FFFFFF"/>
+<line x1="0" y1="146" x2="1180" y2="146" stroke="#F1F5F9" stroke-width="1"/>
+<text x="12" y="139" font-size="10.5" font-weight="700" fill="#002C6C">SR-01</text>
+<text x="56" y="139" font-size="10" fill="#334155">Showroom: Xây, trát tường bao &amp; tường ngăn</text>
+<rect x="561.3" y="127.5" width="146.70000000000005" height="15" rx="3" fill="#CBD5E1"/>
+<text x="712.0" y="138.5" font-size="9" font-weight="600" fill="#64748B">0%</text>
+<rect x="0" y="146" width="1180" height="22" fill="#F8FAFC"/>
+<line x1="0" y1="168" x2="1180" y2="168" stroke="#F1F5F9" stroke-width="1"/>
+<text x="12" y="161" font-size="10.5" font-weight="700" fill="#002C6C">SR-02</text>
+<text x="56" y="161" font-size="10" fill="#334155">Showroom: Ốp lát gạch nền granite &amp; khu vệ s...</text>
+<rect x="713.9" y="149.5" width="117.39999999999998" height="15" rx="3" fill="#CBD5E1"/>
+<text x="835.3" y="160.5" font-size="9" font-weight="600" fill="#64748B">0%</text>
+<rect x="0" y="168" width="1180" height="22" fill="#FFFFFF"/>
+<line x1="0" y1="190" x2="1180" y2="190" stroke="#F1F5F9" stroke-width="1"/>
+<text x="12" y="183" font-size="10.5" font-weight="700" fill="#002C6C">SR-03</text>
+<text x="56" y="183" font-size="10" fill="#334155">Showroom: Gia công lắp dựng vách kính, cửa n...</text>
+<rect x="807.8" y="171.5" width="111.5" height="15" rx="3" fill="#CBD5E1"/>
+<text x="923.3" y="182.5" font-size="9" font-weight="600" fill="#64748B">0%</text>
+<rect x="0" y="190" width="1180" height="22" fill="#F8FAFC"/>
+<line x1="0" y1="212" x2="1180" y2="212" stroke="#F1F5F9" stroke-width="1"/>
+<text x="12" y="205" font-size="10.5" font-weight="700" fill="#002C6C">SR-04</text>
+<text x="56" y="205" font-size="10" fill="#334155">Showroom: Bả matit, sơn nước trong và ngoài</text>
+<rect x="860.7" y="193.5" width="117.29999999999995" height="15" rx="3" fill="#CBD5E1"/>
+<text x="982.0" y="204.5" font-size="9" font-weight="600" fill="#64748B">0%</text>
+<rect x="0" y="212" width="1180" height="22" fill="#FFFFFF"/>
+<line x1="0" y1="234" x2="1180" y2="234" stroke="#F1F5F9" stroke-width="1"/>
+<text x="12" y="227" font-size="10.5" font-weight="700" fill="#002C6C">SR-05</text>
+<text x="56" y="227" font-size="10" fill="#334155">Showroom: Lắp đặt hệ thống Điện, Nước &amp; Chiế...</text>
+<rect x="708.0" y="215.5" width="240.70000000000005" height="15" rx="3" fill="#CBD5E1"/>
+<text x="952.7" y="226.5" font-size="9" font-weight="600" fill="#64748B">0%</text>
+<rect x="0" y="234" width="1180" height="22" fill="#F8FAFC"/>
+<line x1="0" y1="256" x2="1180" y2="256" stroke="#F1F5F9" stroke-width="1"/>
+<text x="12" y="249" font-size="10.5" font-weight="700" fill="#002C6C">WS-01</text>
+<text x="56" y="249" font-size="10" fill="#334155">Xưởng dịch vụ: Nền bê tông chịu tải &amp; sơn Ep...</text>
+<rect x="590.7" y="237.5" width="205.39999999999998" height="15" rx="3" fill="#CBD5E1"/>
+<text x="800.1" y="248.5" font-size="9" font-weight="600" fill="#64748B">0%</text>
+<rect x="0" y="256" width="1180" height="22" fill="#FFFFFF"/>
+<line x1="0" y1="278" x2="1180" y2="278" stroke="#F1F5F9" stroke-width="1"/>
+<text x="12" y="271" font-size="10.5" font-weight="700" fill="#002C6C">WS-02</text>
+<text x="56" y="271" font-size="10" fill="#334155">Lắp đặt hệ thống cầu nâng tải trọng lớn &amp; cầ...</text>
+<rect x="807.8" y="259.5" width="111.5" height="15" rx="3" fill="#CBD5E1"/>
+<text x="923.3" y="270.5" font-size="9" font-weight="600" fill="#64748B">0%</text>
+<rect x="0" y="278" width="1180" height="22" fill="#F8FAFC"/>
+<line x1="0" y1="300" x2="1180" y2="300" stroke="#F1F5F9" stroke-width="1"/>
+<text x="12" y="293" font-size="10.5" font-weight="700" fill="#002C6C">WS-03</text>
+<text x="56" y="293" font-size="10" fill="#334155">Lắp đặt dây chuyền kiểm định KCS (Phanh, Đèn...</text>
+<rect x="890.0" y="281.5" width="117.39999999999998" height="15" rx="3" fill="#CBD5E1"/>
+<text x="1011.4" y="292.5" font-size="9" font-weight="600" fill="#64748B">0%</text>
+<rect x="0" y="300" width="1180" height="22" fill="#FFFFFF"/>
+<line x1="0" y1="322" x2="1180" y2="322" stroke="#F1F5F9" stroke-width="1"/>
+<text x="12" y="315" font-size="10.5" font-weight="700" fill="#002C6C">WS-04</text>
+<text x="56" y="315" font-size="10" fill="#334155">Trang bị dụng cụ bảo hộ cách điện &amp; bàn nâng...</text>
+<rect x="919.3" y="303.5" width="117.40000000000009" height="15" rx="3" fill="#CBD5E1"/>
+<text x="1040.7" y="314.5" font-size="9" font-weight="600" fill="#64748B">0%</text>
+<rect x="0" y="322" width="1180" height="22" fill="#F8FAFC"/>
+<line x1="0" y1="344" x2="1180" y2="344" stroke="#F1F5F9" stroke-width="1"/>
+<text x="12" y="337" font-size="10.5" font-weight="700" fill="#002C6C">WS-05</text>
+<text x="56" y="337" font-size="10" fill="#334155">Nghiệm thu PCCC &amp; Hệ thống xử lý nước thải d...</text>
+<rect x="948.7" y="325.5" width="117.39999999999986" height="15" rx="3" fill="#CBD5E1"/>
+<text x="1070.1" y="336.5" font-size="9" font-weight="600" fill="#64748B">0%</text>
+<rect x="0" y="344" width="1180" height="22" fill="#FFFFFF"/>
+<line x1="0" y1="366" x2="1180" y2="366" stroke="#F1F5F9" stroke-width="1"/>
+<text x="12" y="359" font-size="10.5" font-weight="700" fill="#002C6C">OP-01</text>
+<text x="56" y="359" font-size="10" fill="#334155">Đánh giá cấp Chứng nhận cơ sở bảo hành bảo d...</text>
+<rect x="1036.7" y="347.5" width="88.09999999999991" height="15" rx="3" fill="#CBD5E1"/>
+<text x="1128.8" y="358.5" font-size="9" font-weight="600" fill="#64748B">0%</text>
+<rect x="0" y="366" width="1180" height="22" fill="#F8FAFC"/>
+<line x1="0" y1="388" x2="1180" y2="388" stroke="#F1F5F9" stroke-width="1"/>
+<text x="12" y="381" font-size="10.5" font-weight="700" fill="#002C6C">OP-02</text>
+<text x="56" y="381" font-size="10" fill="#334155">HTCV nghiệm thu tiêu chuẩn đại lý &amp; Khai trư...</text>
+<rect x="1095.4" y="369.5" width="64.59999999999991" height="15" rx="3" fill="#CBD5E1"/>
+<text x="1164.0" y="380.5" font-size="9" font-weight="600" fill="#64748B">0%</text>
+<line x1="532.0" y1="36" x2="532.0" y2="388" stroke="#DC2626" stroke-width="2" stroke-dasharray="4,3"/>
+<rect x="470.0" y="3" width="124" height="18" rx="4" fill="#FEF2F2" stroke="#DC2626" stroke-width="1.5"/>
+<text x="532.0" y="15.5" font-size="9" font-weight="700" fill="#DC2626" text-anchor="middle">📍 Hôm nay (15/09/2026)</text>
+<rect x="0" y="388" width="1180" height="34" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1"/>
+<rect x="350" y="399" width="14" height="10" rx="2" fill="#10B981"/>
+<text x="370" y="407" font-size="9.5" fill="#334155">Đã hoàn thành</text>
+<rect x="480" y="399" width="14" height="10" rx="2" fill="#0284C7"/>
+<text x="500" y="407" font-size="9.5" fill="#334155">Đang thực hiện</text>
+<rect x="610" y="399" width="14" height="10" rx="2" fill="#CBD5E1"/>
+<text x="630" y="407" font-size="9.5" fill="#334155">Chưa thực hiện</text>
+<line x1="740" y1="404" x2="760" y2="404" stroke="#DC2626" stroke-width="2" stroke-dasharray="3,2"/>
+<text x="768" y="407" font-size="9.5" fill="#DC2626" font-weight="600">Mốc hôm nay</text>
+<rect x="865" y="398" width="16" height="11" rx="2" fill="none" stroke="#F59E0B" stroke-width="2"/>
+<text x="888" y="407" font-size="9.5" fill="#D97706">Đang trong kỳ</text>
 </svg>
   </div>
 </section>
@@ -204,13 +201,13 @@
     <thead>
       <tr>
         <th style="width:55px; text-align:center">Mã</th>
-        <th>Tên hạng mục công việc</th>
-        <th style="width:120px">Phân khu</th>
-        <th style="width:130px; text-align:center">Thời gian thực hiện</th>
-        <th style="width:55px; text-align:center">Tiến độ</th>
-        <th style="width:85px; text-align:center">Trạng thái</th>
-        <th style="width:230px">Ghi chú thực tế</th>
-        <th style="width:125px">Phụ trách</th>
+        <th style="width:250px">Tên hạng mục công việc</th>
+        <th style="width:130px">Phân khu</th>
+        <th style="width:140px; text-align:center">Thời gian thực hiện</th>
+        <th style="width:60px; text-align:center">Tiến độ</th>
+        <th style="width:90px; text-align:center">Trạng thái</th>
+        <th>Ghi chú thực tế</th>
+        <th style="width:130px">Phụ trách</th>
       </tr>
     </thead>
     <tbody>
