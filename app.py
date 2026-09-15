@@ -21,6 +21,11 @@ from data_service import (
     save_to_google_sheets,
 )
 from supabase_service import AppUser, OnlineSettings, ROLE_LABELS, SupabaseService
+from commitment_schedule import (
+    VERSION as COMMITMENT_VERSION, BROWN, WEEK_NOTE, LEGACY_CODES,
+    commitment_data, commitment_details, active_progress, gantt_progress, bar_color,
+)
+from schedule_reports import build_printable_html, build_pdf, build_excel
 
 
 # Theo yêu cầu vận hành hiện tại: mở link là có thể cập nhật.
@@ -107,7 +112,7 @@ st.markdown("""
 # 2. KHỞI TẠO BỘ DỮ LIỆU & TỰ ĐỘNG TÍNH TOÁN CẢNH BÁO TIẾN ĐỘ
 # ==============================================================================
 
-def get_initial_progress_data():
+def get_legacy_progress_data():
     """Khởi tạo danh mục tiến độ thi công Giai đoạn 3 (T7/2026 - T12/2026)"""
     data = [
         # Nhóm mốc quan trọng tháng 8 & 9/2026 (Pháp lý & Thiết kế)
@@ -299,6 +304,11 @@ def get_initial_progress_data():
     return df
 
 
+def get_initial_progress_data():
+    # Preserve the four existing items before PDF group 7.
+    return pd.concat([get_legacy_progress_data().iloc[:4], commitment_data()], ignore_index=True)
+
+
 def get_qcvn121_items():
     """Checklist nội bộ 51 điểm kiểm soát có tham chiếu QCVN 121:2024/BGTVT."""
     items = [
@@ -434,7 +444,9 @@ def get_online_service(settings):
 
 
 def reload_online_data(service, current_date):
-    st.session_state.progress_df = service.load_progress(current_date=current_date)
+    all_progress = service.load_progress(current_date=current_date)
+    st.session_state.legacy_progress_df = all_progress.loc[all_progress['Mã'].isin(LEGACY_CODES)].copy()
+    st.session_state.progress_df = active_progress(all_progress)
     st.session_state.qcvn_df = service.load_qcvn()
     st.session_state.online_data_loaded = True
 
@@ -499,6 +511,12 @@ if ONLINE_MODE:
 else:
     st.session_state.setdefault("progress_df", get_initial_progress_data())
     st.session_state.setdefault("qcvn_df", get_qcvn121_items())
+    if st.session_state.get("commitment_version") != COMMITMENT_VERSION:
+        previous = st.session_state.progress_df
+        st.session_state.legacy_progress_df = previous.loc[previous['Mã'].isin(LEGACY_CODES)].copy()
+        missing = commitment_data().loc[lambda d: ~d['Mã'].isin(previous['Mã'])]
+        st.session_state.progress_df = active_progress(pd.concat([previous, missing], ignore_index=True))
+        st.session_state.commitment_version = COMMITMENT_VERSION
 
 
 # ==============================================================================
@@ -552,7 +570,7 @@ with st.sidebar:
     st.metric(
         label="⏳ ĐẾM NGƯỢC KHAI TRƯƠNG",
         value=f"{days_left} Ngày",
-        delta="Mục tiêu: 31/12/2026"
+        delta="Cam kết: tuần 4 tháng 12/2026"
     )
 
     st.markdown("---")
@@ -634,7 +652,7 @@ st.markdown(f"""
     <div style="display:flex; justify-content:space-between; align-items:flex-start;">
         <div>
             <h1 class="hero-title">🚛 HỆ THỐNG QUẢN LÝ TIẾN ĐỘ THI CÔNG & QCVN 121</h1>
-            <div class="hero-sub">Dự án Đại lý 3S Hyundai Miền Tây | Giám sát Giai đoạn 3 (Tháng 7/2026 – Tháng 12/2026)</div>
+            <div class="hero-sub">Dự án Đại lý 3S Hyundai Miền Tây | Giai đoạn 3 · Cam kết CĐT 15/09/2026 · Theo dõi đến tháng 3/2027</div>
         </div>
         <div style="text-align:right;">
             <div style="font-size:0.85rem; color:#94A3B8;">Mốc kiểm tra:</div>
@@ -725,7 +743,12 @@ with tab_gantt:
     st.subheader("📊 Biểu Đồ Gantt Tiến Độ Chi Tiết (Có Đường Line Đỏ Hiện Tại)")
     st.caption("🔴 **Đường Line đỏ thẳng đứng** thể hiện mốc thời gian thực. Các hạng mục nằm bên trái đường đỏ mà chưa hoàn thành sẽ được cảnh báo chậm tiến độ.")
 
-    gantt_data = st.session_state.progress_df.copy()
+    st.caption("Cam kết CĐT 15/09/2026: thanh màu nâu từ mục 7. Mục 15 tạm ẩn trên Gantt, vẫn giữ ở bảng chi tiết.")
+    st.caption(WEEK_NOTE)
+    gantt_data = gantt_progress(st.session_state.progress_df)
+    selected_areas = st.multiselect("Lọc hạng mục trên Gantt", options=list(gantt_data["Phân khu"].unique()), key="gantt_areas")
+    if selected_areas:
+        gantt_data = gantt_data[gantt_data["Phân khu"].isin(selected_areas)]
     gantt_data["Bắt đầu_dt"] = pd.to_datetime(gantt_data["Bắt đầu"])
     gantt_data["Hoàn thành_dt"] = pd.to_datetime(gantt_data["Hoàn thành"])
 
@@ -752,7 +775,7 @@ with tab_gantt:
     # Nhãn hiển thị trên thanh - Tô đậm nếu đang thực hiện
     def format_bar_label(r):
         if r["Đang diễn ra"]:
-            return f"⭐ ĐANG THỰC HIỆN: {r['Số ngày']} ngày ({r['Tiến độ (%)']}%)"
+            return f"ĐANG TRONG KỲ KẾ HOẠCH: {r['Số ngày']} ngày ({r['Tiến độ (%)']}%)"
         return f"{r['Số ngày']} ngày ({r['Tiến độ (%)']}%)"
 
     gantt_data["Nhãn thanh"] = gantt_data.apply(format_bar_label, axis=1)
@@ -761,7 +784,7 @@ with tab_gantt:
     def format_y_axis(r):
         base_label = f"[{r['Bắt đầu'].strftime('%d/%m')} ➔ {r['Hoàn thành'].strftime('%d/%m')}] {r['Mã']}: {r['Hạng mục công việc']}"
         if r["Đang diễn ra"]:
-            return f"👉 <b>{base_label} ◄ [ĐANG THỰC HIỆN]</b>"
+            return f"👉 <b>{base_label} ◄ [TRONG KỲ KẾ HOẠCH]</b>"
         return base_label
 
     gantt_data["Trục Y"] = gantt_data.apply(format_y_axis, axis=1)
@@ -774,14 +797,17 @@ with tab_gantt:
         "Dời tiến độ": "#EF4444"      # Red
     }
 
+    gantt_data["Màu kế hoạch"] = gantt_data["Mã"].map(lambda c: "Cam kết áp dụng (màu nâu)" if bar_color(c) == BROWN else "Mốc trước / đã hoàn thiện")
+    # Inclusive end dates: a one-week task covers its entire final day.
+    gantt_data["Kết thúc thanh"] = gantt_data["Hoàn thành_dt"] + pd.Timedelta(days=1)
     fig_timeline = px.timeline(
         gantt_data,
         x_start="Bắt đầu_dt",
-        x_end="Hoàn thành_dt",
+        x_end="Kết thúc thanh",
         y="Trục Y",
-        color="Trạng thái",
+        color="Màu kế hoạch",
         text="Nhãn thanh",
-        color_discrete_map=color_scheme,
+        color_discrete_map={"Cam kết áp dụng (màu nâu)": BROWN, "Mốc trước / đã hoàn thiện": "#059669"},
         custom_data=["Bắt đầu_str", "Hoàn thành_str", "Số ngày", "Tiến độ (%)", "Trạng thái", "Người phụ trách", "Ghi chú", "Phân khu", "Cảnh báo Tiến độ"]
     )
     
@@ -836,7 +862,7 @@ with tab_gantt:
         fig_timeline.add_annotation(
             x=today_dt,
             y=row["Trục Y"],
-            text=f"🎯 ĐANG THỰC HIỆN: {row['Mã']}",
+            text=f"TRONG KỲ: {row['Mã']}",
             showarrow=True,
             arrowhead=2,
             arrowsize=1.2,
@@ -852,15 +878,15 @@ with tab_gantt:
             opacity=0.95
         )
 
-    fig_timeline.update_yaxes(autorange="reversed", title="", tickfont=dict(size=12))
+    fig_timeline.update_yaxes(autorange="reversed", title="", tickfont=dict(size=12), categoryorder="array", categoryarray=gantt_data["Trục Y"].tolist())
     fig_timeline.update_xaxes(
-        title="Dòng Thời Gian Dự Án (Tháng 8/2026 – Tháng 12/2026)",
+        title="Dòng thời gian theo cam kết CĐT (mục 15 tạm ẩn)",
         dtick="M1",
         tickformat="%m/%Y",
         gridcolor="#E2E8F0"
     )
     fig_timeline.update_layout(
-        height=600,
+        height=max(600, len(gantt_data) * 34 + 130),
         margin=dict(l=320, r=40, t=30, b=20),
         plot_bgcolor="#FFFFFF",
         paper_bgcolor="#FFFFFF",
@@ -870,10 +896,12 @@ with tab_gantt:
 
     # Bảng Tra cứu Lịch trình Nhanh kèm Cảnh báo
     st.markdown("##### 📅 Bảng Lịch Trình Chi Tiết Bắt Đầu - Hoàn Thành & Tình Trạng Quá Hạn:")
-    gantt_data["Tình trạng hôm nay"] = gantt_data["Đang diễn ra"].apply(lambda x: "⭐ Đang thực hiện" if x else "—")
+    gantt_data["Tình trạng hôm nay"] = gantt_data["Đang diễn ra"].apply(lambda x: "Trong kỳ kế hoạch" if x else "—")
     schedule_table = gantt_data[["Mã", "Hạng mục công việc", "Phân khu", "Bắt đầu_str", "Hoàn thành_str", "Số ngày", "Tiến độ (%)", "Trạng thái", "Tình trạng hôm nay", "Cảnh báo Tiến độ"]].copy()
     schedule_table.columns = ["Mã CV", "Hạng mục công việc", "Phân khu", "Ngày Bắt Đầu", "Ngày Hoàn Thành", "Thời lượng (ngày)", "Tiến độ (%)", "Trạng thái", "Tiến độ hiện tại", "Tình trạng Cảnh báo"]
     st.dataframe(schedule_table, width="stretch", hide_index=True)
+    with st.expander("Đối chiếu đầy đủ 58 công việc với PDF cam kết"):
+        st.dataframe(commitment_details(st.session_state.progress_df), hide_index=True, width="stretch")
 
     # 2 Biểu đồ Phân tích
     st.markdown("<br>", unsafe_allow_html=True)
@@ -924,7 +952,7 @@ with tab_progress:
         "Hạng mục công việc": st.column_config.TextColumn("Hạng mục công việc", width="large", required=True),
         "Phân khu": st.column_config.SelectboxColumn(
             "Phân khu",
-            options=["Thiết kế & Pháp lý", "Mặt bằng & Pháp lý", "Showroom (XDCB)", "Xưởng Dịch vụ 3S", "Thiết bị QCVN 121", "Trang bị Xe Điện (EV)", "Môi trường & PCCC", "Kiểm định & Chứng nhận", "Vận hành & Khai trương"],
+            options=list(st.session_state.progress_df["Phân khu"].unique()),
             required=True
         ),
         "Bắt đầu": st.column_config.DateColumn("Ngày bắt đầu", format="YYYY-MM-DD", required=True),
@@ -940,6 +968,10 @@ with tab_progress:
         "Ghi chú": st.column_config.TextColumn("Ghi chú mốc thời gian", width="large")
     }
 
+    with st.expander("Danh mục tổng hợp trước khi đối chiếu PDF"):
+        st.caption("Bảo lưu để tra cứu ghi chú và hồ sơ cũ; danh mục chi tiết hiện hành theo cam kết mục 7–15 ở bên dưới.")
+        st.dataframe(st.session_state.get("legacy_progress_df", pd.DataFrame()), hide_index=True)
+
     # Bảng Master editor
     display_cols = ["Mã", "Hạng mục công việc", "Phân khu", "Bắt đầu", "Hoàn thành", "Tiến độ (%)", "Trạng thái", "Cảnh báo Tiến độ", "Người phụ trách", "Ghi chú"]
     edited_progress = st.data_editor(
@@ -949,7 +981,7 @@ with tab_progress:
         hide_index=True,
         num_rows="fixed",
         disabled=not (ONLINE_MODE and CURRENT_USER.can_edit) if ONLINE_MODE else False,
-        key="master_progress_editor_v3"
+        key="master_progress_editor_20260915"
     )
 
     # Cập nhật khi có thay đổi
@@ -1400,306 +1432,19 @@ with tab_qcvn:
 with tab_report:
     st.subheader("📑 Lộ Trình Cột Mốc Trọng Tâm & Xuất Hồ Sơ Báo Cáo")
 
-    col_m1, col_m2 = st.columns(2)
-    with col_m1:
-        st.info("""
-        **📍 Các Mốc Trọng Tâm Tháng 8 - 9/2026:**
-        * **29/08/2026**: Hoàn thiện Bản vẽ chi tiết (Layout 2D & 3D).
-        * **30/08/2026**: Hoàn tất Thiết kế chi tiết & hồ sơ cấp phép xây dựng.
-        * **12/09/2026**: Ký Hợp đồng thuê mặt bằng (chưa công chứng).
-        * **19/09/2026**: Đặt cọc thuê đất mặt bằng đại lý.
-        """)
-
-    with col_m2:
-        st.success("""
-        **📍 Các Mốc Thi Công & Nghiệm Thu Khai Trương:**
-        * **10 - 11/2026**: Hoàn thành XDCB Showroom & Kết cấu xưởng 3S.
-        * **11 - 12/2026**: Lắp đặt thiết bị kiểm định & an toàn Xe Điện QCVN 121.
-        * **12/2026**: Nghiệm thu PCCC, Đánh giá chứng nhận QCVN 121:2024/BGTVT.
-        * **31/12/2026**: Nghiệm thu chuẩn đại lý HTCV & **Chính thức Khai trương**.
-        """)
-
-    st.markdown("<br>", unsafe_allow_html=True)
-    st.subheader("📑 Biểu Mẫu & Báo Cáo Giám Sát Hiện Trường Chuẩn")
-    st.caption("Bộ đôi hồ sơ báo cáo định kỳ gửi Chủ đầu tư Thế Giới Xe Tải và HTCV: Báo cáo Điều hành PDF và Form HTML chuẩn in ấn A4 (WBS 16 việc, Checklist QCVN 121, ký duyệt 3 bên).")
-
-    pdf_filename = "Bao_cao_dieu_hanh_HMT-CANTHO-2026_2026-09-08.pdf"
-    html_filename = "Bao_cao_in_chu_dau_tu_HMT-CANTHO-2026_2026-09-08.html"
-
-    def _find_report_bytes(filename: str):
-        candidates = [
-            Path(__file__).parent / "reports" / filename,
-            Path(__file__).parent.parent / "05_Tien_do_Thi_cong_va_Cam_ket" / "2026-09_Bao_cao_va_Bieu_mau_Dieu_hanh" / filename,
-            Path(__file__).parent.parent / filename,
-        ]
-        for p in candidates:
-            if p.exists():
-                return p.read_bytes()
-        return None
-
-    def _find_report_text(filename: str):
-        candidates = [
-            Path(__file__).parent / "reports" / filename,
-            Path(__file__).parent.parent / "05_Tien_do_Thi_cong_va_Cam_ket" / "2026-09_Bao_cao_va_Bieu_mau_Dieu_hanh" / filename,
-            Path(__file__).parent.parent / filename,
-        ]
-        for p in candidates:
-            if p.exists():
-                return p.read_text(encoding="utf-8")
-        return ""
-
-    pdf_bytes = _find_report_bytes(pdf_filename)
+    st.info("Cam kết 15/09/2026: chuẩn bị hồ sơ GPXD từ tuần 3 tháng 9; xin phép đến tuần 2 tháng 10; san lấp từ tuần 4 tháng 9; khai trương tuần 4 tháng 12/2026. Mục 15: cấp chứng nhận tuần 4 tháng 3/2027, tạm ẩn trên Gantt.")
+    st.caption(WEEK_NOTE)
+    st.subheader("Báo cáo tiến độ theo cam kết của chủ đầu tư")
     cur_date_display = PROJECT_TODAY.strftime("%d/%m/%Y")
 
-    # Hàm tạo biểu đồ Gantt SVG trực quan chuẩn in ấn khổ ngang (Landscape)
-    def build_gantt_svg(df, today_d):
-        min_d = datetime.date(2026, 8, 15)
-        max_d = datetime.date(2026, 12, 31)
-        total_days = max((max_d - min_d).days, 1)
-        chart_x = 350
-        chart_w = 810
-        row_h = 22
-        header_h = 36
-        total_h = header_h + len(df) * row_h + 34
+    @st.cache_data(show_spinner=False, max_entries=8)
+    def cached_pdf(progress, report_date):
+        return build_pdf(progress, report_date)
 
-        def get_x(d):
-            days = (d - min_d).days
-            return round(chart_x + (days / total_days) * chart_w, 1)
-
-        today_x = get_x(today_d)
-
-        months = [
-            ('Tháng 08/2026', datetime.date(2026, 8, 15), datetime.date(2026, 8, 31)),
-            ('Tháng 09/2026', datetime.date(2026, 9, 1), datetime.date(2026, 9, 30)),
-            ('Tháng 10/2026', datetime.date(2026, 10, 1), datetime.date(2026, 10, 31)),
-            ('Tháng 11/2026', datetime.date(2026, 11, 1), datetime.date(2026, 11, 30)),
-            ('Tháng 12/2026', datetime.date(2026, 12, 1), datetime.date(2026, 12, 31)),
-        ]
-
-        svg_parts = [
-            f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 {total_h}" style="width:100%; height:auto; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:8px; font-family:'Segoe UI',Arial,sans-serif;">'''
-        ]
-
-        # Header tháng và các đường gióng dọc
-        for idx, (m_label, m_start, m_end) in enumerate(months):
-            x1 = get_x(m_start)
-            x2 = get_x(m_end) + (get_x(m_end + datetime.timedelta(days=1)) - get_x(m_end) if m_end < max_d else 0)
-            mw = x2 - x1
-            bg = '#F8FAFC' if idx % 2 == 0 else '#FFFFFF'
-            svg_parts.append(f'''<rect x="{x1}" y="0" width="{mw}" height="{header_h}" fill="{bg}" stroke="#E2E8F0" stroke-width="1"/>''')
-            svg_parts.append(f'''<line x1="{x1}" y1="{header_h}" x2="{x1}" y2="{header_h + len(df) * row_h}" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="3,3"/>''')
-            svg_parts.append(f'''<text x="{x1 + mw/2}" y="23" font-size="11" font-weight="700" fill="#002C6C" text-anchor="middle">{m_label}</text>''')
-
-        # Header cột tên hạng mục
-        svg_parts.append(f'''<rect x="0" y="0" width="{chart_x}" height="{header_h}" fill="#002C6C"/>''')
-        svg_parts.append(f'''<text x="14" y="23" font-size="11.5" font-weight="700" fill="#FFFFFF">MÃ &amp; TÊN HẠNG MỤC (WBS)</text>''')
-
-        # Hàng công việc WBS
-        for i, (_, r) in enumerate(df.iterrows()):
-            ry = header_h + i * row_h
-            row_bg = '#FFFFFF' if i % 2 == 0 else '#F8FAFC'
-            svg_parts.append(f'''<rect x="0" y="{ry}" width="1180" height="{row_h}" fill="{row_bg}"/>''')
-            svg_parts.append(f'''<line x1="0" y1="{ry + row_h}" x2="1180" y2="{ry + row_h}" stroke="#F1F5F9" stroke-width="1"/>''')
-
-            code = html.escape(str(r.get('Mã', '')))
-            t_name = str(r.get('Hạng mục công việc', ''))
-            if len(t_name) > 46:
-                t_name = t_name[:44] + '...'
-            name_esc = html.escape(t_name)
-
-            svg_parts.append(f'''<text x="12" y="{ry + 15}" font-size="10.5" font-weight="700" fill="#002C6C">{code}</text>''')
-            svg_parts.append(f'''<text x="56" y="{ry + 15}" font-size="10" fill="#334155">{name_esc}</text>''')
-
-            # Thanh tiến độ
-            start_d = pd.to_datetime(r.get('Bắt đầu')).date()
-            end_d = pd.to_datetime(r.get('Hoàn thành')).date()
-            pct = int(r.get('Tiến độ (%)', 0))
-            stt = str(r.get('Trạng thái', ''))
-
-            bx1 = get_x(start_d)
-            bx2 = get_x(end_d)
-            bw = max(bx2 - bx1, 8)
-            by = ry + 3.5
-            bh = 15
-
-            is_today = (start_d <= today_d <= end_d)
-            amber_stroke = ' stroke="#F59E0B" stroke-width="2"' if is_today else ''
-
-            if pct >= 100 or stt == 'Đã hoàn thiện':
-                svg_parts.append(f'''<rect x="{bx1}" y="{by}" width="{bw}" height="{bh}" rx="3" fill="#10B981"{amber_stroke}/>''')
-                label_x = bx1 + bw / 2 if bw > 28 else bx1 + bw + 4
-                text_fill = '#FFFFFF' if bw > 28 else '#059669'
-                anchor = 'middle' if bw > 28 else 'start'
-                svg_parts.append(f'''<text x="{label_x}" y="{by + 11}" font-size="9" font-weight="700" fill="{text_fill}" text-anchor="{anchor}">{pct}%</text>''')
-            elif pct > 0:
-                svg_parts.append(f'''<rect x="{bx1}" y="{by}" width="{bw}" height="{bh}" rx="3" fill="#E0F2FE"{amber_stroke}/>''')
-                prog_w = max(bw * pct / 100, 4)
-                svg_parts.append(f'''<rect x="{bx1}" y="{by}" width="{prog_w}" height="{bh}" rx="3" fill="#0284C7"/>''')
-                label_x = bx1 + bw + 4
-                svg_parts.append(f'''<text x="{label_x}" y="{by + 11}" font-size="9" font-weight="700" fill="#0284C7">{pct}%</text>''')
-            else:
-                svg_parts.append(f'''<rect x="{bx1}" y="{by}" width="{bw}" height="{bh}" rx="3" fill="#CBD5E1"{amber_stroke}/>''')
-                svg_parts.append(f'''<text x="{bx1 + bw + 4}" y="{by + 11}" font-size="9" font-weight="600" fill="#64748B">0%</text>''')
-
-        # Vạch đỏ mốc hôm nay
-        svg_parts.append(f'''<line x1="{today_x}" y1="{header_h}" x2="{today_x}" y2="{header_h + len(df) * row_h}" stroke="#DC2626" stroke-width="2" stroke-dasharray="4,3"/>''')
-        badge_text = f'📍 Hôm nay ({today_d.strftime("%d/%m/%Y")})'
-        svg_parts.append(f'''<rect x="{today_x - 62}" y="3" width="124" height="18" rx="4" fill="#FEF2F2" stroke="#DC2626" stroke-width="1.5"/>''')
-        svg_parts.append(f'''<text x="{today_x}" y="15.5" font-size="9" font-weight="700" fill="#DC2626" text-anchor="middle">{badge_text}</text>''')
-
-        # Chú thích cuối biểu đồ Gantt
-        leg_y = header_h + len(df) * row_h + 10
-        svg_parts.append(f'''<rect x="0" y="{header_h + len(df) * row_h}" width="1180" height="34" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1"/>''')
-        svg_parts.append(f'''<rect x="350" y="{leg_y + 1}" width="14" height="10" rx="2" fill="#10B981"/>''')
-        svg_parts.append(f'''<text x="370" y="{leg_y + 9}" font-size="9.5" fill="#334155">Đã hoàn thành</text>''')
-        svg_parts.append(f'''<rect x="480" y="{leg_y + 1}" width="14" height="10" rx="2" fill="#0284C7"/>''')
-        svg_parts.append(f'''<text x="500" y="{leg_y + 9}" font-size="9.5" fill="#334155">Đang thực hiện</text>''')
-        svg_parts.append(f'''<rect x="610" y="{leg_y + 1}" width="14" height="10" rx="2" fill="#CBD5E1"/>''')
-        svg_parts.append(f'''<text x="630" y="{leg_y + 9}" font-size="9.5" fill="#334155">Chưa thực hiện</text>''')
-        svg_parts.append(f'''<line x1="740" y1="{leg_y + 6}" x2="760" y2="{leg_y + 6}" stroke="#DC2626" stroke-width="2" stroke-dasharray="3,2"/>''')
-        svg_parts.append(f'''<text x="768" y="{leg_y + 9}" font-size="9.5" fill="#DC2626" font-weight="600">Mốc hôm nay</text>''')
-        svg_parts.append(f'''<rect x="865" y="{leg_y}" width="16" height="11" rx="2" fill="none" stroke="#F59E0B" stroke-width="2"/>''')
-        svg_parts.append(f'''<text x="888" y="{leg_y + 9}" font-size="9.5" fill="#D97706">Đang trong kỳ</text>''')
-
-        svg_parts.append('</svg>')
-        return '\n'.join(svg_parts)
-
-    # Hàm xây dựng Form HTML in ấn động từ dữ liệu thực tế hiện tại (Khổ ngang A4)
-    def build_dynamic_printable_html(progress_df, report_date_str):
-        total_tasks = len(progress_df)
-        completed_tasks = int((progress_df["Tiến độ (%)"] >= 100).sum() + ((progress_df["Trạng thái"] == "Đã hoàn thiện") & (progress_df["Tiến độ (%)"] < 100)).sum())
-        overall_progress = round(float(progress_df["Tiến độ (%)"].mean()), 1) if total_tasks > 0 else 0
-
-        try:
-            today_d = datetime.datetime.strptime(report_date_str, "%d/%m/%Y").date()
-        except Exception:
-            today_d = PROJECT_TODAY
-        days_left = max((datetime.date(2026, 12, 31) - today_d).days, 0)
-
-        gantt_svg = build_gantt_svg(progress_df, today_d)
-
-        wbs_rows = []
-        for _, r in progress_df.iterrows():
-            pct = int(r.get("Tiến độ (%)", 0))
-            stt_val = str(r.get("Trạng thái", ""))
-            pill_color = "#10B981" if (pct >= 100 or stt_val == "Đã hoàn thiện") else ("#0284C7" if pct > 0 else "#94A3B8")
-            start_str = pd.to_datetime(r.get("Bắt đầu")).strftime('%d/%m/%Y') if pd.notnull(r.get("Bắt đầu")) else ""
-            end_str = pd.to_datetime(r.get("Hoàn thành")).strftime('%d/%m/%Y') if pd.notnull(r.get("Hoàn thành")) else ""
-            task_name = html.escape(str(r.get("Hạng mục công việc", "")))
-            
-            # Cột Ghi chú thực tế: hiện tại không có thông tin thì để trống
-            raw_note = str(r.get("Ghi chú", "")).strip()
-            if raw_note and raw_note.lower() not in ["none", "nan", ""]:
-                escaped_note = html.escape(raw_note).replace("\n", "<br>")
-                note_cell = f"<div class='note-text'>{escaped_note}</div>"
-            else:
-                note_cell = ""
-
-            wbs_rows.append(f"""<tr>
-    <td class="code center">{html.escape(str(r.get('Mã', '')))}</td>
-    <td><b>{task_name}</b></td>
-    <td>{html.escape(str(r.get('Phân khu', '')))}</td>
-    <td class="center">{start_str} - {end_str}</td>
-    <td class="center strong" style="color:{pill_color}">{pct}%</td>
-    <td class="center"><span class="pill" style="background:{pill_color}">{html.escape(stt_val)}</span></td>
-    <td>{note_cell}</td>
-    <td>{html.escape(str(r.get('Người phụ trách', '')))}</td>
-  </tr>""")
-
-        wbs_content = "\n".join(wbs_rows)
-
-        template = f"""<!doctype html>
-<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Báo cáo tiến độ - V6502 (Khổ ngang)</title>
-<style>
-  @page {{ size: A4 landscape; margin: 8mm 12mm; }}
-  * {{ box-sizing: border-box; }}
-  body {{ margin: 6px 10px; color: #0F172A; background: #fff; font: 11.5px/1.35 "Segoe UI", Arial, sans-serif; }}
-  .header {{ display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; border-bottom: 2.5px solid #002C6C; padding-bottom: 6px; }}
-  .header h1 {{ margin: 0; color: #002C6C; font-size: 17px; line-height: 1.25; font-weight: 800; text-transform: uppercase; }}
-  .subtitle {{ color: #475569; margin-top: 2px; font-size: 11px; }}
-  .meta {{ text-align: right; min-width: 140px; }}
-  .meta-label, .kpi-label {{ color: #64748B; font-size: 10px; font-weight: 600; text-transform: uppercase; }}
-  .meta-date {{ color: #002C6C; font-size: 14px; font-weight: 800; margin-top: 1px; }}
-  .meta-brand {{ color: #94A3B8; font-size: 9px; margin-top: 1px; }}
-  .kpis {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 8px 0; }}
-  .kpi {{ padding: 6px; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 6px; text-align: center; }}
-  .kpi-value {{ color: #00AAD2; font-size: 19px; font-weight: 800; }}
-  .kpi-value.blue {{ color: #0284C7; }}
-  .kpi-value.green {{ color: #10B981; }}
-  h2 {{ margin: 10px 0 6px; padding-bottom: 3px; border-bottom: 2px solid #00AAD2; color: #002C6C; font-size: 12.5px; text-transform: uppercase; }}
-  table {{ width: 100%; border-collapse: collapse; font-size: 10px; line-height: 1.35; }}
-  th, td {{ padding: 4.5px 7px; border: 1px solid #CBD5E1; vertical-align: middle; }}
-  th {{ background: #002C6C; color: #fff; font-weight: 700; text-align: left; font-size: 10px; }}
-  tbody tr:nth-child(even) {{ background: #F8FAFC; }}
-  .center {{ text-align: center; }}
-  .strong {{ font-weight: 800; }}
-  .code {{ font-family: Consolas, monospace; font-weight: 800; color: #002C6C; }}
-  .pill {{ display: inline-block; padding: 2px 6px; border-radius: 6px; color: #fff; font-size: 9px; white-space: nowrap; font-weight: 600; }}
-  .note-text {{ font-size: 9.5px; color: #1E293B; line-height: 1.3; }}
-  .btn-print {{ position: fixed; top: 15px; right: 15px; background: #002C6C; color: #fff; padding: 8px 16px; border-radius: 6px; font-weight: 700; border: none; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }}
-  .section-break {{ break-before: page; margin-top: 8px; }}
-  @media print {{
-    body {{ margin: 0; }}
-    .no-print {{ display: none !important; }}
-    thead {{ display: table-header-group; }}
-    tr {{ break-inside: avoid; }}
-    .section-break {{ break-before: page; }}
-  }}
-</style></head><body>
-<button onclick="window.print()" class="btn-print no-print">🖨️ In Báo Cáo (Ctrl + P)</button>
-<header class="header">
-  <div>
-    <h1>BÁO CÁO TIẾN ĐỘ THI CÔNG</h1>
-    <div class="subtitle">Dự án: <b>Đại lý 3S Truck & Bus Hyundai Miền Tây</b> | Mã: <b>V6502</b></div>
-    <div class="subtitle">Chủ đầu tư: <b>Thế giới xe tải</b> | Địa điểm: <b>TP. Cần Thơ</b></div>
-  </div>
-  <div class="meta">
-    <div class="meta-label">Mốc cập nhật</div>
-    <div class="meta-date">{report_date_str}</div>
-    <div class="meta-brand">Hệ thống QLDA Streamlit<br>Hyundai Miền Tây</div>
-  </div>
-</header>
-<p class="subtitle" style="margin-top:6px; margin-bottom:6px;">
-  Số liệu trích xuất thời gian thực từ hệ thống. Tiến độ các hạng mục được đối soát theo nhật ký hiện trường mới nhất.
-</p>
-<section class="kpis">
-  <div class="kpi"><div class="kpi-value">{overall_progress}%</div><div class="kpi-label">Tiến độ tổng thể</div></div>
-  <div class="kpi"><div class="kpi-value blue">{completed_tasks}/{total_tasks}</div><div class="kpi-label">Hạng mục hoàn thành</div></div>
-  <div class="kpi"><div class="kpi-value green">{days_left} ngày</div><div class="kpi-label">Số ngày còn lại (31/12)</div></div>
-</section>
-
-<section>
-  <h2>1. TIẾN ĐỘ HÌNH ẢNH GANTT (GANTT CHART)</h2>
-  <div style="margin-top:6px;">
-    {gantt_svg}
-  </div>
-</section>
-
-<section class="section-break">
-  <h2>2. DANH MỤC HẠNG MỤC THI CÔNG CHI TIẾT (WBS)</h2>
-  <table>
-    <thead>
-      <tr>
-        <th style="width:55px; text-align:center">Mã</th>
-        <th style="width:250px">Tên hạng mục công việc</th>
-        <th style="width:130px">Phân khu</th>
-        <th style="width:140px; text-align:center">Thời gian thực hiện</th>
-        <th style="width:60px; text-align:center">Tiến độ</th>
-        <th style="width:90px; text-align:center">Trạng thái</th>
-        <th>Ghi chú thực tế</th>
-        <th style="width:130px">Phụ trách</th>
-      </tr>
-    </thead>
-    <tbody>
-      {wbs_content}
-    </tbody>
-  </table>
-</section>
-</body></html>"""
-        return template
+    pdf_bytes = None
 
     # Biên dịch ngay bản in HTML theo dữ liệu thời gian thực
-    live_printable_html = build_dynamic_printable_html(st.session_state.progress_df, cur_date_display)
+    live_printable_html = build_printable_html(st.session_state.progress_df, PROJECT_TODAY)
     cur_overall_pct = round(float(st.session_state.progress_df["Tiến độ (%)"].mean()), 1) if not st.session_state.progress_df.empty else 0
     cur_completed = int((st.session_state.progress_df["Tiến độ (%)"] >= 100).sum() + ((st.session_state.progress_df["Trạng thái"] == "Đã hoàn thiện") & (st.session_state.progress_df["Tiến độ (%)"] < 100)).sum())
 
@@ -1714,13 +1459,16 @@ with tab_report:
                     Báo cáo điều hành chuẩn A4 khổ ngang (Landscape): Mục 1 Biểu đồ Gantt trực quan, Mục 2 Danh mục WBS chi tiết kèm ghi chú thực tế.
                 </p>
                 <div style="font-size:0.8rem; color:#64748B;">
-                    • Tiến độ cập nhật: <b>{cur_overall_pct}% ({cur_completed}/16 việc)</b><br>
+                    • Tiến độ cập nhật: <b>{cur_overall_pct}% ({cur_completed}/{len(st.session_state.progress_df)} việc)</b><br>
                     • Mốc cập nhật: <b>{cur_date_display}</b><br>
-                    • Định dạng: <b>PDF 2 trang khổ ngang A4</b>
+                    • Định dạng: <b>PDF nhiều trang khổ ngang A4</b>
                 </div>
             </div>
         </div>
         """, unsafe_allow_html=True)
+        if st.button("Tạo PDF theo dữ liệu hiện tại", key="build_current_pdf", width="stretch"):
+            with st.spinner("Đang tạo báo cáo PDF chi tiết..."):
+                pdf_bytes = cached_pdf(st.session_state.progress_df, PROJECT_TODAY)
         if pdf_bytes:
             st.download_button(
                 label="📥 TẢI BÁO CÁO PDF (MỚI NHẤT)",
@@ -1728,10 +1476,10 @@ with tab_report:
                 file_name=f"Bao_cao_dieu_hanh_HMT-CANTHO_{PROJECT_TODAY.strftime('%Y%m%d')}.pdf",
                 mime="application/pdf",
                 key="download_pdf_report",
-                use_container_width=True
+                width="stretch"
             )
         else:
-            st.warning("Chưa tìm thấy tệp PDF.")
+            st.caption("Bấm Tạo PDF để xuất đúng tiến độ và ghi chú đang hiển thị.")
 
     with col_rep2:
         st.markdown(f"""
@@ -1739,7 +1487,7 @@ with tab_report:
             <div>
                 <h4 style="color:#002C6C; margin:0 0 8px 0;">🌐 Bản In Chủ Đầu Tư (.HTML)</h4>
                 <p style="font-size:0.85rem; color:#475569; margin-bottom:8px;">
-                    Form báo cáo tiến độ A4 khổ ngang chuẩn in ấn, tích hợp Mục 1: Biểu đồ Gantt, Mục 2: WBS 16 việc kèm ghi chú thực tế.
+                    Form báo cáo tiến độ A4 khổ ngang chuẩn in ấn, tích hợp Mục 1: Biểu đồ Gantt, Mục 2: WBS chi tiết theo cam kết 15/09/2026 kèm ghi chú thực tế.
                 </p>
                 <div style="font-size:0.8rem; color:#64748B;">
                     • Dữ liệu: <b>Thời gian thực (Live 100%)</b><br>
@@ -1755,7 +1503,7 @@ with tab_report:
             file_name=f"Bao_cao_in_chu_dau_tu_HMT-CANTHO_{PROJECT_TODAY.strftime('%Y%m%d')}.html",
             mime="text/html",
             key="download_html_report",
-            use_container_width=True
+            width="stretch"
         )
 
     with col_rep3:
@@ -1775,28 +1523,20 @@ with tab_report:
         </div>
         """, unsafe_allow_html=True)
 
-        def generate_excel():
-            import io
-            output = io.BytesIO()
-            with pd.ExcelWriter(output, engine='openpyxl') as writer:
-                st.session_state.progress_df.to_excel(writer, sheet_name='Tien_Do_Thi_Cong', index=False)
-                df_q.to_excel(writer, sheet_name='QCVN_121_Checklist', index=False)
-            return output.getvalue()
-
-        excel_binary = generate_excel()
+        excel_binary = build_excel(st.session_state.progress_df, df_q)
         st.download_button(
             label="📥 TẢI DỮ LIỆU EXCEL",
             data=excel_binary,
             file_name=f"Bao_Cao_Tien_Do_HD_Mien_Tay_{datetime.date.today().strftime('%Y%m%d')}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             key="download_excel_report",
-            use_container_width=True
+            width="stretch"
         )
 
     st.markdown("<br>", unsafe_allow_html=True)
     with st.expander("👁️ Xem Trước Bản In A4 Trực Tiếp (Print Preview)", expanded=True):
-        st.caption(f"Trình xem trước bản in A4 khổ ngang (Landscape) đồng bộ trực tiếp theo dữ liệu hệ thống (Mốc ngày: **{cur_date_display}** | Tiến độ: **{cur_overall_pct}%** | Hoàn thành: **{cur_completed}/16** hạng mục).")
-        components.html(live_printable_html, height=650, scrolling=True)
+        st.caption(f"Trình xem trước bản in A4 khổ ngang (Landscape) đồng bộ trực tiếp theo dữ liệu hệ thống (Mốc ngày: **{cur_date_display}** | Tiến độ: **{cur_overall_pct}%** | Hoàn thành: **{cur_completed}/{len(st.session_state.progress_df)}** hạng mục).")
+        st.iframe(live_printable_html, height=650)
         st.caption("💡 **Mẹo in ấn**: Bấm nút **In Báo Cáo** (hoặc mở tệp tải về bấm **Ctrl + P**), chọn khổ giấy **A4**, hướng giấy **Ngang (Landscape)** để có bản in chuẩn đẹp nhất.")
 
 

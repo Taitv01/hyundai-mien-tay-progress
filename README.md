@@ -1,6 +1,19 @@
 # Hyundai Miền Tây – Quản lý tiến độ thi công
 
-Ứng dụng Streamlit dành cho dự án Đại lý 3S xe thương mại Hyundai Miền Tây tại Cần Thơ, theo dõi giai đoạn tháng 7–12/2026.
+Ứng dụng Streamlit dành cho dự án Đại lý 3S xe thương mại Hyundai Miền Tây tại Cần Thơ, theo dõi giai đoạn 3 và các mốc đến tháng 3/2027.
+
+## Cam kết chủ đầu tư ngày 15/09/2026
+
+- Đối chiếu 58 công việc chi tiết thuộc mục 7–15 với `260915_Tiến độ xây dựng Hyundai Cần Thơ.pdf`, thay cho 12 dòng thi công tổng hợp trước đây. Giữ 4 công việc trước mục 7: tổng cộng 62 công việc hiện hành.
+- Mỗi dòng có mã `CK-<mục>-<thứ tự>`, P.I.C, tuần bắt đầu/kết thúc và trang PDF để đối chiếu. Bản cam kết gốc được lưu trong `commitment_20260915.json`, độc lập với các ngày điều chỉnh và ghi chú thực tế.
+- Thanh kế hoạch áp dụng từ mục 7 dùng màu nâu `#8B5E3C`. Mục 15 (3 công việc D116) tạm ẩn trên Gantt ứng dụng, HTML và PDF; vẫn có trong bảng chi tiết, cập nhật hiện trường và dữ liệu xuất. Thiết bị D116 thuộc mục 9 vẫn hiện trên Gantt.
+- Quy ước hiển thị ngày: W1 = 01–07, W2 = 08–14, W3 = 15–21, W4 = 22–cuối tháng. Đây là quy đổi mốc tuần, không phải ngày lẻ được chủ đầu tư xác nhận.
+- Chuẩn bị hồ sơ GPXD: W3–W4 tháng 9; xin GPXD: W3 tháng 9–W2 tháng 10; san lấp: W4 tháng 9–W1 tháng 10; khai trương: W4 tháng 12/2026; cấp chứng nhận: W4 tháng 3/2027.
+- Bốn dòng đặt hàng chỉ có mốc cũ màu xanh lá được giữ với ghi chú chưa có mốc mới. Ô “39” ở dòng chuẩn bị hồ sơ GPXD được đối chiếu theo ô W4 tháng 9, không chuyển thành ngày 39.
+- Dữ liệu và hồ sơ của 12 công việc tổng hợp cũ được bảo lưu trên Supabase, xem trong mục “Danh mục tổng hợp trước khi đối chiếu PDF”. Không cộng trùng vào tiến độ hiện hành.
+- Báo cáo HTML/Excel dùng dữ liệu hiện tại. Bấm **Tạo PDF theo dữ liệu hiện tại** để tạo và tải PDF nhiều trang; không sử dụng lại PDF ngày 08/09 với tên mới.
+
+Kiểm thử: `py -m pytest tests -q` (chạy từ thư mục ứng dụng).
 
 ## Chức năng đã hoàn thiện
 
@@ -9,7 +22,7 @@
 - Chọn ngày theo dõi để xem lại trạng thái dự án tại một mốc bất kỳ.
 - Checklist nội bộ tham chiếu QCVN 121:2024/BGTVT; 9 điều kiện đặc thù xe điện/hybrid đang tạm ẩn nhưng vẫn được bảo lưu trong dữ liệu.
 - Gantt tương tác, đường mốc ngày theo dõi, biểu đồ trạng thái và tiến độ theo phân khu.
-- Bộ đôi báo cáo giám sát hiện trường định kỳ: Báo cáo Điều hành PDF và Form HTML chuẩn in ấn A4 (tích hợp WBS 16 việc & Checklist QCVN 121, ký duyệt 3 bên, Ctrl + P xuất PDF).
+- Báo cáo giám sát hiện trường: PDF và HTML A4 khổ ngang, Gantt theo tuần và bảng WBS chi tiết theo cam kết CĐT.
 - Trình xem trước bản in (Print Preview) trực tiếp trong app và tính năng sinh Form in HTML động theo dữ liệu thời gian thực.
 - Tải trọn bộ dữ liệu Excel XLSX và CSV.
 - Mở link là xem và cập nhật được ngay, không yêu cầu đăng nhập.
@@ -38,7 +51,7 @@ Mở `http://localhost:8501`. Nếu chưa cấu hình Google Sheets, ứng dụn
 - **Supabase Storage:** lưu ảnh và tệp PDF trong bucket riêng tư; tệp chỉ được xem qua URL có thời hạn.
 - **Streamlit secrets:** giữ khóa dịch vụ phía máy chủ, không đưa khóa lên GitHub hay trình duyệt.
 
-Khởi tạo backend một lần bằng cách chạy toàn bộ [supabase_setup.sql](supabase_setup.sql) trong Supabase SQL Editor. Sau đó khai báo `SUPABASE_URL` và `SUPABASE_SERVICE_ROLE_KEY` theo tệp `.streamlit/secrets.toml.example`. Hệ thống tự nạp 16 hạng mục cùng 51 điểm kiểm soát ban đầu.
+Khởi tạo backend một lần bằng cách chạy toàn bộ [supabase_setup.sql](supabase_setup.sql) trong Supabase SQL Editor. Sau đó khai báo `SUPABASE_URL` và `SUPABASE_SERVICE_ROLE_KEY` theo tệp `.streamlit/secrets.toml.example`. Kho trống tự nạp 62 công việc cùng 51 điểm kiểm soát ban đầu. Kho đã có dữ liệu cần nạp thêm các mã cam kết mới; không ghi đè các bản ghi thực tế cũ.
 
 ## Quy trình sử dụng cho đại lý
 

@@ -1,0 +1,3243 @@
+[
+  {
+    "number": 1,
+    "group": 7,
+    "section": "Giấy phép xây dựng",
+    "description": "Chuẩn bị hồ sơ",
+    "pic": "HDMT",
+    "page": 1,
+    "y": 424.5,
+    "current_weeks": [
+      {
+        "year": 2026,
+        "month": 9,
+        "week": 3
+      },
+      {
+        "year": 2026,
+        "month": 9,
+        "week": 4
+      }
+    ],
+    "source_fills": [
+      {
+        "color": "green",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 5,
+            "week": 1
+          },
+          {
+            "year": 2026,
+            "month": 5,
+            "week": 2
+          },
+          {
+            "year": 2026,
+            "month": 5,
+            "week": 3
+          },
+          {
+            "year": 2026,
+            "month": 5,
+            "week": 4
+          },
+          {
+            "year": 2026,
+            "month": 6,
+            "week": 1
+          }
+        ]
+      },
+      {
+        "color": "green",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 9,
+            "week": 1
+          },
+          {
+            "year": 2026,
+            "month": 9,
+            "week": 2
+          }
+        ]
+      },
+      {
+        "color": "blue",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 9,
+            "week": 3
+          },
+          {
+            "year": 2026,
+            "month": 9,
+            "week": 4
+          }
+        ]
+      }
+    ],
+    "source_status": "Đang xin phép",
+    "code": "CK-07-01"
+  },
+  {
+    "number": 2,
+    "group": 7,
+    "section": "Giấy phép xây dựng",
+    "description": "Xin giấy phép xây dựng",
+    "pic": "DỊCH VỤ",
+    "page": 1,
+    "y": 436.0,
+    "current_weeks": [
+      {
+        "year": 2026,
+        "month": 9,
+        "week": 3
+      },
+      {
+        "year": 2026,
+        "month": 9,
+        "week": 4
+      },
+      {
+        "year": 2026,
+        "month": 10,
+        "week": 1
+      },
+      {
+        "year": 2026,
+        "month": 10,
+        "week": 2
+      }
+    ],
+    "source_fills": [
+      {
+        "color": "green",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 5,
+            "week": 2
+          },
+          {
+            "year": 2026,
+            "month": 5,
+            "week": 3
+          },
+          {
+            "year": 2026,
+            "month": 5,
+            "week": 4
+          },
+          {
+            "year": 2026,
+            "month": 6,
+            "week": 1
+          },
+          {
+            "year": 2026,
+            "month": 6,
+            "week": 2
+          },
+          {
+            "year": 2026,
+            "month": 6,
+            "week": 3
+          },
+          {
+            "year": 2026,
+            "month": 6,
+            "week": 4
+          }
+        ]
+      },
+      {
+        "color": "green",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 9,
+            "week": 2
+          }
+        ]
+      },
+      {
+        "color": "blue",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 9,
+            "week": 3
+          },
+          {
+            "year": 2026,
+            "month": 9,
+            "week": 4
+          },
+          {
+            "year": 2026,
+            "month": 10,
+            "week": 1
+          },
+          {
+            "year": 2026,
+            "month": 10,
+            "week": 2
+          }
+        ]
+      }
+    ],
+    "source_status": "Đang xin phép",
+    "code": "CK-07-02"
+  },
+  {
+    "number": 3,
+    "group": 8,
+    "section": "Thi công phần Showroom (Phần XDCB)",
+    "description": "San lấp mặt bằng",
+    "pic": "HDMT",
+    "page": 1,
+    "y": 459.0,
+    "current_weeks": [
+      {
+        "year": 2026,
+        "month": 9,
+        "week": 4
+      },
+      {
+        "year": 2026,
+        "month": 10,
+        "week": 1
+      }
+    ],
+    "source_fills": [
+      {
+        "color": "green",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 5,
+            "week": 1
+          },
+          {
+            "year": 2026,
+            "month": 5,
+            "week": 2
+          },
+          {
+            "year": 2026,
+            "month": 5,
+            "week": 3
+          },
+          {
+            "year": 2026,
+            "month": 5,
+            "week": 4
+          }
+        ]
+      },
+      {
+        "color": "blue",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 9,
+            "week": 4
+          },
+          {
+            "year": 2026,
+            "month": 10,
+            "week": 1
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-08-01"
+  },
+  {
+    "number": 4,
+    "group": 8,
+    "section": "Thi công phần Showroom (Phần XDCB)",
+    "description": "Móng chân cột",
+    "pic": "HDMT",
+    "page": 1,
+    "y": 470.5,
+    "current_weeks": [
+      {
+        "year": 2026,
+        "month": 10,
+        "week": 1
+      },
+      {
+        "year": 2026,
+        "month": 10,
+        "week": 2
+      },
+      {
+        "year": 2026,
+        "month": 10,
+        "week": 3
+      }
+    ],
+    "source_fills": [
+      {
+        "color": "green",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 5,
+            "week": 1
+          },
+          {
+            "year": 2026,
+            "month": 5,
+            "week": 2
+          },
+          {
+            "year": 2026,
+            "month": 5,
+            "week": 3
+          },
+          {
+            "year": 2026,
+            "month": 5,
+            "week": 4
+          }
+        ]
+      },
+      {
+        "color": "blue",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 10,
+            "week": 1
+          },
+          {
+            "year": 2026,
+            "month": 10,
+            "week": 2
+          },
+          {
+            "year": 2026,
+            "month": 10,
+            "week": 3
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-08-02"
+  },
+  {
+    "number": 5,
+    "group": 8,
+    "section": "Thi công phần Showroom (Phần XDCB)",
+    "description": "Đà kiềng",
+    "pic": "HDMT",
+    "page": 1,
+    "y": 482.1,
+    "current_weeks": [
+      {
+        "year": 2026,
+        "month": 10,
+        "week": 2
+      },
+      {
+        "year": 2026,
+        "month": 10,
+        "week": 3
+      },
+      {
+        "year": 2026,
+        "month": 10,
+        "week": 4
+      }
+    ],
+    "source_fills": [
+      {
+        "color": "green",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 5,
+            "week": 1
+          },
+          {
+            "year": 2026,
+            "month": 5,
+            "week": 2
+          },
+          {
+            "year": 2026,
+            "month": 5,
+            "week": 3
+          },
+          {
+            "year": 2026,
+            "month": 5,
+            "week": 4
+          },
+          {
+            "year": 2026,
+            "month": 6,
+            "week": 1
+          },
+          {
+            "year": 2026,
+            "month": 6,
+            "week": 2
+          }
+        ]
+      },
+      {
+        "color": "blue",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 10,
+            "week": 2
+          },
+          {
+            "year": 2026,
+            "month": 10,
+            "week": 3
+          },
+          {
+            "year": 2026,
+            "month": 10,
+            "week": 4
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-08-03"
+  },
+  {
+    "number": 6,
+    "group": 8,
+    "section": "Thi công phần Showroom (Phần XDCB)",
+    "description": "Dựng khung nhà thép",
+    "pic": "HDMT",
+    "page": 1,
+    "y": 493.6,
+    "current_weeks": [
+      {
+        "year": 2026,
+        "month": 10,
+        "week": 3
+      },
+      {
+        "year": 2026,
+        "month": 10,
+        "week": 4
+      },
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 1
+      }
+    ],
+    "source_fills": [
+      {
+        "color": "green",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 6,
+            "week": 2
+          },
+          {
+            "year": 2026,
+            "month": 6,
+            "week": 3
+          }
+        ]
+      },
+      {
+        "color": "blue",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 10,
+            "week": 3
+          },
+          {
+            "year": 2026,
+            "month": 10,
+            "week": 4
+          },
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 1
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-08-04"
+  },
+  {
+    "number": 7,
+    "group": 8,
+    "section": "Thi công phần Showroom (Phần XDCB)",
+    "description": "Đổ nền showroom",
+    "pic": "HDMT",
+    "page": 1,
+    "y": 505.1,
+    "current_weeks": [
+      {
+        "year": 2026,
+        "month": 10,
+        "week": 4
+      },
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 1
+      },
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 2
+      }
+    ],
+    "source_fills": [
+      {
+        "color": "green",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 6,
+            "week": 3
+          }
+        ]
+      },
+      {
+        "color": "blue",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 10,
+            "week": 4
+          },
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 1
+          },
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 2
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-08-05"
+  },
+  {
+    "number": 8,
+    "group": 8,
+    "section": "Thi công phần Showroom (Phần XDCB)",
+    "description": "Đổ sàn deck",
+    "pic": "HDMT",
+    "page": 1,
+    "y": 516.6,
+    "current_weeks": [
+      {
+        "year": 2026,
+        "month": 10,
+        "week": 4
+      },
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 1
+      },
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 2
+      },
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 3
+      }
+    ],
+    "source_fills": [
+      {
+        "color": "blue",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 10,
+            "week": 4
+          },
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 1
+          },
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 2
+          },
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 3
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-08-06"
+  },
+  {
+    "number": 9,
+    "group": 8,
+    "section": "Thi công phần Showroom (Phần XDCB)",
+    "description": "Lợp mái, vách, máng xối, ống thoát nước",
+    "pic": "HDMT",
+    "page": 2,
+    "y": 50.0,
+    "current_weeks": [
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 1
+      },
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 2
+      },
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 3
+      }
+    ],
+    "source_fills": [
+      {
+        "color": "blue",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 1
+          },
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 2
+          },
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 3
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-08-07"
+  },
+  {
+    "number": 10,
+    "group": 8,
+    "section": "Thi công phần Showroom (Phần XDCB)",
+    "description": "Xây, trát tường showroom trệt và lầu",
+    "pic": "HDMT",
+    "page": 2,
+    "y": 61.5,
+    "current_weeks": [
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 2
+      },
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 3
+      },
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 4
+      }
+    ],
+    "source_fills": [
+      {
+        "color": "blue",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 2
+          },
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 3
+          },
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 4
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-08-08"
+  },
+  {
+    "number": 11,
+    "group": 8,
+    "section": "Thi công phần Showroom (Phần XDCB)",
+    "description": "Ốp lát gạch showroom",
+    "pic": "HDMT",
+    "page": 2,
+    "y": 73.0,
+    "current_weeks": [
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 3
+      },
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 4
+      },
+      {
+        "year": 2026,
+        "month": 12,
+        "week": 1
+      }
+    ],
+    "source_fills": [
+      {
+        "color": "blue",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 3
+          },
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 4
+          },
+          {
+            "year": 2026,
+            "month": 12,
+            "week": 1
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-08-09"
+  },
+  {
+    "number": 12,
+    "group": 8,
+    "section": "Thi công phần Showroom (Phần XDCB)",
+    "description": "Gia công lắp dựng vách kính, cửa",
+    "pic": "HDMT",
+    "page": 2,
+    "y": 84.5,
+    "current_weeks": [
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 3
+      },
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 4
+      }
+    ],
+    "source_fills": [
+      {
+        "color": "blue",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 3
+          },
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 4
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-08-10"
+  },
+  {
+    "number": 13,
+    "group": 8,
+    "section": "Thi công phần Showroom (Phần XDCB)",
+    "description": "Bả, sơn",
+    "pic": "HDMT",
+    "page": 2,
+    "y": 96.0,
+    "current_weeks": [
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 4
+      },
+      {
+        "year": 2026,
+        "month": 12,
+        "week": 1
+      },
+      {
+        "year": 2026,
+        "month": 12,
+        "week": 2
+      }
+    ],
+    "source_fills": [
+      {
+        "color": "blue",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 4
+          },
+          {
+            "year": 2026,
+            "month": 12,
+            "week": 1
+          },
+          {
+            "year": 2026,
+            "month": 12,
+            "week": 2
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-08-11"
+  },
+  {
+    "number": 14,
+    "group": 8,
+    "section": "Thi công phần Showroom (Phần XDCB)",
+    "description": "Điện, nước",
+    "pic": "HDMT",
+    "page": 2,
+    "y": 107.6,
+    "current_weeks": [
+      {
+        "year": 2026,
+        "month": 12,
+        "week": 1
+      },
+      {
+        "year": 2026,
+        "month": 12,
+        "week": 2
+      }
+    ],
+    "source_fills": [
+      {
+        "color": "blue",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 12,
+            "week": 1
+          },
+          {
+            "year": 2026,
+            "month": 12,
+            "week": 2
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-08-12"
+  },
+  {
+    "number": 15,
+    "group": 8,
+    "section": "Thi công phần Xưởng dịch vụ (Phần XDCB)",
+    "description": "Kho chức năng/WC",
+    "pic": "HDMT",
+    "page": 2,
+    "y": 130.6,
+    "current_weeks": [
+      {
+        "year": 2026,
+        "month": 10,
+        "week": 3
+      },
+      {
+        "year": 2026,
+        "month": 10,
+        "week": 4
+      }
+    ],
+    "source_fills": [
+      {
+        "color": "green",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 6,
+            "week": 3
+          }
+        ]
+      },
+      {
+        "color": "blue",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 10,
+            "week": 3
+          },
+          {
+            "year": 2026,
+            "month": 10,
+            "week": 4
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-08-13"
+  },
+  {
+    "number": 16,
+    "group": 8,
+    "section": "Thi công phần Xưởng dịch vụ (Phần XDCB)",
+    "description": "Ốp lát gạch kho hậu mãi (bên phải)",
+    "pic": "HDMT",
+    "page": 2,
+    "y": 142.1,
+    "current_weeks": [
+      {
+        "year": 2026,
+        "month": 10,
+        "week": 4
+      },
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 1
+      },
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 2
+      }
+    ],
+    "source_fills": [
+      {
+        "color": "blue",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 10,
+            "week": 4
+          },
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 1
+          },
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 2
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-08-14"
+  },
+  {
+    "number": 17,
+    "group": 8,
+    "section": "Thi công phần Xưởng dịch vụ (Phần XDCB)",
+    "description": "Hầm kiểm tra xe",
+    "pic": "HDMT",
+    "page": 2,
+    "y": 153.7,
+    "current_weeks": [
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 1
+      }
+    ],
+    "source_fills": [
+      {
+        "color": "blue",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 1
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-08-15"
+  },
+  {
+    "number": 18,
+    "group": 8,
+    "section": "Thi công phần Xưởng dịch vụ (Phần XDCB)",
+    "description": "Hầm băng thử phanh",
+    "pic": "HDMT",
+    "page": 2,
+    "y": 165.2,
+    "current_weeks": [
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 2
+      },
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 3
+      }
+    ],
+    "source_fills": [
+      {
+        "color": "blue",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 2
+          },
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 3
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-08-16"
+  },
+  {
+    "number": 19,
+    "group": 8,
+    "section": "Thi công phần Xưởng dịch vụ (Phần XDCB)",
+    "description": "Hệ thống ống hơi",
+    "pic": "HDMT",
+    "page": 2,
+    "y": 176.7,
+    "current_weeks": [
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 3
+      },
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 4
+      }
+    ],
+    "source_fills": [
+      {
+        "color": "blue",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 3
+          },
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 4
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-08-17"
+  },
+  {
+    "number": 20,
+    "group": 8,
+    "section": "Thi công phần Xưởng dịch vụ (Phần XDCB)",
+    "description": "Hệ thống điện",
+    "pic": "HDMT",
+    "page": 2,
+    "y": 188.2,
+    "current_weeks": [
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 3
+      }
+    ],
+    "source_fills": [
+      {
+        "color": "blue",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 3
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-08-18"
+  },
+  {
+    "number": 21,
+    "group": 8,
+    "section": "Thi công phần Showroom (Phần nội thất)",
+    "description": "Thi công trần thạch cao",
+    "pic": "HDMT",
+    "page": 2,
+    "y": 211.3,
+    "current_weeks": [
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 3
+      },
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 4
+      },
+      {
+        "year": 2026,
+        "month": 12,
+        "week": 1
+      }
+    ],
+    "source_fills": [
+      {
+        "color": "blue",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 3
+          },
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 4
+          },
+          {
+            "year": 2026,
+            "month": 12,
+            "week": 1
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-08-19"
+  },
+  {
+    "number": 22,
+    "group": 8,
+    "section": "Thi công phần Showroom (Phần nội thất)",
+    "description": "Backdrop quầy lễ tân",
+    "pic": "HDMT",
+    "page": 2,
+    "y": 222.8,
+    "current_weeks": [
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 4
+      },
+      {
+        "year": 2026,
+        "month": 12,
+        "week": 1
+      },
+      {
+        "year": 2026,
+        "month": 12,
+        "week": 2
+      }
+    ],
+    "source_fills": [
+      {
+        "color": "blue",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 4
+          },
+          {
+            "year": 2026,
+            "month": 12,
+            "week": 1
+          },
+          {
+            "year": 2026,
+            "month": 12,
+            "week": 2
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-08-20"
+  },
+  {
+    "number": 23,
+    "group": 8,
+    "section": "Thi công CI (Showroom và xưởng dịch vụ)",
+    "description": "Lắp biển hiệu mặt tiền",
+    "pic": "HDMT",
+    "page": 2,
+    "y": 245.8,
+    "current_weeks": [
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 3
+      },
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 4
+      },
+      {
+        "year": 2026,
+        "month": 12,
+        "week": 1
+      }
+    ],
+    "source_fills": [
+      {
+        "color": "blue",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 3
+          },
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 4
+          },
+          {
+            "year": 2026,
+            "month": 12,
+            "week": 1
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-08-21"
+  },
+  {
+    "number": 24,
+    "group": 8,
+    "section": "Thi công CI (Showroom và xưởng dịch vụ)",
+    "description": "Lắp cửa chính showroom",
+    "pic": "HDMT",
+    "page": 2,
+    "y": 257.4,
+    "current_weeks": [
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 4
+      },
+      {
+        "year": 2026,
+        "month": 12,
+        "week": 1
+      },
+      {
+        "year": 2026,
+        "month": 12,
+        "week": 2
+      }
+    ],
+    "source_fills": [
+      {
+        "color": "blue",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 4
+          },
+          {
+            "year": 2026,
+            "month": 12,
+            "week": 1
+          },
+          {
+            "year": 2026,
+            "month": 12,
+            "week": 2
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-08-22"
+  },
+  {
+    "number": 25,
+    "group": 8,
+    "section": "Thi công khu cột biển vẫy",
+    "description": "Đào móng, đổ chân cột",
+    "pic": "HDMT",
+    "page": 2,
+    "y": 280.4,
+    "current_weeks": [
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 2
+      },
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 3
+      },
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 4
+      }
+    ],
+    "source_fills": [
+      {
+        "color": "green",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 6,
+            "week": 1
+          },
+          {
+            "year": 2026,
+            "month": 6,
+            "week": 2
+          }
+        ]
+      },
+      {
+        "color": "blue",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 2
+          },
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 3
+          },
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 4
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-08-23"
+  },
+  {
+    "number": 26,
+    "group": 8,
+    "section": "Thi công khu cột biển vẫy",
+    "description": "Dựng cột",
+    "pic": "HDMT",
+    "page": 2,
+    "y": 291.9,
+    "current_weeks": [
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 3
+      },
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 4
+      }
+    ],
+    "source_fills": [
+      {
+        "color": "blue",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 3
+          },
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 4
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-08-24"
+  },
+  {
+    "number": 27,
+    "group": 8,
+    "section": "Thi công khu cột biển vẫy",
+    "description": "Lắp đặt alu/logo/hệ thống điện",
+    "pic": "HDMT",
+    "page": 2,
+    "y": 303.4,
+    "current_weeks": [
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 4
+      },
+      {
+        "year": 2026,
+        "month": 12,
+        "week": 1
+      }
+    ],
+    "source_fills": [
+      {
+        "color": "blue",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 4
+          },
+          {
+            "year": 2026,
+            "month": 12,
+            "week": 1
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-08-25"
+  },
+  {
+    "number": 28,
+    "group": 9,
+    "section": "Dụng cụ thiết bị",
+    "description": "Đặt hàng, thanh toán dụng cụ GDS",
+    "pic": "HDMT",
+    "page": 2,
+    "y": 315.0,
+    "current_weeks": [],
+    "source_fills": [
+      {
+        "color": "green",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 6,
+            "week": 1
+          },
+          {
+            "year": 2026,
+            "month": 6,
+            "week": 2
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-09-01"
+  },
+  {
+    "number": 29,
+    "group": 9,
+    "section": "Dụng cụ thiết bị",
+    "description": "Giao & nhận dụng cụ GDS",
+    "pic": "HTCV/HDMT",
+    "page": 2,
+    "y": 326.5,
+    "current_weeks": [
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 1
+      },
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 2
+      },
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 3
+      },
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 4
+      }
+    ],
+    "source_fills": [
+      {
+        "color": "yellow",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 1
+          },
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 2
+          },
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 3
+          },
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 4
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-09-02"
+  },
+  {
+    "number": 30,
+    "group": 9,
+    "section": "Dụng cụ thiết bị",
+    "description": "Đặt hàng dụng cụ SST",
+    "pic": "HDMT",
+    "page": 2,
+    "y": 338.0,
+    "current_weeks": [],
+    "source_fills": [
+      {
+        "color": "green",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 6,
+            "week": 1
+          },
+          {
+            "year": 2026,
+            "month": 6,
+            "week": 2
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-09-03"
+  },
+  {
+    "number": 31,
+    "group": 9,
+    "section": "Dụng cụ thiết bị",
+    "description": "Giao & nhận dụng cụ SST",
+    "pic": "HDMT",
+    "page": 2,
+    "y": 349.5,
+    "current_weeks": [
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 1
+      },
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 2
+      },
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 3
+      },
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 4
+      }
+    ],
+    "source_fills": [
+      {
+        "color": "yellow",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 1
+          },
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 2
+          },
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 3
+          },
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 4
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-09-04"
+  },
+  {
+    "number": 32,
+    "group": 9,
+    "section": "Dụng cụ thiết bị",
+    "description": "Ký hợp đồng, đặt hàng trang thiết bị D116",
+    "pic": "HDMT",
+    "page": 2,
+    "y": 361.1,
+    "current_weeks": [],
+    "source_fills": [
+      {
+        "color": "green",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 5,
+            "week": 1
+          },
+          {
+            "year": 2026,
+            "month": 5,
+            "week": 2
+          },
+          {
+            "year": 2026,
+            "month": 5,
+            "week": 3
+          },
+          {
+            "year": 2026,
+            "month": 5,
+            "week": 4
+          },
+          {
+            "year": 2026,
+            "month": 6,
+            "week": 1
+          },
+          {
+            "year": 2026,
+            "month": 6,
+            "week": 2
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-09-05"
+  },
+  {
+    "number": 33,
+    "group": 9,
+    "section": "Dụng cụ thiết bị",
+    "description": "Giao & nhận thiết bị D116",
+    "pic": "HDMT",
+    "page": 2,
+    "y": 372.6,
+    "current_weeks": [
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 1
+      },
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 2
+      },
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 3
+      },
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 4
+      }
+    ],
+    "source_fills": [
+      {
+        "color": "yellow",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 1
+          },
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 2
+          },
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 3
+          },
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 4
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-09-06"
+  },
+  {
+    "number": 34,
+    "group": 9,
+    "section": "Dụng cụ thiết bị",
+    "description": "Ký hợp đồng, đặt hàng TTB tiêu chuẩn của HTCV",
+    "pic": "HDMT",
+    "page": 2,
+    "y": 384.1,
+    "current_weeks": [],
+    "source_fills": [
+      {
+        "color": "green",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 6,
+            "week": 1
+          },
+          {
+            "year": 2026,
+            "month": 6,
+            "week": 2
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-09-07"
+  },
+  {
+    "number": 35,
+    "group": 9,
+    "section": "Dụng cụ thiết bị",
+    "description": "Giao & nhận TTB tiêu chuẩn của HTCV",
+    "pic": "HDMT",
+    "page": 2,
+    "y": 395.6,
+    "current_weeks": [
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 3
+      },
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 4
+      },
+      {
+        "year": 2026,
+        "month": 12,
+        "week": 1
+      }
+    ],
+    "source_fills": [
+      {
+        "color": "yellow",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 3
+          },
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 4
+          },
+          {
+            "year": 2026,
+            "month": 12,
+            "week": 1
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-09-08"
+  },
+  {
+    "number": 36,
+    "group": 9,
+    "section": "Dụng cụ thiết bị",
+    "description": "Xác nhận số lượng, kiểu loại, vị trí lắp đặt",
+    "pic": "HTCV",
+    "page": 2,
+    "y": 407.1,
+    "current_weeks": [
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 2
+      },
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 3
+      }
+    ],
+    "source_fills": [
+      {
+        "color": "yellow",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 2
+          },
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 3
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-09-09"
+  },
+  {
+    "number": 37,
+    "group": 9,
+    "section": "Dụng cụ thiết bị",
+    "description": "Đặt hàng kệ kho phụ tùng và các kê cho xưởng",
+    "pic": "HDMT",
+    "page": 2,
+    "y": 418.7,
+    "current_weeks": [
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 3
+      },
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 4
+      },
+      {
+        "year": 2026,
+        "month": 12,
+        "week": 1
+      }
+    ],
+    "source_fills": [
+      {
+        "color": "yellow",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 3
+          },
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 4
+          },
+          {
+            "year": 2026,
+            "month": 12,
+            "week": 1
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-09-10"
+  },
+  {
+    "number": 38,
+    "group": 9,
+    "section": "Dụng cụ thiết bị",
+    "description": "Lắp đặt kệ kho phụ tùng và các kê cho xưởng",
+    "pic": "HDMT",
+    "page": 2,
+    "y": 430.2,
+    "current_weeks": [
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 4
+      },
+      {
+        "year": 2026,
+        "month": 12,
+        "week": 1
+      },
+      {
+        "year": 2026,
+        "month": 12,
+        "week": 2
+      }
+    ],
+    "source_fills": [
+      {
+        "color": "yellow",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 4
+          },
+          {
+            "year": 2026,
+            "month": 12,
+            "week": 1
+          },
+          {
+            "year": 2026,
+            "month": 12,
+            "week": 2
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-09-11"
+  },
+  {
+    "number": 39,
+    "group": 9,
+    "section": "Dụng cụ thiết bị",
+    "description": "Kẻ vạch tường, nền xưởng, mũi tên, biển hiệu",
+    "pic": "HDMT",
+    "page": 2,
+    "y": 441.7,
+    "current_weeks": [
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 4
+      },
+      {
+        "year": 2026,
+        "month": 12,
+        "week": 1
+      }
+    ],
+    "source_fills": [
+      {
+        "color": "yellow",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 4
+          },
+          {
+            "year": 2026,
+            "month": 12,
+            "week": 1
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-09-12"
+  },
+  {
+    "number": 40,
+    "group": 9,
+    "section": "Dụng cụ thiết bị",
+    "description": "Ký hợp đồng, đặt hàng TTB khối VP",
+    "pic": "HDMT",
+    "page": 2,
+    "y": 453.3,
+    "current_weeks": [
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 1
+      },
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 2
+      },
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 3
+      },
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 4
+      }
+    ],
+    "source_fills": [
+      {
+        "color": "yellow",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 1
+          },
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 2
+          },
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 3
+          },
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 4
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-09-13"
+  },
+  {
+    "number": 41,
+    "group": 9,
+    "section": "Dụng cụ thiết bị",
+    "description": "Giao & nhận TTB khối VP",
+    "pic": "HDMT",
+    "page": 2,
+    "y": 464.8,
+    "current_weeks": [
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 3
+      },
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 4
+      }
+    ],
+    "source_fills": [
+      {
+        "color": "yellow",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 3
+          },
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 4
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-09-14"
+  },
+  {
+    "number": 42,
+    "group": 9,
+    "section": "Dụng cụ thiết bị",
+    "description": "Đặt đồng phục cho KTV/CVDV/TVBH/CS",
+    "pic": "HDMT",
+    "page": 2,
+    "y": 476.3,
+    "current_weeks": [
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 1
+      },
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 2
+      },
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 3
+      }
+    ],
+    "source_fills": [
+      {
+        "color": "yellow",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 1
+          },
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 2
+          },
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 3
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-09-15"
+  },
+  {
+    "number": 43,
+    "group": 9,
+    "section": "Dụng cụ thiết bị",
+    "description": "Giao & nhận đồng phục cho KTV/CVDV/TVBH",
+    "pic": "HDMT",
+    "page": 2,
+    "y": 487.8,
+    "current_weeks": [
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 3
+      },
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 4
+      }
+    ],
+    "source_fills": [
+      {
+        "color": "yellow",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 3
+          },
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 4
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-09-16"
+  },
+  {
+    "number": 44,
+    "group": 9,
+    "section": "Dụng cụ thiết bị",
+    "description": "Biển tên khu vực dịch vụ",
+    "pic": "HDMT",
+    "page": 2,
+    "y": 499.3,
+    "current_weeks": [
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 2
+      },
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 3
+      }
+    ],
+    "source_fills": [
+      {
+        "color": "yellow",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 2
+          },
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 3
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-09-17"
+  },
+  {
+    "number": 45,
+    "group": 10,
+    "section": "Tuyển dụng",
+    "description": "Tuyển dụng nhân sự KD/MKT/ADMIN/KT",
+    "pic": "HDMT",
+    "page": 2,
+    "y": 510.9,
+    "current_weeks": [
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 1
+      },
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 2
+      },
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 3
+      },
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 4
+      },
+      {
+        "year": 2026,
+        "month": 12,
+        "week": 1
+      },
+      {
+        "year": 2026,
+        "month": 12,
+        "week": 2
+      }
+    ],
+    "source_fills": [
+      {
+        "color": "green",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 4,
+            "week": 2
+          },
+          {
+            "year": 2026,
+            "month": 4,
+            "week": 3
+          },
+          {
+            "year": 2026,
+            "month": 4,
+            "week": 4
+          },
+          {
+            "year": 2026,
+            "month": 5,
+            "week": 1
+          },
+          {
+            "year": 2026,
+            "month": 5,
+            "week": 2
+          },
+          {
+            "year": 2026,
+            "month": 5,
+            "week": 3
+          },
+          {
+            "year": 2026,
+            "month": 5,
+            "week": 4
+          },
+          {
+            "year": 2026,
+            "month": 6,
+            "week": 1
+          },
+          {
+            "year": 2026,
+            "month": 6,
+            "week": 2
+          }
+        ]
+      },
+      {
+        "color": "yellow",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 1
+          },
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 2
+          },
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 3
+          },
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 4
+          },
+          {
+            "year": 2026,
+            "month": 12,
+            "week": 1
+          },
+          {
+            "year": 2026,
+            "month": 12,
+            "week": 2
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-10-01"
+  },
+  {
+    "number": 46,
+    "group": 10,
+    "section": "Tuyển dụng",
+    "description": "Tuyển dụng nhân sự HM/CSKH",
+    "pic": "HDMT",
+    "page": 2,
+    "y": 522.4,
+    "current_weeks": [
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 3
+      },
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 4
+      },
+      {
+        "year": 2026,
+        "month": 12,
+        "week": 1
+      },
+      {
+        "year": 2026,
+        "month": 12,
+        "week": 2
+      },
+      {
+        "year": 2026,
+        "month": 12,
+        "week": 3
+      }
+    ],
+    "source_fills": [
+      {
+        "color": "green",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 5,
+            "week": 1
+          },
+          {
+            "year": 2026,
+            "month": 5,
+            "week": 2
+          },
+          {
+            "year": 2026,
+            "month": 5,
+            "week": 3
+          },
+          {
+            "year": 2026,
+            "month": 5,
+            "week": 4
+          },
+          {
+            "year": 2026,
+            "month": 6,
+            "week": 1
+          },
+          {
+            "year": 2026,
+            "month": 6,
+            "week": 2
+          },
+          {
+            "year": 2026,
+            "month": 6,
+            "week": 3
+          },
+          {
+            "year": 2026,
+            "month": 6,
+            "week": 4
+          },
+          {
+            "year": 2026,
+            "month": 7,
+            "week": 1
+          },
+          {
+            "year": 2026,
+            "month": 7,
+            "week": 2
+          },
+          {
+            "year": 2026,
+            "month": 7,
+            "week": 3
+          }
+        ]
+      },
+      {
+        "color": "yellow",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 3
+          },
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 4
+          },
+          {
+            "year": 2026,
+            "month": 12,
+            "week": 1
+          },
+          {
+            "year": 2026,
+            "month": 12,
+            "week": 2
+          },
+          {
+            "year": 2026,
+            "month": 12,
+            "week": 3
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-10-02"
+  },
+  {
+    "number": 47,
+    "group": 11,
+    "section": "Hoàn thiện",
+    "description": "Vệ sinh toàn bộ VP, xưởng",
+    "pic": "HDMT",
+    "page": 2,
+    "y": 533.9,
+    "current_weeks": [
+      {
+        "year": 2026,
+        "month": 12,
+        "week": 3
+      }
+    ],
+    "source_fills": [
+      {
+        "color": "yellow",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 12,
+            "week": 3
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-11-01"
+  },
+  {
+    "number": 48,
+    "group": 12,
+    "section": "Đào tạo",
+    "description": "Đào tạo nhân sự đại lý và cài đặt DMS",
+    "pic": "HTCV",
+    "page": 3,
+    "y": 50.0,
+    "current_weeks": [
+      {
+        "year": 2026,
+        "month": 12,
+        "week": 1
+      },
+      {
+        "year": 2026,
+        "month": 12,
+        "week": 2
+      }
+    ],
+    "source_fills": [
+      {
+        "color": "green",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 7,
+            "week": 2
+          },
+          {
+            "year": 2026,
+            "month": 7,
+            "week": 3
+          }
+        ]
+      },
+      {
+        "color": "yellow",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 12,
+            "week": 1
+          },
+          {
+            "year": 2026,
+            "month": 12,
+            "week": 2
+          }
+        ]
+      }
+    ],
+    "source_status": "Đã cài DMS",
+    "code": "CK-12-01"
+  },
+  {
+    "number": 49,
+    "group": 13,
+    "section": "Hoạt động",
+    "description": "iDOCnet (Voice/brandname SMS)",
+    "pic": "HDMT",
+    "page": 3,
+    "y": 61.5,
+    "current_weeks": [
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 4
+      },
+      {
+        "year": 2026,
+        "month": 12,
+        "week": 1
+      }
+    ],
+    "source_fills": [
+      {
+        "color": "yellow",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 4
+          },
+          {
+            "year": 2026,
+            "month": 12,
+            "week": 1
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-13-01"
+  },
+  {
+    "number": 50,
+    "group": 13,
+    "section": "Hoạt động",
+    "description": "Kiểm tra và vận hành thử",
+    "pic": "HDMT",
+    "page": 3,
+    "y": 73.0,
+    "current_weeks": [
+      {
+        "year": 2026,
+        "month": 12,
+        "week": 2
+      }
+    ],
+    "source_fills": [
+      {
+        "color": "yellow",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 12,
+            "week": 2
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-13-02"
+  },
+  {
+    "number": 51,
+    "group": 13,
+    "section": "Hoạt động",
+    "description": "Biên bản nghiệm thu từ HTCV",
+    "pic": "HTCV/HDMT",
+    "page": 3,
+    "y": 84.5,
+    "current_weeks": [
+      {
+        "year": 2026,
+        "month": 12,
+        "week": 1
+      },
+      {
+        "year": 2026,
+        "month": 12,
+        "week": 2
+      }
+    ],
+    "source_fills": [
+      {
+        "color": "yellow",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 12,
+            "week": 1
+          },
+          {
+            "year": 2026,
+            "month": 12,
+            "week": 2
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-13-03"
+  },
+  {
+    "number": 52,
+    "group": 13,
+    "section": "Hoạt động",
+    "description": "Ký hợp đồng đại lý",
+    "pic": "HTCV/HDMT",
+    "page": 3,
+    "y": 96.0,
+    "current_weeks": [
+      {
+        "year": 2026,
+        "month": 12,
+        "week": 2
+      },
+      {
+        "year": 2026,
+        "month": 12,
+        "week": 3
+      }
+    ],
+    "source_fills": [
+      {
+        "color": "yellow",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 12,
+            "week": 2
+          },
+          {
+            "year": 2026,
+            "month": 12,
+            "week": 3
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-13-04"
+  },
+  {
+    "number": 53,
+    "group": 14,
+    "section": "Khai trương",
+    "description": "Kế hoạch MKT",
+    "pic": "HDMT",
+    "page": 3,
+    "y": 107.6,
+    "current_weeks": [
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 1
+      },
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 2
+      },
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 3
+      },
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 4
+      },
+      {
+        "year": 2026,
+        "month": 12,
+        "week": 1
+      },
+      {
+        "year": 2026,
+        "month": 12,
+        "week": 2
+      }
+    ],
+    "source_fills": [
+      {
+        "color": "green",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 6,
+            "week": 1
+          },
+          {
+            "year": 2026,
+            "month": 6,
+            "week": 2
+          }
+        ]
+      },
+      {
+        "color": "yellow",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 1
+          },
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 2
+          },
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 3
+          },
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 4
+          },
+          {
+            "year": 2026,
+            "month": 12,
+            "week": 1
+          },
+          {
+            "year": 2026,
+            "month": 12,
+            "week": 2
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-14-01"
+  },
+  {
+    "number": 54,
+    "group": 14,
+    "section": "Khai trương",
+    "description": "Marketing (tổ chức sự kiện)",
+    "pic": "HDMT",
+    "page": 3,
+    "y": 119.1,
+    "current_weeks": [
+      {
+        "year": 2026,
+        "month": 10,
+        "week": 3
+      },
+      {
+        "year": 2026,
+        "month": 10,
+        "week": 4
+      },
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 1
+      },
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 2
+      },
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 3
+      },
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 4
+      },
+      {
+        "year": 2026,
+        "month": 12,
+        "week": 1
+      },
+      {
+        "year": 2026,
+        "month": 12,
+        "week": 2
+      },
+      {
+        "year": 2026,
+        "month": 12,
+        "week": 3
+      }
+    ],
+    "source_fills": [
+      {
+        "color": "green",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 6,
+            "week": 1
+          },
+          {
+            "year": 2026,
+            "month": 6,
+            "week": 2
+          }
+        ]
+      },
+      {
+        "color": "yellow",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 10,
+            "week": 3
+          },
+          {
+            "year": 2026,
+            "month": 10,
+            "week": 4
+          },
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 1
+          },
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 2
+          },
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 3
+          },
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 4
+          },
+          {
+            "year": 2026,
+            "month": 12,
+            "week": 1
+          },
+          {
+            "year": 2026,
+            "month": 12,
+            "week": 2
+          },
+          {
+            "year": 2026,
+            "month": 12,
+            "week": 3
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-14-02"
+  },
+  {
+    "number": 55,
+    "group": 14,
+    "section": "Khai trương",
+    "description": "Khai trương",
+    "pic": "HDMT",
+    "page": 3,
+    "y": 130.6,
+    "current_weeks": [
+      {
+        "year": 2026,
+        "month": 12,
+        "week": 4
+      }
+    ],
+    "source_fills": [
+      {
+        "color": "yellow",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 12,
+            "week": 4
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-14-03"
+  },
+  {
+    "number": 56,
+    "group": 15,
+    "section": "D116 (TCVN: 121)",
+    "description": "Chuẩn bị hồ sơ",
+    "pic": "HDMT",
+    "page": 3,
+    "y": 142.1,
+    "current_weeks": [
+      {
+        "year": 2026,
+        "month": 11,
+        "week": 4
+      },
+      {
+        "year": 2026,
+        "month": 12,
+        "week": 1
+      },
+      {
+        "year": 2026,
+        "month": 12,
+        "week": 2
+      }
+    ],
+    "source_fills": [
+      {
+        "color": "yellow",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 11,
+            "week": 4
+          },
+          {
+            "year": 2026,
+            "month": 12,
+            "week": 1
+          },
+          {
+            "year": 2026,
+            "month": 12,
+            "week": 2
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-15-01"
+  },
+  {
+    "number": 57,
+    "group": 15,
+    "section": "D116 (TCVN: 121)",
+    "description": "Kiểm tra, đánh giá, nghiệm thu",
+    "pic": "HDMT",
+    "page": 3,
+    "y": 153.7,
+    "current_weeks": [
+      {
+        "year": 2026,
+        "month": 12,
+        "week": 2
+      },
+      {
+        "year": 2026,
+        "month": 12,
+        "week": 3
+      },
+      {
+        "year": 2026,
+        "month": 12,
+        "week": 4
+      },
+      {
+        "year": 2027,
+        "month": 1,
+        "week": 1
+      },
+      {
+        "year": 2027,
+        "month": 1,
+        "week": 2
+      },
+      {
+        "year": 2027,
+        "month": 1,
+        "week": 3
+      },
+      {
+        "year": 2027,
+        "month": 1,
+        "week": 4
+      },
+      {
+        "year": 2027,
+        "month": 2,
+        "week": 1
+      },
+      {
+        "year": 2027,
+        "month": 2,
+        "week": 2
+      },
+      {
+        "year": 2027,
+        "month": 2,
+        "week": 3
+      },
+      {
+        "year": 2027,
+        "month": 2,
+        "week": 4
+      },
+      {
+        "year": 2027,
+        "month": 3,
+        "week": 1
+      },
+      {
+        "year": 2027,
+        "month": 3,
+        "week": 2
+      },
+      {
+        "year": 2027,
+        "month": 3,
+        "week": 3
+      },
+      {
+        "year": 2027,
+        "month": 3,
+        "week": 4
+      }
+    ],
+    "source_fills": [
+      {
+        "color": "yellow",
+        "weeks": [
+          {
+            "year": 2026,
+            "month": 12,
+            "week": 2
+          },
+          {
+            "year": 2026,
+            "month": 12,
+            "week": 3
+          },
+          {
+            "year": 2026,
+            "month": 12,
+            "week": 4
+          },
+          {
+            "year": 2027,
+            "month": 1,
+            "week": 1
+          },
+          {
+            "year": 2027,
+            "month": 1,
+            "week": 2
+          },
+          {
+            "year": 2027,
+            "month": 1,
+            "week": 3
+          },
+          {
+            "year": 2027,
+            "month": 1,
+            "week": 4
+          },
+          {
+            "year": 2027,
+            "month": 2,
+            "week": 1
+          },
+          {
+            "year": 2027,
+            "month": 2,
+            "week": 2
+          },
+          {
+            "year": 2027,
+            "month": 2,
+            "week": 3
+          },
+          {
+            "year": 2027,
+            "month": 2,
+            "week": 4
+          },
+          {
+            "year": 2027,
+            "month": 3,
+            "week": 1
+          },
+          {
+            "year": 2027,
+            "month": 3,
+            "week": 2
+          },
+          {
+            "year": 2027,
+            "month": 3,
+            "week": 3
+          },
+          {
+            "year": 2027,
+            "month": 3,
+            "week": 4
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-15-02"
+  },
+  {
+    "number": 58,
+    "group": 15,
+    "section": "D116 (TCVN: 121)",
+    "description": "Cấp chứng nhận",
+    "pic": "VR",
+    "page": 3,
+    "y": 165.2,
+    "current_weeks": [
+      {
+        "year": 2027,
+        "month": 3,
+        "week": 4
+      }
+    ],
+    "source_fills": [
+      {
+        "color": "yellow",
+        "weeks": [
+          {
+            "year": 2027,
+            "month": 3,
+            "week": 4
+          }
+        ]
+      }
+    ],
+    "source_status": "",
+    "code": "CK-15-03"
+  }
+]
