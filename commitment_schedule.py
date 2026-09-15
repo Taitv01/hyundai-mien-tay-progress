@@ -12,6 +12,15 @@ BROWN = '#8B5E3C'
 WEEK_NOTE = ('Quy đổi để hiển thị: W1 = ngày 01–07; W2 = 08–14; '
              'W3 = 15–21; W4 = 22–cuối tháng. Ngày hiển thị được quy đổi từ ô tuần; các số ghi riêng trên PDF được đối chiếu trong ghi chú.')
 LEGACY_CODES = {f'SR-{i:02}' for i in range(1, 6)} | {f'WS-{i:02}' for i in range(1, 6)} | {'OP-01', 'OP-02'}
+MAJOR_GROUPS = {
+    6: 'Bản vẽ layout/3D, hợp đồng thuê mặt bằng',
+    7: 'Giấy phép xây dựng', 8: 'Thi công', 9: 'Dụng cụ thiết bị',
+    10: 'Tuyển dụng', 11: 'Hoàn thiện', 12: 'Đào tạo',
+    13: 'Hoạt động', 14: 'Khai trương', 15: 'D116 (TCVN: 121)',
+}
+SUMMARY_NOTE = ('Mỗi dòng là một hạng mục lớn. Thời gian bao quát các công việc con; '
+                'tiến độ là bình quân các công việc có mốc áp dụng, chưa tính trọng số. '
+                'Các mốc cũ chưa có kế hoạch mới không gộp vào thời gian và tỷ lệ tổng hợp.')
 
 
 def source_rows():
@@ -67,7 +76,51 @@ def active_progress(df):
 
 def gantt_progress(df):
     # Hide by WBS group, not by the word D116: equipment in group 9 stays visible.
-    return df.loc[~df['Mã'].astype(str).str.startswith('CK-15-')].copy()
+    codes = df['Mã'].astype(str)
+    return df.loc[~(codes.str.startswith('CK-15-') | codes.eq('HM-15'))].copy()
+
+
+def major_group(code):
+    if code.startswith('CK-') or code.startswith('HM-'):
+        return int(code.split('-')[1])
+    return 6 if code in {'PL-01', 'PL-02', 'PL-03', 'PL-04'} else 99
+
+
+def major_label(code):
+    group = major_group(str(code))
+    return f'{group:02}. {MAJOR_GROUPS.get(group, "Hạng mục khác")}'
+
+
+def summarize_progress(df):
+    """Read-only rollup of live rows. Never persist aggregate rows as field tasks."""
+    metadata = {r['code']: r for r in source_rows()}
+    work = active_progress(df).copy()
+    work['_group'] = work['Mã'].map(major_group)
+    result = []
+    for group, children in work.groupby('_group', sort=True):
+        applicable = children.loc[[bool(metadata.get(c, {}).get('current_weeks', True)) for c in children['Mã']]]
+        if applicable.empty:
+            continue
+        percent = int(round(applicable['Tiến độ (%)'].mean()))
+        statuses = set(applicable['Trạng thái'])
+        status = ('Đã hoàn thiện' if percent == 100 else 'Dời tiến độ' if 'Dời tiến độ' in statuses
+                  else 'Đang thi công' if percent > 0 or 'Đang thi công' in statuses else 'Chưa thực hiện')
+        name = MAJOR_GROUPS.get(group, 'Hạng mục khác')
+        excluded = len(children) - len(applicable)
+        note = f'Tổng hợp {len(applicable)} công việc có mốc áp dụng.'
+        if excluded:
+            note += f' {excluded} công việc chỉ có mốc cũ được bảo lưu riêng.'
+        result.append({
+            'Mã': f'HM-{group:02}', 'Hạng mục công việc': name,
+            'Phân khu': f'{group:02}. {name}',
+            'Bắt đầu': min(applicable['Bắt đầu']), 'Hoàn thành': max(applicable['Hoàn thành']),
+            'Tiến độ (%)': percent, 'Trạng thái': status,
+            'Người phụ trách': ' / '.join(dict.fromkeys(applicable['Người phụ trách'].str.strip())),
+            'Ghi chú': note,
+        })
+    return pd.DataFrame(result, columns=df.columns.intersection([
+        'Mã', 'Hạng mục công việc', 'Phân khu', 'Bắt đầu', 'Hoàn thành',
+        'Tiến độ (%)', 'Trạng thái', 'Người phụ trách', 'Ghi chú']))
 
 
 def commitment_details(df):
@@ -81,5 +134,7 @@ def commitment_details(df):
 
 
 def bar_color(code):
+    if str(code).startswith('HM-'):
+        return BROWN if 7 <= major_group(code) <= 15 else '#64748B'
     r = next((r for r in source_rows() if r['code'] == code), None)
     return BROWN if r and r['current_weeks'] else '#059669' if r else '#64748B'

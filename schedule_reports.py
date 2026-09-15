@@ -5,7 +5,7 @@ import io
 
 import pandas as pd
 
-from commitment_schedule import BROWN, SOURCE, WEEK_NOTE, commitment_details, gantt_progress, source_rows, week_date, week_label
+from commitment_schedule import BROWN, SOURCE, WEEK_NOTE, SUMMARY_NOTE, commitment_details, gantt_progress, source_rows, week_date, week_label, major_group
 
 CSS = '''
 @page { size:A4 landscape; margin:9mm; }
@@ -32,9 +32,26 @@ def esc(value):
     return html.escape(str(value)).replace('\n', '<br>')
 
 
-def report_sections(df, report_date):
+def is_summary(df):
+    return not df.empty and df['Mã'].str.startswith('HM-').all()
+
+
+def report_metadata(df):
     metadata = {r['code']: r for r in source_rows()}
-    title = f'<h1>TIẾN ĐỘ DỰ ÁN HYUNDAI MIỀN TÂY — CẦN THƠ</h1><p>Chủ đầu tư: Thế Giới Xe Tải · Mốc theo dõi: <b>{report_date:%d/%m/%Y}</b><br>Nguồn cam kết: {esc(SOURCE)} · {len(df)} công việc đang theo dõi, gồm 58 dòng thuộc mục 7–15.</p>'
+    for _, r in df.iterrows():
+        if str(r['Mã']).startswith('HM-'):
+            weeks = [dict(year=d.year, month=d.month, week=min((d.day-1)//7+1,4)) for d in (r['Bắt đầu'],r['Hoàn thành'])]
+            metadata[r['Mã']] = dict(current_weeks=weeks, group=major_group(r['Mã']))
+    return metadata
+
+
+def report_sections(df, report_date):
+    metadata = report_metadata(df)
+    summary = is_summary(df)
+    unit = 'hạng mục lớn' if summary else 'công việc'
+    title = f'<h1>TIẾN ĐỘ DỰ ÁN HYUNDAI MIỀN TÂY — CẦN THƠ</h1><p>Chủ đầu tư: Thế Giới Xe Tải · Mốc theo dõi: <b>{report_date:%d/%m/%Y}</b><br>Nguồn cam kết: {esc(SOURCE)} · {len(df)} {unit} đang theo dõi.</p>'
+    if summary:
+        title += f'<p class="muted">{SUMMARY_NOTE}</p>'
     legend = f'<p class="muted"><b style="color:{BROWN}">■ Màu nâu: kế hoạch áp dụng từ mục 7.</b> Mục 15 tạm ẩn trên Gantt; vẫn có trong bảng chi tiết.<br>{WEEK_NOTE}</p>'
     visible = gantt_progress(df)
     # Historical purchasing milestones have no new dates; do not extend the new Gantt back to May.
@@ -62,7 +79,7 @@ def report_sections(df, report_date):
             else:
                 for w in weeks:
                     overlaps = r['Bắt đầu'] <= week_date(w, True) and r['Hoàn thành'] >= week_date(w)
-                    color = BROWN if item else '#059669' if r['Tiến độ (%)'] == 100 else '#64748B'
+                    color = BROWN if item and item.get('group',7) >= 7 else '#059669' if r['Tiến độ (%)'] == 100 else '#64748B'
                     in_week = week_date(w) <= report_date <= week_date(w, True)
                     style = f'background-color:{color};color:white;' if overlaps else 'background-color:#FFFFFF;'
                     if in_week:
@@ -79,7 +96,8 @@ def report_sections(df, report_date):
             period += f'<br><span class="muted">Hiển thị: {r["Bắt đầu"]:%d/%m/%Y} – {r["Hoàn thành"]:%d/%m/%Y}</span>'
             lines.append('<tr>' + ''.join(f'<td>{v}</td>' for v in [f'<b>{esc(r["Mã"])}</b><br>{esc(r["Phân khu"])}',esc(r['Hạng mục công việc']),period,f'{r["Tiến độ (%)"]}%<br>{esc(r["Trạng thái"])}',esc(r['Người phụ trách']),esc(r['Ghi chú'])]) + '</tr>')
         head = '<thead><tr><th style="width:12%">Mã / Hạng mục</th><th style="width:21%">Diễn giải công việc</th><th style="width:19%">Mốc cam kết theo tuần</th><th style="width:10%">Thực tế</th><th style="width:9%">P.I.C</th><th style="width:29%">Nguồn và ghi chú</th></tr></thead>'
-        sections.append(title + f'<h2>2. BẢNG CHI TIẾT · Công việc {start+1}–{min(start+10,len(df))}/{len(df)}</h2><p class="muted">{WEEK_NOTE} Tiến độ thực tế không suy ra từ độ dài thanh kế hoạch.</p><table class="detail">' + head + '<tbody>' + ''.join(lines) + '</tbody></table>')
+        heading = '2. TỔNG HỢP HẠNG MỤC LỚN' if summary else '2. BẢNG CHI TIẾT'
+        sections.append(title + f'<h2>{heading} · {start+1}–{min(start+10,len(df))}/{len(df)}</h2><p class="muted">{WEEK_NOTE} Tiến độ thực tế không suy ra từ độ dài thanh kế hoạch.</p><table class="detail">' + head + '<tbody>' + ''.join(lines) + '</tbody></table>')
     return sections
 
 
@@ -91,7 +109,8 @@ def build_printable_html(df, report_date):
 def build_pdf(df, report_date):
     import fitz
     doc = fitz.open()
-    metadata = {r['code']: r for r in source_rows()}
+    metadata = report_metadata(df)
+    summary = is_summary(df)
     def color(h):
         return tuple(int(h[i:i+2],16)/255 for i in (1,3,5))
     def box(page, rect, text, background=None, size=8, foreground='#172B3A'):
@@ -105,7 +124,7 @@ def build_pdf(df, report_date):
         page = doc.new_page(width=842,height=595)
         content = (f'<h2 style="color:#002C6C;margin:0;font-size:16px">TIẾN ĐỘ DỰ ÁN HYUNDAI MIỀN TÂY — CẦN THƠ</h2>'
                    f'<p style="margin:4px 0;font-size:9px">Chủ đầu tư: Thế Giới Xe Tải · Mốc theo dõi: {report_date:%d/%m/%Y} · Nguồn cam kết: PDF 15/09/2026<br>'
-                   f'{esc(subtitle)}<br>{WEEK_NOTE}</p>')
+                   f'{esc(subtitle)}<br>{WEEK_NOTE}' + (f'<br>{SUMMARY_NOTE}' if summary else '') + '</p>')
         page.insert_htmlbox(fitz.Rect(26,18,816,87),content)
         return page
     visible = gantt_progress(df)
@@ -139,13 +158,14 @@ def build_pdf(df, report_date):
             for j,w in enumerate(weeks):
                 x = left+label_width+j*cell_w
                 overlaps = r['Bắt đầu'] <= week_date(w,True) and r['Hoàn thành'] >= week_date(w)
-                fill = BROWN if item else '#059669' if r['Tiến độ (%)']==100 else '#64748B'
+                fill = BROWN if item and item.get('group',7) >= 7 else '#059669' if r['Tiến độ (%)']==100 else '#64748B'
                 box(page,(x,y,x+cell_w,y+26),'',fill if overlaps else None)
                 if week_date(w) <= report_date <= week_date(w,True):
                     page.draw_line((x,y),(x,y+26),color=color('#C83232'),width=1)
     widths = [77,163,150,66,58,276]
     for start in range(0,len(df),10):
-        page = new_page(f'2. BẢNG CHI TIẾT · Công việc {start+1}–{min(start+10,len(df))}/{len(df)} · Bao gồm đầy đủ mục 15.')
+        heading = '2. TỔNG HỢP HẠNG MỤC LỚN' if summary else '2. BẢNG CHI TIẾT'
+        page = new_page(f'{heading} · {start+1}–{min(start+10,len(df))}/{len(df)} · Bao gồm đầy đủ mục 15.')
         x = 26
         for label,w in zip(['Mã / Mục','Diễn giải công việc','Mốc cam kết theo tuần','Thực tế','P.I.C','Nguồn / Ghi chú'],widths):
             box(page,(x,88,x+w,112),f'<b>{label}</b>','#002C6C',8,'#FFFFFF')
@@ -173,7 +193,7 @@ def build_excel(df, qcvn):
     from openpyxl.styles import PatternFill, Font, Alignment
     output = io.BytesIO()
     with pd.ExcelWriter(output, engine='openpyxl') as writer:
-        commitment_details(df).to_excel(writer, sheet_name='Tien_Do_Thi_Cong', index=False)
+        (df if is_summary(df) else commitment_details(df)).to_excel(writer, sheet_name='Tong_Hop_Hang_Muc' if is_summary(df) else 'Tien_Do_Thi_Cong', index=False)
         qcvn.to_excel(writer, sheet_name='QCVN_121_Checklist', index=False)
         for sheet in writer.book:
             sheet.freeze_panes = 'C2'

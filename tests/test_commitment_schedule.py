@@ -1,6 +1,6 @@
 import datetime as dt
 
-from commitment_schedule import commitment_data, gantt_progress, source_rows
+from commitment_schedule import commitment_data, gantt_progress, source_rows, summarize_progress
 from schedule_reports import build_printable_html
 
 
@@ -30,3 +30,31 @@ def test_hide_only_group_15_not_d116_equipment_or_detailed_report():
     assert 'CK-15-' not in chart
     assert 'CK-15-03' in details
     assert '#8B5E3C' in chart
+
+
+def test_summary_uses_current_equipment_schedule_and_live_changes():
+    df = commitment_data()
+    before = df.copy(deep=True)
+    summary = summarize_progress(df).set_index('Mã')
+    assert len(summary) == 9
+    assert summary.loc['HM-08','Bắt đầu'] == dt.date(2026,9,22)
+    assert summary.loc['HM-08','Hoàn thành'] == dt.date(2026,12,14)
+    assert summary.loc['HM-09','Bắt đầu'] == dt.date(2026,11,1)
+    assert summary.loc['HM-09','Tiến độ (%)'] == 0
+    assert '4 công việc chỉ có mốc cũ' in summary.loc['HM-09','Ghi chú']
+    assert df.equals(before)
+    df.loc[df['Mã']=='CK-07-02','Hoàn thành'] = dt.date(2026,10,20)
+    df.loc[df['Mã']=='CK-07-01','Tiến độ (%)'] = 100
+    updated = summarize_progress(df).set_index('Mã')
+    assert updated.loc['HM-07','Hoàn thành'] == dt.date(2026,10,20)
+    assert updated.loc['HM-07','Tiến độ (%)'] == 50
+
+
+def test_summary_report_has_only_parent_rows_and_retains_group_15_in_table():
+    df = summarize_progress(commitment_data())
+    assert len(gantt_progress(df)) == 8
+    report = build_printable_html(df, dt.date(2026,9,15))
+    chart, table = report.split('2. TỔNG HỢP HẠNG MỤC LỚN',1)
+    assert 'HM-15' not in chart
+    assert 'HM-15' in table
+    assert 'CK-' not in report

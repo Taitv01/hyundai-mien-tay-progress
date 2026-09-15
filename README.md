@@ -4,6 +4,10 @@
 
 ## Cam kết chủ đầu tư ngày 15/09/2026
 
+- Gantt và báo cáo có hai mức **Hạng mục lớn** (mặc định) / **Công việc chi tiết**. Mức tổng hợp gồm 10 hạng mục 6–15; Gantt hiện 9 hạng mục vì mục 15 tạm ẩn. Có bộ lọc chọn hạng mục lớn cho cả hai mức xem Gantt.
+- PDF/HTML/Excel xuất theo mức báo cáo đã chọn. Báo cáo tổng hợp PDF gồm 2 trang: Gantt và bảng hạng mục lớn, không liệt kê các công việc con.
+- Thời gian hạng mục lớn bao quát các công việc có mốc áp dụng; tỷ lệ là bình quân công việc con, chưa tính trọng số. Bốn mốc đặt hàng cũ không gộp vào thời gian hoặc tỷ lệ tổng hợp. Dữ liệu tổng hợp chỉ dùng để xem và xuất báo cáo, không ghi đè công việc chi tiết.
+
 - Đối chiếu 58 công việc chi tiết thuộc mục 7–15 với `260915_Tiến độ xây dựng Hyundai Cần Thơ.pdf`, thay cho 12 dòng thi công tổng hợp trước đây. Giữ 4 công việc trước mục 7: tổng cộng 62 công việc hiện hành.
 - Mỗi dòng có mã `CK-<mục>-<thứ tự>`, P.I.C, tuần bắt đầu/kết thúc và trang PDF để đối chiếu. Bản cam kết gốc được lưu trong `commitment_20260915.json`, độc lập với các ngày điều chỉnh và ghi chú thực tế.
 - Thanh kế hoạch áp dụng từ mục 7 dùng màu nâu `#8B5E3C`. Mục 15 (3 công việc D116) tạm ẩn trên Gantt ứng dụng, HTML và PDF; vẫn có trong bảng chi tiết, cập nhật hiện trường và dữ liệu xuất. Thiết bị D116 thuộc mục 9 vẫn hiện trên Gantt.

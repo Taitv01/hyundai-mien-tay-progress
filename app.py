@@ -24,6 +24,7 @@ from supabase_service import AppUser, OnlineSettings, ROLE_LABELS, SupabaseServi
 from commitment_schedule import (
     VERSION as COMMITMENT_VERSION, BROWN, WEEK_NOTE, LEGACY_CODES,
     commitment_data, commitment_details, active_progress, gantt_progress, bar_color,
+    summarize_progress, major_label, SUMMARY_NOTE,
 )
 from schedule_reports import build_printable_html, build_pdf, build_excel
 
@@ -740,15 +741,21 @@ tab_gantt, tab_progress, tab_update, tab_qcvn, tab_report, tab_users = st.tabs([
 # TAB 1: BIỂU ĐỒ GANTT CÓ ĐƯỜNG LINE ĐỎ THỜI GIAN THỰC & CHẬM TIẾN ĐỘ
 # ------------------------------------------------------------------------------
 with tab_gantt:
-    st.subheader("📊 Biểu Đồ Gantt Tiến Độ Chi Tiết (Có Đường Line Đỏ Hiện Tại)")
+    st.subheader("📊 Biểu đồ Gantt tiến độ dự án")
     st.caption("🔴 **Đường Line đỏ thẳng đứng** thể hiện mốc thời gian thực. Các hạng mục nằm bên trái đường đỏ mà chưa hoàn thành sẽ được cảnh báo chậm tiến độ.")
 
     st.caption("Cam kết CĐT 15/09/2026: thanh màu nâu từ mục 7. Mục 15 tạm ẩn trên Gantt, vẫn giữ ở bảng chi tiết.")
     st.caption(WEEK_NOTE)
-    gantt_data = gantt_progress(st.session_state.progress_df)
-    selected_areas = st.multiselect("Lọc hạng mục trên Gantt", options=list(gantt_data["Phân khu"].unique()), key="gantt_areas")
+    gantt_level = st.selectbox("Mức hiển thị Gantt", ["Hạng mục lớn", "Công việc chi tiết"], key="gantt_level")
+    gantt_source = st.session_state.progress_df
+    if gantt_level == "Hạng mục lớn":
+        gantt_source = calculate_progress_alerts(summarize_progress(gantt_source), current_date=PROJECT_TODAY)
+        st.caption(SUMMARY_NOTE)
+    gantt_data = gantt_progress(gantt_source)
+    gantt_data["Hạng mục lớn"] = gantt_data["Mã"].map(major_label)
+    selected_areas = st.multiselect("Chọn hạng mục lớn", options=list(gantt_data["Hạng mục lớn"].unique()), key="gantt_major_groups")
     if selected_areas:
-        gantt_data = gantt_data[gantt_data["Phân khu"].isin(selected_areas)]
+        gantt_data = gantt_data[gantt_data["Hạng mục lớn"].isin(selected_areas)]
     gantt_data["Bắt đầu_dt"] = pd.to_datetime(gantt_data["Bắt đầu"])
     gantt_data["Hoàn thành_dt"] = pd.to_datetime(gantt_data["Hoàn thành"])
 
@@ -1435,6 +1442,12 @@ with tab_report:
     st.info("Cam kết 15/09/2026: chuẩn bị hồ sơ GPXD từ tuần 3 tháng 9; xin phép đến tuần 2 tháng 10; san lấp từ tuần 4 tháng 9; khai trương tuần 4 tháng 12/2026. Mục 15: cấp chứng nhận tuần 4 tháng 3/2027, tạm ẩn trên Gantt.")
     st.caption(WEEK_NOTE)
     st.subheader("Báo cáo tiến độ theo cam kết của chủ đầu tư")
+    report_level = st.selectbox("Mức chi tiết báo cáo", ["Hạng mục lớn", "Công việc chi tiết"], key="report_level")
+    report_df = summarize_progress(st.session_state.progress_df) if report_level == "Hạng mục lớn" else st.session_state.progress_df
+    report_suffix = "Tong_hop" if report_level == "Hạng mục lớn" else "Chi_tiet"
+    if report_level == "Hạng mục lớn":
+        st.caption(SUMMARY_NOTE)
+        st.dataframe(report_df[["Phân khu", "Bắt đầu", "Hoàn thành", "Tiến độ (%)", "Trạng thái"]], hide_index=True, width="stretch")
     cur_date_display = PROJECT_TODAY.strftime("%d/%m/%Y")
 
     @st.cache_data(show_spinner=False, max_entries=8)
@@ -1444,9 +1457,8 @@ with tab_report:
     pdf_bytes = None
 
     # Biên dịch ngay bản in HTML theo dữ liệu thời gian thực
-    live_printable_html = build_printable_html(st.session_state.progress_df, PROJECT_TODAY)
-    cur_overall_pct = round(float(st.session_state.progress_df["Tiến độ (%)"].mean()), 1) if not st.session_state.progress_df.empty else 0
-    cur_completed = int((st.session_state.progress_df["Tiến độ (%)"] >= 100).sum() + ((st.session_state.progress_df["Trạng thái"] == "Đã hoàn thiện") & (st.session_state.progress_df["Tiến độ (%)"] < 100)).sum())
+    live_printable_html = build_printable_html(report_df, PROJECT_TODAY)
+    cur_completed = int((report_df["Tiến độ (%)"] >= 100).sum())
 
     col_rep1, col_rep2, col_rep3 = st.columns(3)
 
@@ -1456,10 +1468,10 @@ with tab_report:
             <div>
                 <h4 style="color:#002C6C; margin:0 0 8px 0;">📑 Báo Cáo Điều Hành (.PDF)</h4>
                 <p style="font-size:0.85rem; color:#475569; margin-bottom:8px;">
-                    Báo cáo điều hành chuẩn A4 khổ ngang (Landscape): Mục 1 Biểu đồ Gantt trực quan, Mục 2 Danh mục WBS chi tiết kèm ghi chú thực tế.
+                    Báo cáo điều hành chuẩn A4 khổ ngang (Landscape): Mục 1 Biểu đồ Gantt trực quan, Mục 2 Danh mục theo mức báo cáo đã chọn.
                 </p>
                 <div style="font-size:0.8rem; color:#64748B;">
-                    • Tiến độ cập nhật: <b>{cur_overall_pct}% ({cur_completed}/{len(st.session_state.progress_df)} việc)</b><br>
+                    • Mức báo cáo: <b>{report_level} · {cur_completed}/{len(report_df)} hoàn thành</b><br>
                     • Mốc cập nhật: <b>{cur_date_display}</b><br>
                     • Định dạng: <b>PDF nhiều trang khổ ngang A4</b>
                 </div>
@@ -1467,13 +1479,13 @@ with tab_report:
         </div>
         """, unsafe_allow_html=True)
         if st.button("Tạo PDF theo dữ liệu hiện tại", key="build_current_pdf", width="stretch"):
-            with st.spinner("Đang tạo báo cáo PDF chi tiết..."):
-                pdf_bytes = cached_pdf(st.session_state.progress_df, PROJECT_TODAY)
+            with st.spinner("Đang tạo báo cáo PDF..."):
+                pdf_bytes = cached_pdf(report_df, PROJECT_TODAY)
         if pdf_bytes:
             st.download_button(
                 label="📥 TẢI BÁO CÁO PDF (MỚI NHẤT)",
                 data=pdf_bytes,
-                file_name=f"Bao_cao_dieu_hanh_HMT-CANTHO_{PROJECT_TODAY.strftime('%Y%m%d')}.pdf",
+                file_name=f"Bao_cao_dieu_hanh_{report_suffix}_HMT-CANTHO_{PROJECT_TODAY.strftime('%Y%m%d')}.pdf",
                 mime="application/pdf",
                 key="download_pdf_report",
                 width="stretch"
@@ -1487,7 +1499,7 @@ with tab_report:
             <div>
                 <h4 style="color:#002C6C; margin:0 0 8px 0;">🌐 Bản In Chủ Đầu Tư (.HTML)</h4>
                 <p style="font-size:0.85rem; color:#475569; margin-bottom:8px;">
-                    Form báo cáo tiến độ A4 khổ ngang chuẩn in ấn, tích hợp Mục 1: Biểu đồ Gantt, Mục 2: WBS chi tiết theo cam kết 15/09/2026 kèm ghi chú thực tế.
+                    Form báo cáo tiến độ A4 khổ ngang chuẩn in ấn, tích hợp Mục 1: Biểu đồ Gantt, Mục 2: danh mục theo mức báo cáo đã chọn.
                 </p>
                 <div style="font-size:0.8rem; color:#64748B;">
                     • Dữ liệu: <b>Thời gian thực (Live 100%)</b><br>
@@ -1500,7 +1512,7 @@ with tab_report:
         st.download_button(
             label="📥 TẢI BẢN IN HTML (MỚI NHẤT)",
             data=live_printable_html.encode("utf-8"),
-            file_name=f"Bao_cao_in_chu_dau_tu_HMT-CANTHO_{PROJECT_TODAY.strftime('%Y%m%d')}.html",
+            file_name=f"Bao_cao_in_chu_dau_tu_{report_suffix}_HMT-CANTHO_{PROJECT_TODAY.strftime('%Y%m%d')}.html",
             mime="text/html",
             key="download_html_report",
             width="stretch"
@@ -1510,9 +1522,9 @@ with tab_report:
         st.markdown("""
         <div style="border:1px solid #E2E8F0; border-radius:10px; padding:16px; background:#F8FAFC; min-height:220px; display:flex; flex-direction:column; justify-content:space-between;">
             <div>
-                <h4 style="color:#002C6C; margin:0 0 8px 0;">📊 Dữ Liệu Chi Tiết (.XLSX)</h4>
+                <h4 style="color:#002C6C; margin:0 0 8px 0;">📊 Dữ Liệu Báo Cáo (.XLSX)</h4>
                 <p style="font-size:0.85rem; color:#475569; margin-bottom:8px;">
-                    Toàn bộ cơ sở dữ liệu gồm 2 bảng: Tiến độ thi công WBS và Danh mục Checklist đánh giá QCVN 121:2024.
+                    Hai bảng: Tiến độ theo mức báo cáo đã chọn và Checklist đánh giá QCVN 121:2024.
                 </p>
                 <div style="font-size:0.8rem; color:#64748B;">
                     • Định dạng: <b>Excel (.xlsx)</b><br>
@@ -1523,11 +1535,11 @@ with tab_report:
         </div>
         """, unsafe_allow_html=True)
 
-        excel_binary = build_excel(st.session_state.progress_df, df_q)
+        excel_binary = build_excel(report_df, df_q)
         st.download_button(
             label="📥 TẢI DỮ LIỆU EXCEL",
             data=excel_binary,
-            file_name=f"Bao_Cao_Tien_Do_HD_Mien_Tay_{datetime.date.today().strftime('%Y%m%d')}.xlsx",
+            file_name=f"Bao_Cao_{report_suffix}_Tien_Do_HD_Mien_Tay_{datetime.date.today().strftime('%Y%m%d')}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             key="download_excel_report",
             width="stretch"
@@ -1535,7 +1547,7 @@ with tab_report:
 
     st.markdown("<br>", unsafe_allow_html=True)
     with st.expander("👁️ Xem Trước Bản In A4 Trực Tiếp (Print Preview)", expanded=True):
-        st.caption(f"Trình xem trước bản in A4 khổ ngang (Landscape) đồng bộ trực tiếp theo dữ liệu hệ thống (Mốc ngày: **{cur_date_display}** | Tiến độ: **{cur_overall_pct}%** | Hoàn thành: **{cur_completed}/{len(st.session_state.progress_df)}** hạng mục).")
+        st.caption(f"Trình xem trước bản in A4 khổ ngang (Landscape) đồng bộ trực tiếp theo dữ liệu hệ thống (Mốc ngày: **{cur_date_display}** | Mức: **{report_level}** | Hoàn thành: **{cur_completed}/{len(report_df)}** hạng mục).")
         st.iframe(live_printable_html, height=650)
         st.caption("💡 **Mẹo in ấn**: Bấm nút **In Báo Cáo** (hoặc mở tệp tải về bấm **Ctrl + P**), chọn khổ giấy **A4**, hướng giấy **Ngang (Landscape)** để có bản in chuẩn đẹp nhất.")
 
