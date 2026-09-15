@@ -120,7 +120,7 @@ def get_initial_progress_data():
             "Tiến độ (%)": 100,
             "Trạng thái": "Đã hoàn thiện",
             "Người phụ trách": "Ban QLDA / TVTK",
-            "Ghi chú": "Cột mốc quan trọng 29/08/2026"
+            "Ghi chú": ""
         },
         {
             "Mã": "PL-02",
@@ -128,10 +128,10 @@ def get_initial_progress_data():
             "Phân khu": "Thiết kế & Pháp lý",
             "Bắt đầu": datetime.date(2026, 8, 20),
             "Hoàn thành": datetime.date(2026, 8, 30),
-            "Tiến độ (%)": 85,
-            "Trạng thái": "Đang thi công",
+            "Tiến độ (%)": 90,
+            "Trạng thái": "Đã hoàn thiện",
             "Người phụ trách": "Ban QLDA",
-            "Ghi chú": "Cột mốc quan trọng 30/08/2026"
+            "Ghi chú": "HTCV - HXG - Hyundai Miền Tây đã ký bản vẽ chi tiết; đang gửi Đại lý bổ sung giáp lai"
         },
         {
             "Mã": "PL-03",
@@ -139,10 +139,10 @@ def get_initial_progress_data():
             "Phân khu": "Mặt bằng & Pháp lý",
             "Bắt đầu": datetime.date(2026, 9, 1),
             "Hoàn thành": datetime.date(2026, 9, 12),
-            "Tiến độ (%)": 0,
-            "Trạng thái": "Chưa thực hiện",
+            "Tiến độ (%)": 100,
+            "Trạng thái": "Đã hoàn thiện",
             "Người phụ trách": "Ban Giám Đốc / Pháp chế",
-            "Ghi chú": "Mốc cam kết 12/09/2026"
+            "Ghi chú": "Đã cập nhật hợp đồng thuê công chứng ngày 12/09/2026; giấy CNQSDĐ ngày 26/08/2026"
         },
         {
             "Mã": "PL-04",
@@ -177,7 +177,7 @@ def get_initial_progress_data():
             "Tiến độ (%)": 0,
             "Trạng thái": "Chưa thực hiện",
             "Người phụ trách": "Nhà thầu hoàn thiện",
-            "Ghi chú": "Gạch granite chống trượt GDSI"
+            "Ghi chú": ""
         },
         {
             "Mã": "SR-03",
@@ -188,7 +188,7 @@ def get_initial_progress_data():
             "Tiến độ (%)": 0,
             "Trạng thái": "Chưa thực hiện",
             "Người phụ trách": "Nhà thầu nhôm kính",
-            "Ghi chú": "Kính cường lực an toàn mặt tiền"
+            "Ghi chú": ""
         },
         {
             "Mã": "SR-04",
@@ -199,7 +199,7 @@ def get_initial_progress_data():
             "Tiến độ (%)": 0,
             "Trạng thái": "Chưa thực hiện",
             "Người phụ trách": "Nhà thầu sơn",
-            "Ghi chú": "Màu chuẩn nhận diện thương hiệu"
+            "Ghi chú": ""
         },
         {
             "Mã": "SR-05",
@@ -210,7 +210,7 @@ def get_initial_progress_data():
             "Tiến độ (%)": 0,
             "Trạng thái": "Chưa thực hiện",
             "Người phụ trách": "Nhà thầu M&E",
-            "Ghi chú": "Dự kiến bắt đầu 15/10/2026"
+            "Ghi chú": ""
         },
 
         # Nhóm Xưởng Dịch vụ & Thiết bị kiểm định (QCVN 121)
@@ -223,7 +223,7 @@ def get_initial_progress_data():
             "Tiến độ (%)": 0,
             "Trạng thái": "Chưa thực hiện",
             "Người phụ trách": "Nhà thầu xây dựng",
-            "Ghi chú": "Dự kiến bắt đầu 25/09/2026"
+            "Ghi chú": ""
         },
         {
             "Mã": "WS-02",
@@ -234,7 +234,7 @@ def get_initial_progress_data():
             "Tiến độ (%)": 0,
             "Trạng thái": "Chưa thực hiện",
             "Người phụ trách": "NCC Thiết bị Garage",
-            "Ghi chú": "Cầu nâng xe tải 2 trụ & 4 trụ"
+            "Ghi chú": ""
         },
         {
             "Mã": "WS-03",
@@ -245,7 +245,7 @@ def get_initial_progress_data():
             "Tiến độ (%)": 0,
             "Trạng thái": "Chưa thực hiện",
             "Người phụ trách": "NCC Thiết bị kiểm định",
-            "Ghi chú": "Bắt buộc theo QCVN 121:2024"
+            "Ghi chú": ""
         },
         {
             "Mã": "WS-04",
@@ -256,7 +256,7 @@ def get_initial_progress_data():
             "Tiến độ (%)": 0,
             "Trạng thái": "Chưa thực hiện",
             "Người phụ trách": "Bộ phận Kỹ thuật / Dịch vụ",
-            "Ghi chú": "Đặc thù bắt buộc cho EV/Hybrid"
+            "Ghi chú": ""
         },
         {
             "Mã": "WS-05",
@@ -267,7 +267,7 @@ def get_initial_progress_data():
             "Tiến độ (%)": 0,
             "Trạng thái": "Chưa thực hiện",
             "Người phụ trách": "Cơ quan PCCC / Môi trường",
-            "Ghi chú": "Điều kiện cần để cấp chứng nhận"
+            "Ghi chú": ""
         },
         {
             "Mã": "OP-01",
@@ -278,7 +278,7 @@ def get_initial_progress_data():
             "Tiến độ (%)": 0,
             "Trạng thái": "Chưa thực hiện",
             "Người phụ trách": "Tổ chức đánh giá sự phù hợp / Cơ quan tiếp nhận",
-            "Ghi chú": "Công bố hợp quy trước khi đưa cơ sở vào hoạt động"
+            "Ghi chú": ""
         },
         {
             "Mã": "OP-02",
@@ -289,7 +289,7 @@ def get_initial_progress_data():
             "Tiến độ (%)": 0,
             "Trạng thái": "Chưa thực hiện",
             "Người phụ trách": "Ban Giám Đốc & HTCV",
-            "Ghi chú": "Chính thức đi vào hoạt động"
+            "Ghi chú": ""
         }
     ]
     df = pd.DataFrame(data)
@@ -1451,23 +1451,132 @@ with tab_report:
     pdf_bytes = _find_report_bytes(pdf_filename)
     cur_date_display = PROJECT_TODAY.strftime("%d/%m/%Y")
 
+    # Hàm tạo biểu đồ Gantt SVG trực quan chuẩn in ấn
+    def build_gantt_svg(df, today_d):
+        min_d = datetime.date(2026, 8, 15)
+        max_d = datetime.date(2026, 12, 31)
+        total_days = max((max_d - min_d).days, 1)
+        chart_x = 290
+        chart_w = 700
+        row_h = 24
+        header_h = 38
+        total_h = header_h + len(df) * row_h + 34
+
+        def get_x(d):
+            days = (d - min_d).days
+            return round(chart_x + (days / total_days) * chart_w, 1)
+
+        today_x = get_x(today_d)
+
+        months = [
+            ('Tháng 08/26', datetime.date(2026, 8, 15), datetime.date(2026, 8, 31)),
+            ('Tháng 09/26', datetime.date(2026, 9, 1), datetime.date(2026, 9, 30)),
+            ('Tháng 10/26', datetime.date(2026, 10, 1), datetime.date(2026, 10, 31)),
+            ('Tháng 11/26', datetime.date(2026, 11, 1), datetime.date(2026, 11, 30)),
+            ('Tháng 12/26', datetime.date(2026, 12, 1), datetime.date(2026, 12, 31)),
+        ]
+
+        svg_parts = [
+            f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1005 {total_h}" style="width:100%; height:auto; background:#FFFFFF; border:1px solid #E2E8F0; border-radius:8px; font-family:'Segoe UI',Arial,sans-serif;">'''
+        ]
+
+        # Header tháng và các đường gióng dọc
+        for idx, (m_label, m_start, m_end) in enumerate(months):
+            x1 = get_x(m_start)
+            x2 = get_x(m_end) + (get_x(m_end + datetime.timedelta(days=1)) - get_x(m_end) if m_end < max_d else 0)
+            mw = x2 - x1
+            bg = '#F8FAFC' if idx % 2 == 0 else '#FFFFFF'
+            svg_parts.append(f'''<rect x="{x1}" y="0" width="{mw}" height="{header_h}" fill="{bg}" stroke="#E2E8F0" stroke-width="1"/>''')
+            svg_parts.append(f'''<line x1="{x1}" y1="{header_h}" x2="{x1}" y2="{header_h + len(df) * row_h}" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="3,3"/>''')
+            svg_parts.append(f'''<text x="{x1 + mw/2}" y="24" font-size="11" font-weight="700" fill="#002C6C" text-anchor="middle">{m_label}</text>''')
+
+        # Header cột tên hạng mục
+        svg_parts.append(f'''<rect x="0" y="0" width="{chart_x}" height="{header_h}" fill="#002C6C"/>''')
+        svg_parts.append(f'''<text x="12" y="24" font-size="11.5" font-weight="700" fill="#FFFFFF">MÃ &amp; TÊN HẠNG MỤC (WBS)</text>''')
+
+        # Hàng công việc WBS
+        for i, (_, r) in enumerate(df.iterrows()):
+            ry = header_h + i * row_h
+            row_bg = '#FFFFFF' if i % 2 == 0 else '#F8FAFC'
+            svg_parts.append(f'''<rect x="0" y="{ry}" width="1005" height="{row_h}" fill="{row_bg}"/>''')
+            svg_parts.append(f'''<line x1="0" y1="{ry + row_h}" x2="1005" y2="{ry + row_h}" stroke="#F1F5F9" stroke-width="1"/>''')
+
+            code = html.escape(str(r.get('Mã', '')))
+            t_name = str(r.get('Hạng mục công việc', ''))
+            if len(t_name) > 34:
+                t_name = t_name[:32] + '...'
+            name_esc = html.escape(t_name)
+
+            svg_parts.append(f'''<text x="10" y="{ry + 16}" font-size="10.5" font-weight="700" fill="#002C6C">{code}</text>''')
+            svg_parts.append(f'''<text x="52" y="{ry + 16}" font-size="10" fill="#334155">{name_esc}</text>''')
+
+            # Thanh tiến độ
+            start_d = pd.to_datetime(r.get('Bắt đầu')).date()
+            end_d = pd.to_datetime(r.get('Hoàn thành')).date()
+            pct = int(r.get('Tiến độ (%)', 0))
+            stt = str(r.get('Trạng thái', ''))
+
+            bx1 = get_x(start_d)
+            bx2 = get_x(end_d)
+            bw = max(bx2 - bx1, 8)
+            by = ry + 4
+            bh = 15
+
+            is_today = (start_d <= today_d <= end_d)
+            amber_stroke = ' stroke="#F59E0B" stroke-width="2"' if is_today else ''
+
+            if pct >= 100 or stt == 'Đã hoàn thiện':
+                svg_parts.append(f'''<rect x="{bx1}" y="{by}" width="{bw}" height="{bh}" rx="3" fill="#10B981"{amber_stroke}/>''')
+                label_x = bx1 + bw / 2 if bw > 28 else bx1 + bw + 4
+                text_fill = '#FFFFFF' if bw > 28 else '#059669'
+                anchor = 'middle' if bw > 28 else 'start'
+                svg_parts.append(f'''<text x="{label_x}" y="{by + 11}" font-size="9" font-weight="700" fill="{text_fill}" text-anchor="{anchor}">{pct}%</text>''')
+            elif pct > 0:
+                svg_parts.append(f'''<rect x="{bx1}" y="{by}" width="{bw}" height="{bh}" rx="3" fill="#E0F2FE"{amber_stroke}/>''')
+                prog_w = max(bw * pct / 100, 4)
+                svg_parts.append(f'''<rect x="{bx1}" y="{by}" width="{prog_w}" height="{bh}" rx="3" fill="#0284C7"/>''')
+                label_x = bx1 + bw + 4
+                svg_parts.append(f'''<text x="{label_x}" y="{by + 11}" font-size="9" font-weight="700" fill="#0284C7">{pct}%</text>''')
+            else:
+                svg_parts.append(f'''<rect x="{bx1}" y="{by}" width="{bw}" height="{bh}" rx="3" fill="#CBD5E1"{amber_stroke}/>''')
+                svg_parts.append(f'''<text x="{bx1 + bw + 4}" y="{by + 11}" font-size="9" font-weight="600" fill="#64748B">0%</text>''')
+
+        # Vạch đỏ mốc hôm nay
+        svg_parts.append(f'''<line x1="{today_x}" y1="{header_h}" x2="{today_x}" y2="{header_h + len(df) * row_h}" stroke="#DC2626" stroke-width="2" stroke-dasharray="4,3"/>''')
+        badge_text = f'📍 Hôm nay ({today_d.strftime("%d/%m/%Y")})'
+        svg_parts.append(f'''<rect x="{today_x - 58}" y="3" width="116" height="18" rx="4" fill="#FEF2F2" stroke="#DC2626" stroke-width="1.5"/>''')
+        svg_parts.append(f'''<text x="{today_x}" y="15.5" font-size="9" font-weight="700" fill="#DC2626" text-anchor="middle">{badge_text}</text>''')
+
+        # Chú thích cuối biểu đồ Gantt
+        leg_y = header_h + len(df) * row_h + 10
+        svg_parts.append(f'''<rect x="0" y="{header_h + len(df) * row_h}" width="1005" height="34" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1"/>''')
+        svg_parts.append(f'''<rect x="290" y="{leg_y + 1}" width="14" height="10" rx="2" fill="#10B981"/>''')
+        svg_parts.append(f'''<text x="310" y="{leg_y + 9}" font-size="9.5" fill="#334155">Đã hoàn thành</text>''')
+        svg_parts.append(f'''<rect x="410" y="{leg_y + 1}" width="14" height="10" rx="2" fill="#0284C7"/>''')
+        svg_parts.append(f'''<text x="430" y="{leg_y + 9}" font-size="9.5" fill="#334155">Đang thực hiện</text>''')
+        svg_parts.append(f'''<rect x="530" y="{leg_y + 1}" width="14" height="10" rx="2" fill="#CBD5E1"/>''')
+        svg_parts.append(f'''<text x="550" y="{leg_y + 9}" font-size="9.5" fill="#334155">Chưa thực hiện</text>''')
+        svg_parts.append(f'''<line x1="645" y1="{leg_y + 6}" x2="665" y2="{leg_y + 6}" stroke="#DC2626" stroke-width="2" stroke-dasharray="3,2"/>''')
+        svg_parts.append(f'''<text x="672" y="{leg_y + 9}" font-size="9.5" fill="#DC2626" font-weight="600">Mốc hôm nay</text>''')
+        svg_parts.append(f'''<rect x="760" y="{leg_y}" width="16" height="11" rx="2" fill="none" stroke="#F59E0B" stroke-width="2"/>''')
+        svg_parts.append(f'''<text x="782" y="{leg_y + 9}" font-size="9.5" fill="#D97706">Đang trong kỳ</text>''')
+
+        svg_parts.append('</svg>')
+        return '\n'.join(svg_parts)
+
     # Hàm xây dựng Form HTML in ấn động từ dữ liệu thực tế hiện tại
-    def build_dynamic_printable_html(progress_df, qcvn_df, report_date_str):
+    def build_dynamic_printable_html(progress_df, report_date_str):
         total_tasks = len(progress_df)
         completed_tasks = int((progress_df["Tiến độ (%)"] >= 100).sum() + ((progress_df["Trạng thái"] == "Đã hoàn thiện") & (progress_df["Tiến độ (%)"] < 100)).sum())
         overall_progress = round(float(progress_df["Tiến độ (%)"].mean()), 1) if total_tasks > 0 else 0
 
-        # Số ngày còn lại đến 31/12/2026
         try:
             today_d = datetime.datetime.strptime(report_date_str, "%d/%m/%Y").date()
         except Exception:
             today_d = PROJECT_TODAY
         days_left = max((datetime.date(2026, 12, 31) - today_d).days, 0)
 
-        # Đánh giá Checklist
-        total_check = len(qcvn_df)
-        achieved_check = int((qcvn_df["Đánh giá"] == "Đạt").sum())
-        qcvn_pct = round((achieved_check / total_check * 100), 1) if total_check > 0 else 0
+        gantt_svg = build_gantt_svg(progress_df, today_d)
 
         wbs_rows = []
         for _, r in progress_df.iterrows():
@@ -1477,76 +1586,68 @@ with tab_report:
             start_str = pd.to_datetime(r.get("Bắt đầu")).strftime('%d/%m/%Y') if pd.notnull(r.get("Bắt đầu")) else ""
             end_str = pd.to_datetime(r.get("Hoàn thành")).strftime('%d/%m/%Y') if pd.notnull(r.get("Hoàn thành")) else ""
             task_name = html.escape(str(r.get("Hạng mục công việc", "")))
-            note_val = html.escape(str(r.get("Ghi chú", "")).strip())
-            note_html = f"<div style='font-size:10px; color:#475569; margin-top:3px; font-weight:normal;'>📌 {note_val}</div>" if note_val else ""
+            
+            # Cột Ghi chú thực tế: hiện tại không có thông tin thì để trống
+            raw_note = str(r.get("Ghi chú", "")).strip()
+            if raw_note and raw_note.lower() not in ["none", "nan", ""]:
+                escaped_note = html.escape(raw_note).replace("\n", "<br>")
+                note_cell = f"<div class='note-text'>{escaped_note}</div>"
+            else:
+                note_cell = ""
 
             wbs_rows.append(f"""<tr>
-    <td class="code">{html.escape(str(r.get('Mã', '')))}</td>
-    <td><b>{task_name}</b>{note_html}</td>
+    <td class="code center">{html.escape(str(r.get('Mã', '')))}</td>
+    <td><b>{task_name}</b></td>
     <td>{html.escape(str(r.get('Phân khu', '')))}</td>
     <td class="center">{start_str} - {end_str}</td>
     <td class="center strong" style="color:{pill_color}">{pct}%</td>
     <td class="center"><span class="pill" style="background:{pill_color}">{html.escape(stt_val)}</span></td>
+    <td>{note_cell}</td>
     <td>{html.escape(str(r.get('Người phụ trách', '')))}</td>
   </tr>""")
 
-        qcvn_rows = []
-        for idx, r in qcvn_df.reset_index(drop=True).iterrows():
-            stt_num = r.get("STT", idx + 1)
-            group_name = html.escape(str(r.get("Nhóm") or r.get("Nhóm tiêu chuẩn") or ""))
-            item_name = html.escape(str(r.get("Hạng mục") or r.get("Nội dung kiểm soát") or ""))
-            eval_val = str(r.get("Đánh giá", ""))
-            note_text = html.escape(str(r.get("Ghi chú") or r.get("Ghi chú / Yêu cầu chứng minh") or ""))
-            pill_bg = "#16A34A" if eval_val == "Đạt" else ("#0284C7" if "Đang thi công" in eval_val else ("#D97706" if "Đang mua sắm" in eval_val else "#DC2626"))
-            qcvn_rows.append(f"""<tr>
-    <td class="center">#{stt_num}</td>
-    <td>{group_name}</td>
-    <td><b>{item_name}</b></td>
-    <td class="center"><span class="pill" style="background:{pill_bg}">{html.escape(eval_val)}</span></td>
-    <td>{note_text}</td>
-  </tr>""")
-
         wbs_content = "\n".join(wbs_rows)
-        qcvn_content = "\n".join(qcvn_rows)
 
         template = f"""<!doctype html>
 <html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Báo cáo tiến độ - HMT-CANTHO-2026</title>
 <style>
-  @page {{ size: A4; margin: 12mm 15mm; }}
+  @page {{ size: A4 portrait; margin: 8mm 10mm; }}
   * {{ box-sizing: border-box; }}
-  body {{ margin: 25px; color: #0F172A; background: #fff; font: 12.5px/1.45 "Segoe UI", Arial, sans-serif; }}
-  .header {{ display: flex; justify-content: space-between; gap: 20px; align-items: flex-start; border-bottom: 3px solid #002C6C; padding-bottom: 12px; }}
-  .header h1 {{ margin: 0; color: #002C6C; font-size: 19px; line-height: 1.35; font-weight: 800; text-transform: uppercase; }}
-  .subtitle {{ color: #475569; margin-top: 3px; font-size: 12px; }}
-  .meta {{ text-align: right; min-width: 140px; }}
-  .meta-label, .kpi-label {{ color: #64748B; font-size: 11px; font-weight: 600; text-transform: uppercase; }}
-  .meta-date {{ color: #002C6C; font-size: 15px; font-weight: 800; margin-top: 2px; }}
-  .meta-brand {{ color: #94A3B8; font-size: 10px; margin-top: 3px; }}
-  .kpis {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 16px 0; }}
-  .kpi {{ padding: 10px; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; text-align: center; }}
-  .kpi-value {{ color: #00AAD2; font-size: 22px; font-weight: 800; }}
+  body {{ margin: 8px 12px; color: #0F172A; background: #fff; font: 11px/1.3 "Segoe UI", Arial, sans-serif; }}
+  .header {{ display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; border-bottom: 2.5px solid #002C6C; padding-bottom: 6px; }}
+  .header h1 {{ margin: 0; color: #002C6C; font-size: 16.5px; line-height: 1.25; font-weight: 800; text-transform: uppercase; }}
+  .subtitle {{ color: #475569; margin-top: 2px; font-size: 10.5px; }}
+  .meta {{ text-align: right; min-width: 120px; }}
+  .meta-label, .kpi-label {{ color: #64748B; font-size: 9.5px; font-weight: 600; text-transform: uppercase; }}
+  .meta-date {{ color: #002C6C; font-size: 13px; font-weight: 800; margin-top: 1px; }}
+  .meta-brand {{ color: #94A3B8; font-size: 8.5px; margin-top: 1px; }}
+  .kpis {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 8px 0; }}
+  .kpi {{ padding: 5px; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 6px; text-align: center; }}
+  .kpi-value {{ color: #00AAD2; font-size: 18px; font-weight: 800; }}
   .kpi-value.blue {{ color: #0284C7; }}
   .kpi-value.green {{ color: #10B981; }}
   .kpi-value.amber {{ color: #D97706; }}
-  h2 {{ margin: 20px 0 10px; padding-bottom: 4px; border-bottom: 2px solid #00AAD2; color: #002C6C; font-size: 14px; }}
-  table {{ width: 100%; border-collapse: collapse; font-size: 11px; }}
-  th, td {{ padding: 7px 9px; border: 1px solid #E2E8F0; vertical-align: top; }}
-  th {{ background: #002C6C; color: #fff; font-weight: 700; text-align: left; }}
+  h2 {{ margin: 10px 0 5px; padding-bottom: 3px; border-bottom: 2px solid #00AAD2; color: #002C6C; font-size: 12px; text-transform: uppercase; }}
+  table {{ width: 100%; border-collapse: collapse; font-size: 9px; line-height: 1.25; }}
+  th, td {{ padding: 3px 5px; border: 1px solid #CBD5E1; vertical-align: middle; }}
+  th {{ background: #002C6C; color: #fff; font-weight: 700; text-align: left; font-size: 9px; }}
   tbody tr:nth-child(even) {{ background: #F8FAFC; }}
   .center {{ text-align: center; }}
   .strong {{ font-weight: 800; }}
-  .code {{ font-family: Consolas, monospace; font-weight: 800; }}
-  .pill {{ display: inline-block; padding: 2px 7px; border-radius: 10px; color: #fff; font-size: 10px; white-space: nowrap; font-weight: 600; }}
-  .quality {{ margin-top: 22px; }}
-  .signatures {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 35px; break-inside: avoid; text-align: center; font-size: 11px; }}
-  .signatures small {{ color: #64748B; }}
-  .signature-line {{ height: 65px; border-bottom: 1px solid #CBD5E1; margin: 0 14px 8px; }}
+  .code {{ font-family: Consolas, monospace; font-weight: 800; color: #002C6C; }}
+  .pill {{ display: inline-block; padding: 1.5px 5px; border-radius: 5px; color: #fff; font-size: 8px; white-space: nowrap; font-weight: 600; }}
+  .note-text {{ font-size: 8px; color: #1E293B; line-height: 1.2; }}
+  .signatures {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 12px; break-inside: avoid; text-align: center; font-size: 10px; }}
+  .signatures small {{ color: #64748B; font-size: 8.5px; }}
+  .signature-line {{ height: 42px; border-bottom: 1px solid #94A3B8; margin: 0 10px 3px; }}
   .btn-print {{ position: fixed; top: 15px; right: 15px; background: #002C6C; color: #fff; padding: 8px 16px; border-radius: 6px; font-weight: 700; border: none; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }}
+  .section-break {{ break-before: page; margin-top: 6px; }}
   @media print {{
     body {{ margin: 0; }}
     .no-print {{ display: none !important; }}
     thead {{ display: table-header-group; }}
     tr {{ break-inside: avoid; }}
+    .section-break {{ break-before: page; }}
   }}
 </style></head><body>
 <button onclick="window.print()" class="btn-print no-print">🖨️ In Báo Cáo (Ctrl + P)</button>
@@ -1562,8 +1663,8 @@ with tab_report:
     <div class="meta-brand">Hệ thống QLDA Streamlit<br>Hyundai Miền Tây</div>
   </div>
 </header>
-<p class="subtitle" style="margin-top:8px;">
-  Số liệu trích xuất thời gian thực từ cơ sở dữ liệu hệ thống. Tiến độ các hạng mục đã được đối soát theo nhật ký hiện trường mới nhất.
+<p class="subtitle" style="margin-top:6px; margin-bottom:8px;">
+  Số liệu trích xuất thời gian thực từ hệ thống. Tiến độ các hạng mục được đối soát theo nhật ký hiện trường mới nhất.
 </p>
 <section class="kpis">
   <div class="kpi"><div class="kpi-value">{overall_progress}%</div><div class="kpi-label">Tiến độ tổng thể</div></div>
@@ -1573,39 +1674,29 @@ with tab_report:
 </section>
 
 <section>
-  <h2>1. DANH MỤC HẠNG MỤC THI CÔNG CHI TIẾT (WBS)</h2>
+  <h2>1. TIẾN ĐỘ HÌNH ẢNH GANTT (GANTT CHART)</h2>
+  <div style="margin-top:6px;">
+    {gantt_svg}
+  </div>
+</section>
+
+<section class="section-break">
+  <h2>2. DANH MỤC HẠNG MỤC THI CÔNG CHI TIẾT (WBS)</h2>
   <table>
     <thead>
       <tr>
-        <th style="width:65px">Mã</th>
-        <th>Tên hạng mục công việc &amp; Ghi chú hiện trường</th>
-        <th style="width:130px">Phân khu</th>
-        <th style="width:145px; text-align:center">Thời gian thực hiện</th>
-        <th style="width:65px; text-align:center">Tiến độ</th>
-        <th style="width:95px; text-align:center">Trạng thái</th>
-        <th style="width:140px">Phụ trách</th>
+        <th style="width:55px; text-align:center">Mã</th>
+        <th>Tên hạng mục công việc</th>
+        <th style="width:120px">Phân khu</th>
+        <th style="width:130px; text-align:center">Thời gian thực hiện</th>
+        <th style="width:55px; text-align:center">Tiến độ</th>
+        <th style="width:85px; text-align:center">Trạng thái</th>
+        <th style="width:230px">Ghi chú thực tế</th>
+        <th style="width:125px">Phụ trách</th>
       </tr>
     </thead>
     <tbody>
       {wbs_content}
-    </tbody>
-  </table>
-</section>
-
-<section class="quality">
-  <h2>2. ĐÁNH GIÁ TIÊU CHUẨN KỸ THUẬT &amp; CHECKLIST QCVN 121 (Đạt {qcvn_pct}%)</h2>
-  <table>
-    <thead>
-      <tr>
-        <th style="width:45px; text-align:center">STT</th>
-        <th style="width:190px">Phân loại</th>
-        <th>Tiêu chuẩn kiểm định</th>
-        <th style="width:95px; text-align:center">Kết quả</th>
-        <th>Ghi chú thực tế</th>
-      </tr>
-    </thead>
-    <tbody>
-      {qcvn_content}
     </tbody>
   </table>
 </section>
@@ -1631,7 +1722,7 @@ with tab_report:
         return template
 
     # Biên dịch ngay bản in HTML theo dữ liệu thời gian thực
-    live_printable_html = build_dynamic_printable_html(st.session_state.progress_df, df_q, cur_date_display)
+    live_printable_html = build_dynamic_printable_html(st.session_state.progress_df, cur_date_display)
     cur_overall_pct = round(float(st.session_state.progress_df["Tiến độ (%)"].mean()), 1) if not st.session_state.progress_df.empty else 0
     cur_completed = int((st.session_state.progress_df["Tiến độ (%)"] >= 100).sum() + ((st.session_state.progress_df["Trạng thái"] == "Đã hoàn thiện") & (st.session_state.progress_df["Tiến độ (%)"] < 100)).sum())
 
@@ -1643,12 +1734,12 @@ with tab_report:
             <div>
                 <h4 style="color:#002C6C; margin:0 0 8px 0;">📑 Báo Cáo Điều Hành (.PDF)</h4>
                 <p style="font-size:0.85rem; color:#475569; margin-bottom:8px;">
-                    Bản báo cáo điều hành toàn diện kèm số liệu giám sát hiện trường, bảng đánh giá đường găng tiến độ và phân tích rủi ro.
+                    Báo cáo điều hành 2 trang chuẩn A4: Mục 1 Biểu đồ Gantt trực quan, Mục 2 Danh mục WBS chi tiết & Ký duyệt 3 bên.
                 </p>
                 <div style="font-size:0.8rem; color:#64748B;">
                     • Tiến độ cập nhật: <b>{cur_overall_pct}% ({cur_completed}/16 việc)</b><br>
                     • Mốc cập nhật: <b>{cur_date_display}</b><br>
-                    • Định dạng: <b>PDF khổ in A4</b>
+                    • Định dạng: <b>PDF 2 trang khổ in A4</b>
                 </div>
             </div>
         </div>
@@ -1671,11 +1762,11 @@ with tab_report:
             <div>
                 <h4 style="color:#002C6C; margin:0 0 8px 0;">🌐 Bản In Chủ Đầu Tư (.HTML)</h4>
                 <p style="font-size:0.85rem; color:#475569; margin-bottom:8px;">
-                    Form báo cáo tiến độ A4 chuẩn in ấn, tích hợp WBS 16 việc, checklist QCVN 121 và phần ký duyệt 3 bên.
+                    Form báo cáo tiến độ A4 chuẩn in ấn, tích hợp Mục 1: Biểu đồ Gantt, Mục 2: WBS 16 việc & Ký duyệt 3 bên.
                 </p>
                 <div style="font-size:0.8rem; color:#64748B;">
                     • Dữ liệu: <b>Thời gian thực (Live 100%)</b><br>
-                    • Khổ in: <b>A4 chuẩn in ấn</b><br>
+                    • Khổ in: <b>A4 chuẩn in ấn (2 trang)</b><br>
                     • In ấn: <b>Có nút In ngay (Ctrl + P)</b>
                 </div>
             </div>
