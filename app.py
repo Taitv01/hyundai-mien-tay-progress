@@ -9,6 +9,9 @@ import streamlit as st
 import pandas as pd
 import datetime
 import plotly.express as px
+import html
+from pathlib import Path
+import streamlit.components.v1 as components
 
 from data_service import (
     credentials_from_config,
@@ -1417,24 +1420,218 @@ with tab_report:
         """)
 
     st.markdown("<br>", unsafe_allow_html=True)
-    st.markdown("#### 📥 Xuất Toàn Bộ Báo Cáo Ra Tệp Excel (.XLSX):")
+    st.subheader("📑 Biểu Mẫu & Báo Cáo Giám Sát Hiện Trường Chuẩn")
+    st.caption("Bộ đôi hồ sơ báo cáo định kỳ gửi Chủ đầu tư Thế Giới Xe Tải và HTCV: Báo cáo Điều hành PDF và Form HTML chuẩn in ấn A4 (WBS 16 việc, Checklist QCVN 121, ký duyệt 3 bên).")
 
-    def generate_excel():
-        import io
-        output = io.BytesIO()
-        with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            st.session_state.progress_df.to_excel(writer, sheet_name='Tien_Do_Thi_Cong', index=False)
-            df_q.to_excel(writer, sheet_name='QCVN_121_Checklist', index=False)
-        return output.getvalue()
+    pdf_filename = "Bao_cao_dieu_hanh_HMT-CANTHO-2026_2026-09-08.pdf"
+    html_filename = "Bao_cao_in_chu_dau_tu_HMT-CANTHO-2026_2026-09-08.html"
 
-    excel_binary = generate_excel()
-    st.download_button(
-        label="📊 TẢI TRỌN BỘ BÁO CÁO TIẾN ĐỘ & CHECKLIST QCVN 121 (.XLSX)",
-        data=excel_binary,
-        file_name=f"Bao_Cao_Tien_Do_HD_Mien_Tay_{datetime.date.today().strftime('%Y%m%d')}.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        width="stretch"
-    )
+    def _find_report_bytes(filename: str):
+        candidates = [
+            Path(__file__).parent / "reports" / filename,
+            Path(__file__).parent.parent / "05_Tien_do_Thi_cong_va_Cam_ket" / "2026-09_Bao_cao_va_Bieu_mau_Dieu_hanh" / filename,
+            Path(__file__).parent.parent / filename,
+        ]
+        for p in candidates:
+            if p.exists():
+                return p.read_bytes()
+        return None
+
+    def _find_report_text(filename: str):
+        candidates = [
+            Path(__file__).parent / "reports" / filename,
+            Path(__file__).parent.parent / "05_Tien_do_Thi_cong_va_Cam_ket" / "2026-09_Bao_cao_va_Bieu_mau_Dieu_hanh" / filename,
+            Path(__file__).parent.parent / filename,
+        ]
+        for p in candidates:
+            if p.exists():
+                return p.read_text(encoding="utf-8")
+        return ""
+
+    pdf_bytes = _find_report_bytes(pdf_filename)
+    html_text = _find_report_text(html_filename)
+
+    col_rep1, col_rep2, col_rep3 = st.columns(3)
+
+    with col_rep1:
+        st.markdown("""
+        <div style="border:1px solid #E2E8F0; border-radius:10px; padding:16px; background:#F8FAFC; min-height:220px; display:flex; flex-direction:column; justify-content:space-between;">
+            <div>
+                <h4 style="color:#002C6C; margin:0 0 8px 0;">📑 Báo Cáo Điều Hành (.PDF)</h4>
+                <p style="font-size:0.85rem; color:#475569; margin-bottom:8px;">
+                    Bản báo cáo điều hành toàn diện kèm số liệu giám sát hiện trường, bảng đánh giá đường găng tiến độ và phân tích rủi ro.
+                </p>
+                <div style="font-size:0.8rem; color:#64748B;">
+                    • Định dạng: <b>PDF</b> (185 KB)<br>
+                    • Mốc nhật ký: <b>08/09/2026</b><br>
+                    • Đơn vị: <b>Ban QLDA / CĐT</b>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        if pdf_bytes:
+            st.download_button(
+                label="📥 TẢI BÁO CÁO PDF",
+                data=pdf_bytes,
+                file_name=pdf_filename,
+                mime="application/pdf",
+                key="download_pdf_report",
+                use_container_width=True
+            )
+        else:
+            st.warning("Chưa tìm thấy tệp PDF.")
+
+    with col_rep2:
+        st.markdown("""
+        <div style="border:1px solid #E2E8F0; border-radius:10px; padding:16px; background:#F8FAFC; min-height:220px; display:flex; flex-direction:column; justify-content:space-between;">
+            <div>
+                <h4 style="color:#002C6C; margin:0 0 8px 0;">🌐 Bản In Chủ Đầu Tư (.HTML)</h4>
+                <p style="font-size:0.85rem; color:#475569; margin-bottom:8px;">
+                    Form báo cáo tiến độ A4 chuẩn in ấn, tích hợp bảng WBS 16 việc, checklist QCVN 121 và phần ký duyệt 3 bên.
+                </p>
+                <div style="font-size:0.8rem; color:#64748B;">
+                    • Định dạng: <b>HTML (Print-ready)</b><br>
+                    • Khổ in: <b>A4 chuẩn</b><br>
+                    • In ấn: <b>Ctrl + P xuất PDF</b>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        if html_text:
+            st.download_button(
+                label="📥 TẢI BẢN IN HTML",
+                data=html_text.encode("utf-8"),
+                file_name=html_filename,
+                mime="text/html",
+                key="download_html_report",
+                use_container_width=True
+            )
+        else:
+            st.warning("Chưa tìm thấy tệp HTML.")
+
+    with col_rep3:
+        st.markdown("""
+        <div style="border:1px solid #E2E8F0; border-radius:10px; padding:16px; background:#F8FAFC; min-height:220px; display:flex; flex-direction:column; justify-content:space-between;">
+            <div>
+                <h4 style="color:#002C6C; margin:0 0 8px 0;">📊 Dữ Liệu Chi Tiết (.XLSX)</h4>
+                <p style="font-size:0.85rem; color:#475569; margin-bottom:8px;">
+                    Toàn bộ cơ sở dữ liệu gồm 2 bảng: Tiến độ thi công WBS và Danh mục Checklist đánh giá QCVN 121:2024.
+                </p>
+                <div style="font-size:0.8rem; color:#64748B;">
+                    • Định dạng: <b>Excel (.xlsx)</b><br>
+                    • Số sheet: <b>2 worksheets</b><br>
+                    • Dữ liệu: <b>Thời gian thực</b>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        def generate_excel():
+            import io
+            output = io.BytesIO()
+            with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                st.session_state.progress_df.to_excel(writer, sheet_name='Tien_Do_Thi_Cong', index=False)
+                df_q.to_excel(writer, sheet_name='QCVN_121_Checklist', index=False)
+            return output.getvalue()
+
+        excel_binary = generate_excel()
+        st.download_button(
+            label="📥 TẢI DỮ LIỆU EXCEL",
+            data=excel_binary,
+            file_name=f"Bao_Cao_Tien_Do_HD_Mien_Tay_{datetime.date.today().strftime('%Y%m%d')}.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            key="download_excel_report",
+            use_container_width=True
+        )
+
+    # Hàm xây dựng Form HTML in ấn động từ dữ liệu thực tế hiện tại
+    def build_dynamic_printable_html(progress_df, qcvn_df, report_date_str):
+        total_tasks = len(progress_df)
+        completed_tasks = int((progress_df["Tiến độ (%)"] >= 100).sum())
+        overall_progress = round(float(progress_df["Tiến độ (%)"].mean()), 1) if total_tasks > 0 else 0
+        total_check = len(qcvn_df)
+        achieved_check = int((qcvn_df["Đánh giá"] == "Đạt").sum())
+        qcvn_pct = round((achieved_check / total_check * 100), 1) if total_check > 0 else 0
+
+        wbs_rows = []
+        for _, r in progress_df.iterrows():
+            pct = int(r.get("Tiến độ (%)", 0))
+            stt_val = str(r.get("Trạng thái", ""))
+            pill_color = "#10B981" if pct >= 100 else ("#0284C7" if pct > 0 else "#94A3B8")
+            start_str = pd.to_datetime(r.get("Bắt đầu")).strftime('%d/%m/%Y') if pd.notnull(r.get("Bắt đầu")) else ""
+            end_str = pd.to_datetime(r.get("Hoàn thành")).strftime('%d/%m/%Y') if pd.notnull(r.get("Hoàn thành")) else ""
+            wbs_rows.append(f"""<tr>
+    <td class="code">{html.escape(str(r.get('Mã', '')))}</td>
+    <td><b>{html.escape(str(r.get('Hạng mục công việc', '')))}</b></td>
+    <td>{html.escape(str(r.get('Phân khu', '')))}</td>
+    <td class="center">{start_str} - {end_str}</td>
+    <td class="center strong" style="color:{pill_color}">{pct}%</td>
+    <td class="center"><span class="pill" style="background:{pill_color}">{html.escape(stt_val)}</span></td>
+    <td>{html.escape(str(r.get('Người phụ trách', '')))}</td>
+  </tr>""")
+
+        qcvn_rows = []
+        for idx, r in qcvn_df.reset_index(drop=True).iterrows():
+            eval_val = str(r.get("Đánh giá", ""))
+            pill_bg = "#16A34A" if eval_val == "Đạt" else ("#0284C7" if "Đang thi công" in eval_val else ("#D97706" if "Đang mua sắm" in eval_val else "#DC2626"))
+            qcvn_rows.append(f"""<tr>
+    <td class="center">#{idx + 1}</td>
+    <td>{html.escape(str(r.get('Nhóm tiêu chuẩn', '')))}</td>
+    <td><b>{html.escape(str(r.get('Nội dung kiểm soát', '')))}</b></td>
+    <td class="center"><span class="pill" style="background:{pill_bg}">{html.escape(eval_val)}</span></td>
+    <td>{html.escape(str(r.get('Ghi chú / Yêu cầu chứng minh', '')))}</td>
+  </tr>""")
+
+        wbs_content = "\\n".join(wbs_rows)
+        qcvn_content = "\\n".join(qcvn_rows)
+
+        template = f"""<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Báo cáo tiến độ - HMT-CANTHO-2026</title>
+<style>
+  @page{{size:A4;margin:15mm}}*{{box-sizing:border-box}}body{{margin:30px;color:#0F172A;background:#fff;font:13px/1.45 "Segoe UI",Arial,sans-serif}}.header{{display:flex;justify-content:space-between;gap:24px;align-items:flex-start;border-bottom:3px solid #002C6C;padding-bottom:15px}}.header h1{{margin:0;color:#002C6C;font-size:20px;line-height:1.35;font-weight:800;text-transform:uppercase}}.subtitle{{color:#475569;margin-top:4px}}.meta{{text-align:right;min-width:120px}}.meta-label,.kpi-label{{color:#64748B;font-size:11px;font-weight:600;text-transform:uppercase}}.meta-date{{color:#002C6C;font-size:14px;font-weight:800}}.meta-brand{{color:#94A3B8;font-size:10px;margin-top:4px}}.kpis{{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:20px 0}}.kpi{{padding:12px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;text-align:center}}.kpi-value{{color:#00AAD2;font-size:22px;font-weight:800}}.kpi-value.blue{{color:#0284C7}}.kpi-value.green{{color:#10B981}}.kpi-value.amber{{color:#D97706}}h2{{margin:25px 0 10px;padding-bottom:5px;border-bottom:2px solid #00AAD2;color:#002C6C;font-size:15px}}table{{width:100%;border-collapse:collapse;font-size:11px}}th,td{{padding:8px 10px;border:1px solid #E2E8F0;vertical-align:top}}th{{background:#002C6C;color:#fff;font-weight:700}}tbody tr:nth-child(even){{background:#F8FAFC}}.center{{text-align:center}}.strong{{font-weight:800}}.code{{font-family:Consolas,monospace;font-weight:800}}.pill{{display:inline-block;padding:2px 8px;border-radius:10px;color:#fff;font-size:10px;white-space:nowrap}}.quality{{margin-top:25px}}.signatures{{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin-top:42px;break-inside:avoid;text-align:center}}.signatures small{{color:#64748B}}.signature-line{{height:76px;border-bottom:1px solid #CBD5E1;margin:0 14px 9px}}@media print{{body{{margin:0}}.no-print{{display:none}}thead{{display:table-header-group}}tr{{break-inside:avoid}}}}
+</style></head><body>
+<header class="header"><div><h1>BÁO CÁO TIẾN ĐỘ THI CÔNG & GIÁM SÁT HIỆN TRƯỜNG</h1><div class="subtitle">Dự án: <b>Đại lý 3S Xe Thương Mại Hyundai Miền Tây</b> | Mã: <b>HMT-CANTHO-2026</b></div><div class="subtitle">Chủ đầu tư: <b>Thế giới xe tải</b> | Địa điểm: <b>TP. Cần Thơ</b></div></div><div class="meta"><div class="meta-label">Mốc xuất báo cáo</div><div class="meta-date">{report_date_str}</div><div class="meta-brand">Hệ thống QLDA Streamlit</div></div></header>
+<p class="subtitle">Báo cáo cập nhật thời gian thực từ cơ sở dữ liệu hệ thống quản trị dự án Hyundai Miền Tây.</p>
+<section class="kpis"><div class="kpi"><div class="kpi-value">{overall_progress}%</div><div class="kpi-label">Tiến độ tổng thể</div></div><div class="kpi"><div class="kpi-value blue">{completed_tasks}/{total_tasks}</div><div class="kpi-label">Hạng mục hoàn thành</div></div><div class="kpi"><div class="kpi-value green">{achieved_check}/{total_check}</div><div class="kpi-label">Checklist QCVN 121</div></div><div class="kpi"><div class="kpi-value amber">16 tỷ VND</div><div class="kpi-label">Ngân sách phê duyệt</div></div></section>
+<section><h2>1. DANH MỤC HẠNG MỤC THI CÔNG CHI TIẾT (WBS)</h2><table><thead><tr><th>Mã</th><th>Tên hạng mục công việc</th><th>Phân khu</th><th>Thời gian thực hiện</th><th>Tiến độ</th><th>Trạng thái</th><th>Phụ trách</th></tr></thead><tbody>
+{wbs_content}
+</tbody></table></section>
+<section class="quality">
+  <h2>2. ĐÁNH GIÁ TIÊU CHUẨN KỸ THUẬT & CHECKLIST (Đạt {qcvn_pct}%)</h2>
+  <table><thead><tr><th>STT</th><th>Phân loại</th><th>Tiêu chuẩn kiểm định</th><th>Kết quả</th><th>Ghi chú thực tế</th></tr></thead><tbody>
+{qcvn_content}
+  </tbody></table>
+</section>
+<section class="signatures"><div><b>ĐẠI DIỆN CHỦ ĐẦU TƯ</b><br><small>(Ký và ghi rõ họ tên)</small><div class="signature-line"></div><b>Thế giới xe tải</b></div><div><b>TƯ VẤN GIÁM SÁT</b><br><small>(Ký và ghi rõ họ tên)</small><div class="signature-line"></div><b>Trưởng đoàn TVGS</b></div><div><b>CHỈ HUY TRƯỞNG CÔNG TRÌNH</b><br><small>(Ký và ghi rõ họ tên)</small><div class="signature-line"></div><b>Ban Chỉ huy MPP</b></div></section>
+</body></html>"""
+        return template
+
+    st.markdown("<br>", unsafe_allow_html=True)
+    with st.expander("⚡ Xuất Form In HTML Động (Cập nhật từ dữ liệu hiện tại)", expanded=False):
+        st.caption("Hệ thống tự động biên dịch bảng WBS và Checklist hiện tại thành bản in A4 HTML mới nhất.")
+        cur_date_str = datetime.date.today().strftime("%d/%m/%Y")
+        dynamic_html = build_dynamic_printable_html(st.session_state.progress_df, df_q, cur_date_str)
+        st.download_button(
+            label="⚡ TẢI FORM IN HTML DỮ LIỆU MỚI NHẤT",
+            data=dynamic_html.encode("utf-8"),
+            file_name=f"Bao_cao_in_chu_dau_tu_HMT-CANTHO_{datetime.date.today().strftime('%Y%m%d')}.html",
+            mime="text/html",
+            key="download_dynamic_html",
+            use_container_width=True
+        )
+
+    with st.expander("👁️ Xem Trước Bản In A4 Trực Tiếp (Print Preview)", expanded=True):
+        preview_mode = st.radio(
+            "Chọn bản xem trước:",
+            ["Bản lưu trữ chuẩn 08/09/2026 (Kèm số liệu hiện trường)", "Bản cập nhật động từ dữ liệu hiện tại"],
+            horizontal=True
+        )
+        content_to_preview = html_text if (preview_mode.startswith("Bản lưu trữ chuẩn") and html_text) else build_dynamic_printable_html(st.session_state.progress_df, df_q, datetime.date.today().strftime("%d/%m/%Y"))
+        if content_to_preview:
+            components.html(content_to_preview, height=650, scrolling=True)
+            st.caption("💡 **Mẹo in ấn**: Mở file HTML bằng Chrome/Edge, bấm **Ctrl + P**, chọn khổ giấy **A4** và **Save as PDF** để có bản in đẹp nhất.")
+        else:
+            st.info("Chưa có nội dung để hiển thị xem trước.")
 
 
 # ------------------------------------------------------------------------------

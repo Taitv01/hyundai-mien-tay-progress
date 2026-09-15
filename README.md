@@ -9,7 +9,9 @@
 - Chọn ngày theo dõi để xem lại trạng thái dự án tại một mốc bất kỳ.
 - Checklist nội bộ tham chiếu QCVN 121:2024/BGTVT; 9 điều kiện đặc thù xe điện/hybrid đang tạm ẩn nhưng vẫn được bảo lưu trong dữ liệu.
 - Gantt tương tác, đường mốc ngày theo dõi, biểu đồ trạng thái và tiến độ theo phân khu.
-- Tải báo cáo CSV/XLSX.
+- Bộ đôi báo cáo giám sát hiện trường định kỳ: Báo cáo Điều hành PDF và Form HTML chuẩn in ấn A4 (tích hợp WBS 16 việc & Checklist QCVN 121, ký duyệt 3 bên, Ctrl + P xuất PDF).
+- Trình xem trước bản in (Print Preview) trực tiếp trong app và tính năng sinh Form in HTML động theo dữ liệu thời gian thực.
+- Tải trọn bộ dữ liệu Excel XLSX và CSV.
 - Mở link là xem và cập nhật được ngay, không yêu cầu đăng nhập.
 - Đại lý cập nhật phần trăm, trạng thái, ghi chú, chụp/chọn nhiều ảnh hiện trường và đính kèm tệp tài liệu PDF (biên bản nghiệm thu, bản vẽ kỹ thuật, chứng chỉ...).
 - Quản lý tệp tập trung: Thư viện hồ sơ hỗ trợ lọc theo hạng mục, lọc theo loại tệp (PDF / Ảnh), tìm kiếm, xem trước trực tiếp (iframe PDF/ảnh), tải về và xóa tệp an toàn.
@@ -74,6 +76,7 @@ Không dán khóa Service Account vào giao diện và không commit `.streamlit
 ├── supabase_setup.sql              # Lược đồ database/storage chạy một lần
 ├── requirements.txt               # Thư viện chạy ứng dụng
 ├── credentials_sample.json        # Khóa mẫu, không dùng để đăng nhập
+├── reports/                       # Form báo cáo chuẩn (PDF điều hành & HTML in ấn A4)
 ├── .streamlit/config.toml          # Giao diện và cấu hình máy chủ
 ├── .streamlit/secrets.toml.example # Mẫu secrets an toàn
 └── tests/                          # Kiểm thử logic và smoke test
