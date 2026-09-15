@@ -1700,24 +1700,6 @@ with tab_report:
     </tbody>
   </table>
 </section>
-
-<section class="signatures">
-  <div>
-    <b>ĐẠI DIỆN CHỦ ĐẦU TƯ</b><br><small>(Ký và ghi rõ họ tên)</small>
-    <div class="signature-line"></div>
-    <b>Thế giới xe tải</b>
-  </div>
-  <div>
-    <b>TƯ VẤN GIÁM SÁT</b><br><small>(Ký và ghi rõ họ tên)</small>
-    <div class="signature-line"></div>
-    <b>Trưởng đoàn TVGS</b>
-  </div>
-  <div>
-    <b>CHỈ HUY TRƯỞNG CÔNG TRÌNH</b><br><small>(Ký và ghi rõ họ tên)</small>
-    <div class="signature-line"></div>
-    <b>Ban Chỉ huy MPP</b>
-  </div>
-</section>
 </body></html>"""
         return template
 
@@ -1734,7 +1716,7 @@ with tab_report:
             <div>
                 <h4 style="color:#002C6C; margin:0 0 8px 0;">📑 Báo Cáo Điều Hành (.PDF)</h4>
                 <p style="font-size:0.85rem; color:#475569; margin-bottom:8px;">
-                    Báo cáo điều hành 2 trang chuẩn A4: Mục 1 Biểu đồ Gantt trực quan, Mục 2 Danh mục WBS chi tiết & Ký duyệt 3 bên.
+                    Báo cáo điều hành 2 trang chuẩn A4: Mục 1 Biểu đồ Gantt trực quan, Mục 2 Danh mục WBS chi tiết kèm ghi chú thực tế.
                 </p>
                 <div style="font-size:0.8rem; color:#64748B;">
                     • Tiến độ cập nhật: <b>{cur_overall_pct}% ({cur_completed}/16 việc)</b><br>
@@ -1762,7 +1744,7 @@ with tab_report:
             <div>
                 <h4 style="color:#002C6C; margin:0 0 8px 0;">🌐 Bản In Chủ Đầu Tư (.HTML)</h4>
                 <p style="font-size:0.85rem; color:#475569; margin-bottom:8px;">
-                    Form báo cáo tiến độ A4 chuẩn in ấn, tích hợp Mục 1: Biểu đồ Gantt, Mục 2: WBS 16 việc & Ký duyệt 3 bên.
+                    Form báo cáo tiến độ A4 chuẩn in ấn, tích hợp Mục 1: Biểu đồ Gantt, Mục 2: WBS 16 việc kèm ghi chú thực tế.
                 </p>
                 <div style="font-size:0.8rem; color:#64748B;">
                     • Dữ liệu: <b>Thời gian thực (Live 100%)</b><br>
