@@ -1621,12 +1621,11 @@ with tab_report:
   .meta-label, .kpi-label {{ color: #64748B; font-size: 10px; font-weight: 600; text-transform: uppercase; }}
   .meta-date {{ color: #002C6C; font-size: 14px; font-weight: 800; margin-top: 1px; }}
   .meta-brand {{ color: #94A3B8; font-size: 9px; margin-top: 1px; }}
-  .kpis {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 8px 0; }}
+  .kpis {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 8px 0; }}
   .kpi {{ padding: 6px; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 6px; text-align: center; }}
   .kpi-value {{ color: #00AAD2; font-size: 19px; font-weight: 800; }}
   .kpi-value.blue {{ color: #0284C7; }}
   .kpi-value.green {{ color: #10B981; }}
-  .kpi-value.amber {{ color: #D97706; }}
   h2 {{ margin: 10px 0 6px; padding-bottom: 3px; border-bottom: 2px solid #00AAD2; color: #002C6C; font-size: 12.5px; text-transform: uppercase; }}
   table {{ width: 100%; border-collapse: collapse; font-size: 10px; line-height: 1.35; }}
   th, td {{ padding: 4.5px 7px; border: 1px solid #CBD5E1; vertical-align: middle; }}
@@ -1667,7 +1666,6 @@ with tab_report:
   <div class="kpi"><div class="kpi-value">{overall_progress}%</div><div class="kpi-label">Tiến độ tổng thể</div></div>
   <div class="kpi"><div class="kpi-value blue">{completed_tasks}/{total_tasks}</div><div class="kpi-label">Hạng mục hoàn thành</div></div>
   <div class="kpi"><div class="kpi-value green">{days_left} ngày</div><div class="kpi-label">Số ngày còn lại (31/12)</div></div>
-  <div class="kpi"><div class="kpi-value amber">16 tỷ VND</div><div class="kpi-label">Ngân sách phê duyệt</div></div>
 </section>
 
 <section>
