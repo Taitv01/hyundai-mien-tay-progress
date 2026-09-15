@@ -10,7 +10,7 @@ SOURCE = '260915_Tiến độ xây dựng Hyundai Cần Thơ.pdf'
 VERSION = '2026-09-15'
 BROWN = '#8B5E3C'
 WEEK_NOTE = ('Quy đổi để hiển thị: W1 = ngày 01–07; W2 = 08–14; '
-             'W3 = 15–21; W4 = 22–cuối tháng. PDF cam kết theo tuần, không ấn định ngày lẻ.')
+             'W3 = 15–21; W4 = 22–cuối tháng. Ngày hiển thị được quy đổi từ ô tuần; các số ghi riêng trên PDF được đối chiếu trong ghi chú.')
 LEGACY_CODES = {f'SR-{i:02}' for i in range(1, 6)} | {f'WS-{i:02}' for i in range(1, 6)} | {'OP-01', 'OP-02'}
 
 
@@ -45,6 +45,8 @@ def commitment_data():
             note += f" Tình trạng ghi trên PDF: {r['source_status']}."
         if r['code'] == 'CK-07-01':
             note += ' Ô cuối trên PDF ghi “39”; giữ mốc tuần 4 tháng 9, không diễn giải thành ngày 39.'
+        if r['code'] == 'CK-07-02':
+            note += ' Ô cuối PDF ghi “15” tại W2 tháng 10; giữ nguyên mốc ô tuần. Ngày 14/10 trong bảng là quy đổi W2, chưa phải xác nhận ngày cấp phép; cần đối chiếu số 15 với CĐT.'
         data.append({
             'Mã': r['code'], 'Hạng mục công việc': r['description'],
             'Phân khu': f"{r['group']:02}. {r['section']}",
