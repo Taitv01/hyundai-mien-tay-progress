@@ -1,154 +1,501 @@
 <!doctype html>
 <html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Báo cáo tiến độ - HMT-CANTHO-2026</title>
 <style>
-  @page{size:A4;margin:15mm}*{box-sizing:border-box}body{margin:30px;color:#0F172A;background:#fff;font:13px/1.45 "Segoe UI",Arial,sans-serif}.header{display:flex;justify-content:space-between;gap:24px;align-items:flex-start;border-bottom:3px solid #002C6C;padding-bottom:15px}.header h1{margin:0;color:#002C6C;font-size:20px;line-height:1.35;font-weight:800;text-transform:uppercase}.subtitle{color:#475569;margin-top:4px}.meta{text-align:right;min-width:120px}.meta-label,.kpi-label{color:#64748B;font-size:11px;font-weight:600;text-transform:uppercase}.meta-date{color:#002C6C;font-size:14px;font-weight:800}.meta-brand{color:#94A3B8;font-size:10px;margin-top:4px}.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:20px 0}.kpi{padding:12px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;text-align:center}.kpi-value{color:#00AAD2;font-size:22px;font-weight:800}.kpi-value.blue{color:#0284C7}.kpi-value.green{color:#10B981}.kpi-value.amber{color:#D97706}h2{margin:25px 0 10px;padding-bottom:5px;border-bottom:2px solid #00AAD2;color:#002C6C;font-size:15px}table{width:100%;border-collapse:collapse;font-size:11px}th,td{padding:8px 10px;border:1px solid #E2E8F0;vertical-align:top}th{background:#002C6C;color:#fff;font-weight:700}tbody tr:nth-child(even){background:#F8FAFC}.center{text-align:center}.strong{font-weight:800}.code{font-family:Consolas,monospace;font-weight:800}.pill{display:inline-block;padding:2px 8px;border-radius:10px;color:#fff;font-size:10px;white-space:nowrap}.quality{margin-top:25px}.empty{color:#64748B;text-align:center}.signatures{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin-top:42px;break-inside:avoid;text-align:center}.signatures small{color:#64748B}.signature-line{height:76px;border-bottom:1px solid #CBD5E1;margin:0 14px 9px}@media print{body{margin:0}.no-print{display:none}thead{display:table-header-group}tr{break-inside:avoid}}
+  @page { size: A4; margin: 12mm 15mm; }
+  * { box-sizing: border-box; }
+  body { margin: 25px; color: #0F172A; background: #fff; font: 12.5px/1.45 "Segoe UI", Arial, sans-serif; }
+  .header { display: flex; justify-content: space-between; gap: 20px; align-items: flex-start; border-bottom: 3px solid #002C6C; padding-bottom: 12px; }
+  .header h1 { margin: 0; color: #002C6C; font-size: 19px; line-height: 1.35; font-weight: 800; text-transform: uppercase; }
+  .subtitle { color: #475569; margin-top: 3px; font-size: 12px; }
+  .meta { text-align: right; min-width: 140px; }
+  .meta-label, .kpi-label { color: #64748B; font-size: 11px; font-weight: 600; text-transform: uppercase; }
+  .meta-date { color: #002C6C; font-size: 15px; font-weight: 800; margin-top: 2px; }
+  .meta-brand { color: #94A3B8; font-size: 10px; margin-top: 3px; }
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 16px 0; }
+  .kpi { padding: 10px; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; text-align: center; }
+  .kpi-value { color: #00AAD2; font-size: 22px; font-weight: 800; }
+  .kpi-value.blue { color: #0284C7; }
+  .kpi-value.green { color: #10B981; }
+  .kpi-value.amber { color: #D97706; }
+  h2 { margin: 20px 0 10px; padding-bottom: 4px; border-bottom: 2px solid #00AAD2; color: #002C6C; font-size: 14px; }
+  table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  th, td { padding: 7px 9px; border: 1px solid #E2E8F0; vertical-align: top; }
+  th { background: #002C6C; color: #fff; font-weight: 700; text-align: left; }
+  tbody tr:nth-child(even) { background: #F8FAFC; }
+  .center { text-align: center; }
+  .strong { font-weight: 800; }
+  .code { font-family: Consolas, monospace; font-weight: 800; }
+  .pill { display: inline-block; padding: 2px 7px; border-radius: 10px; color: #fff; font-size: 10px; white-space: nowrap; font-weight: 600; }
+  .quality { margin-top: 22px; }
+  .signatures { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 35px; break-inside: avoid; text-align: center; font-size: 11px; }
+  .signatures small { color: #64748B; }
+  .signature-line { height: 65px; border-bottom: 1px solid #CBD5E1; margin: 0 14px 8px; }
+  .btn-print { position: fixed; top: 15px; right: 15px; background: #002C6C; color: #fff; padding: 8px 16px; border-radius: 6px; font-weight: 700; border: none; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+  @media print {
+    body { margin: 0; }
+    .no-print { display: none !important; }
+    thead { display: table-header-group; }
+    tr { break-inside: avoid; }
+  }
 </style></head><body>
-<header class="header"><div><h1>BÁO CÁO TIẾN ĐỘ THI CÔNG & GIÁM SÁT HIỆN TRƯỜNG</h1><div class="subtitle">Dự án: <b>Đại lý 3S Xe Thương Mại Hyundai Miền Tây</b> | Mã: <b>HMT-CANTHO-2026</b></div><div class="subtitle">Chủ đầu tư: <b>Thế giới xe tải</b> | Địa điểm: <b>TP. Cần Thơ</b></div></div><div class="meta"><div class="meta-label">Mốc nhật ký</div><div class="meta-date">08/09/2026</div><div class="meta-brand">Xuất lúc 23:08 8/9/26<br>MPP Workspace</div></div></header>
-<p class="subtitle">KPI tổng thể và checklist là số liệu hiện tại. Tiến độ và trạng thái từng công việc trong WBS lấy theo nhật ký đến 08/09/2026; 0% khi chưa có nhật ký nghĩa là chưa có tiến độ được ghi nhận.</p>
-<section class="kpis"><div class="kpi"><div class="kpi-value">10%</div><div class="kpi-label">Tiến độ tổng thể</div></div><div class="kpi"><div class="kpi-value blue">1/16</div><div class="kpi-label">Hạng mục hoàn thành</div></div><div class="kpi"><div class="kpi-value green">114</div><div class="kpi-label">Số ngày còn lại</div></div><div class="kpi"><div class="kpi-value amber">16 tỷ VND</div><div class="kpi-label">Ngân sách phê duyệt</div></div></section>
-<section><h2>1. DANH MỤC HẠNG MỤC THI CÔNG CHI TIẾT (WBS)</h2><table><thead><tr><th>Mã</th><th>Tên hạng mục công việc</th><th>Phân khu</th><th>Thời gian thực hiện</th><th>Tiến độ</th><th>Trạng thái</th><th>Phụ trách</th></tr></thead><tbody><tr>
-    <td class="code">PL-01</td><td><b>Lên bản vẽ chi tiết (dựa trên BV layout và 3D)</b></td><td>Thiết kế &amp; Pháp lý</td>
+<button onclick="window.print()" class="btn-print no-print">🖨️ In Báo Cáo (Ctrl + P)</button>
+<header class="header">
+  <div>
+    <h1>BÁO CÁO TIẾN ĐỘ THI CÔNG & GIÁM SÁT HIỆN TRƯỜNG</h1>
+    <div class="subtitle">Dự án: <b>Đại lý 3S Xe Thương Mại Hyundai Miền Tây</b> | Mã: <b>HMT-CANTHO-2026</b></div>
+    <div class="subtitle">Chủ đầu tư: <b>Thế giới xe tải</b> | Địa điểm: <b>TP. Cần Thơ</b></div>
+  </div>
+  <div class="meta">
+    <div class="meta-label">Mốc cập nhật</div>
+    <div class="meta-date">15/09/2026</div>
+    <div class="meta-brand">Hệ thống QLDA Streamlit<br>Hyundai Miền Tây</div>
+  </div>
+</header>
+<p class="subtitle" style="margin-top:8px;">
+  Số liệu trích xuất thời gian thực từ cơ sở dữ liệu hệ thống. Tiến độ các hạng mục đã được đối soát theo nhật ký hiện trường mới nhất.
+</p>
+<section class="kpis">
+  <div class="kpi"><div class="kpi-value">18.1%</div><div class="kpi-label">Tiến độ tổng thể</div></div>
+  <div class="kpi"><div class="kpi-value blue">3/16</div><div class="kpi-label">Hạng mục hoàn thành</div></div>
+  <div class="kpi"><div class="kpi-value green">107 ngày</div><div class="kpi-label">Số ngày còn lại (31/12)</div></div>
+  <div class="kpi"><div class="kpi-value amber">16 tỷ VND</div><div class="kpi-label">Ngân sách phê duyệt</div></div>
+</section>
+
+<section>
+  <h2>1. DANH MỤC HẠNG MỤC THI CÔNG CHI TIẾT (WBS)</h2>
+  <table>
+    <thead>
+      <tr>
+        <th style="width:65px">Mã</th>
+        <th>Tên hạng mục công việc &amp; Ghi chú hiện trường</th>
+        <th style="width:130px">Phân khu</th>
+        <th style="width:145px; text-align:center">Thời gian thực hiện</th>
+        <th style="width:65px; text-align:center">Tiến độ</th>
+        <th style="width:95px; text-align:center">Trạng thái</th>
+        <th style="width:140px">Phụ trách</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+    <td class="code">PL-01</td>
+    <td><b>Lên bản vẽ chi tiết (dựa trên BV layout và 3D)</b></td>
+    <td>Thiết kế &amp; Pháp lý</td>
     <td class="center">15/08/2026 - 29/08/2026</td>
     <td class="center strong" style="color:#10B981">100%</td>
-    <td class="center"><span class="pill" style="background:#10B981">Hoàn thành</span></td>
+    <td class="center"><span class="pill" style="background:#10B981">Đã hoàn thiện</span></td>
     <td>Ban QLDA / TVTK</td>
   </tr><tr>
-    <td class="code">PL-02</td><td><b>Hoàn thiện thiết kế chi tiết &amp; hồ sơ xin phép</b></td><td>Thiết kế &amp; Pháp lý</td>
+    <td class="code">PL-02</td>
+    <td><b>Hoàn thiện thiết kế chi tiết &amp; hồ sơ xin phép</b><div style='font-size:10px; color:#475569; margin-top:3px; font-weight:normal;'>📌 HTCV - HXG - Hyundai Miền tây Đã ký bản vẽ chi tiết 
+Đang gửi Đại lý bổ sung giáp lai</div></td>
+    <td>Thiết kế &amp; Pháp lý</td>
     <td class="center">20/08/2026 - 30/08/2026</td>
-    <td class="center strong" style="color:#0284C7">65%</td>
-    <td class="center"><span class="pill" style="background:#0284C7">Đang thi công</span></td>
+    <td class="center strong" style="color:#10B981">90%</td>
+    <td class="center"><span class="pill" style="background:#10B981">Đã hoàn thiện</span></td>
     <td>Ban QLDA</td>
   </tr><tr>
-    <td class="code">PL-03</td><td><b>Ký hợp đồng thuê mặt bằng (chưa công chứng)</b></td><td>Mặt bằng &amp; Pháp lý</td>
+    <td class="code">PL-03</td>
+    <td><b>Ký hợp đồng thuê mặt bằng (chưa công chứng)</b><div style='font-size:10px; color:#475569; margin-top:3px; font-weight:normal;'>📌 Đã cập nhật hợp đồng thuê công chứng ngày 12/09/2026
+Đã cập nhật giấy chứng nhận quyền sử dụng đất gần nhất ngày 26/08/2026</div></td>
+    <td>Mặt bằng &amp; Pháp lý</td>
     <td class="center">01/09/2026 - 12/09/2026</td>
-    <td class="center strong" style="color:#94A3B8">0%</td>
-    <td class="center"><span class="pill" style="background:#94A3B8">Chưa thực hiện</span></td>
+    <td class="center strong" style="color:#10B981">100%</td>
+    <td class="center"><span class="pill" style="background:#10B981">Đã hoàn thiện</span></td>
     <td>Ban Giám Đốc / Pháp chế</td>
   </tr><tr>
-    <td class="code">PL-04</td><td><b>Đặt cọc thuê đất mặt bằng đại lý</b></td><td>Mặt bằng &amp; Pháp lý</td>
+    <td class="code">PL-04</td>
+    <td><b>Đặt cọc thuê đất mặt bằng đại lý</b><div style='font-size:10px; color:#475569; margin-top:3px; font-weight:normal;'>📌 Mốc thanh toán cọc 19/09/2026</div></td>
+    <td>Mặt bằng &amp; Pháp lý</td>
     <td class="center">13/09/2026 - 19/09/2026</td>
     <td class="center strong" style="color:#94A3B8">0%</td>
     <td class="center"><span class="pill" style="background:#94A3B8">Chưa thực hiện</span></td>
     <td>Ban Tài chính - Kế toán</td>
   </tr><tr>
-    <td class="code">SR-01</td><td><b>Showroom: Xây, trát tường bao &amp; tường ngăn</b></td><td>Showroom (XDCB)</td>
+    <td class="code">SR-01</td>
+    <td><b>Showroom: Xây, trát tường bao &amp; tường ngăn</b><div style='font-size:10px; color:#475569; margin-top:3px; font-weight:normal;'>📌 Bắt đầu sau khi cọc đất (20/09/2026)</div></td>
+    <td>Showroom (XDCB)</td>
     <td class="center">20/09/2026 - 15/10/2026</td>
     <td class="center strong" style="color:#94A3B8">0%</td>
     <td class="center"><span class="pill" style="background:#94A3B8">Chưa thực hiện</span></td>
     <td>Nhà thầu xây dựng</td>
   </tr><tr>
-    <td class="code">SR-02</td><td><b>Showroom: Ốp lát gạch nền granite &amp; khu vệ sinh</b></td><td>Showroom (XDCB)</td>
+    <td class="code">SR-02</td>
+    <td><b>Showroom: Ốp lát gạch nền granite &amp; khu vệ sinh</b><div style='font-size:10px; color:#475569; margin-top:3px; font-weight:normal;'>📌 Gạch granite chống trượt GDSI</div></td>
+    <td>Showroom (XDCB)</td>
     <td class="center">16/10/2026 - 05/11/2026</td>
     <td class="center strong" style="color:#94A3B8">0%</td>
     <td class="center"><span class="pill" style="background:#94A3B8">Chưa thực hiện</span></td>
     <td>Nhà thầu hoàn thiện</td>
   </tr><tr>
-    <td class="code">SR-03</td><td><b>Showroom: Gia công lắp dựng vách kính, cửa nhôm</b></td><td>Showroom (XDCB)</td>
+    <td class="code">SR-03</td>
+    <td><b>Showroom: Gia công lắp dựng vách kính, cửa nhôm</b><div style='font-size:10px; color:#475569; margin-top:3px; font-weight:normal;'>📌 Kính cường lực an toàn mặt tiền</div></td>
+    <td>Showroom (XDCB)</td>
     <td class="center">01/11/2026 - 20/11/2026</td>
     <td class="center strong" style="color:#94A3B8">0%</td>
     <td class="center"><span class="pill" style="background:#94A3B8">Chưa thực hiện</span></td>
     <td>Nhà thầu nhôm kính</td>
   </tr><tr>
-    <td class="code">SR-04</td><td><b>Showroom: Bả matit, sơn nước trong và ngoài</b></td><td>Showroom (XDCB)</td>
+    <td class="code">SR-04</td>
+    <td><b>Showroom: Bả matit, sơn nước trong và ngoài</b><div style='font-size:10px; color:#475569; margin-top:3px; font-weight:normal;'>📌 Màu chuẩn nhận diện thương hiệu</div></td>
+    <td>Showroom (XDCB)</td>
     <td class="center">10/11/2026 - 30/11/2026</td>
     <td class="center strong" style="color:#94A3B8">0%</td>
     <td class="center"><span class="pill" style="background:#94A3B8">Chưa thực hiện</span></td>
     <td>Nhà thầu sơn</td>
   </tr><tr>
-    <td class="code">SR-05</td><td><b>Showroom: Lắp đặt hệ thống Điện, Nước &amp; Chiếu sáng</b></td><td>Showroom (XDCB)</td>
+    <td class="code">SR-05</td>
+    <td><b>Showroom: Lắp đặt hệ thống Điện, Nước &amp; Chiếu sáng</b><div style='font-size:10px; color:#475569; margin-top:3px; font-weight:normal;'>📌 Dự kiến bắt đầu 15/10/2026</div></td>
+    <td>Showroom (XDCB)</td>
     <td class="center">15/10/2026 - 25/11/2026</td>
     <td class="center strong" style="color:#94A3B8">0%</td>
     <td class="center"><span class="pill" style="background:#94A3B8">Chưa thực hiện</span></td>
     <td>Nhà thầu M&amp;E</td>
   </tr><tr>
-    <td class="code">WS-01</td><td><b>Xưởng dịch vụ: Nền bê tông chịu tải &amp; sơn Epoxy</b></td><td>Xưởng Dịch vụ 3S</td>
+    <td class="code">WS-01</td>
+    <td><b>Xưởng dịch vụ: Nền bê tông chịu tải &amp; sơn Epoxy</b><div style='font-size:10px; color:#475569; margin-top:3px; font-weight:normal;'>📌 Dự kiến bắt đầu 25/09/2026</div></td>
+    <td>Xưởng Dịch vụ 3S</td>
     <td class="center">25/09/2026 - 30/10/2026</td>
     <td class="center strong" style="color:#94A3B8">0%</td>
     <td class="center"><span class="pill" style="background:#94A3B8">Chưa thực hiện</span></td>
     <td>Nhà thầu xây dựng</td>
   </tr><tr>
-    <td class="code">WS-02</td><td><b>Lắp đặt hệ thống cầu nâng tải trọng lớn &amp; cầu cắt kéo</b></td><td>Xưởng Dịch vụ 3S</td>
+    <td class="code">WS-02</td>
+    <td><b>Lắp đặt hệ thống cầu nâng tải trọng lớn &amp; cầu cắt kéo</b><div style='font-size:10px; color:#475569; margin-top:3px; font-weight:normal;'>📌 Cầu nâng xe tải 2 trụ &amp; 4 trụ</div></td>
+    <td>Xưởng Dịch vụ 3S</td>
     <td class="center">01/11/2026 - 20/11/2026</td>
     <td class="center strong" style="color:#94A3B8">0%</td>
     <td class="center"><span class="pill" style="background:#94A3B8">Chưa thực hiện</span></td>
     <td>NCC Thiết bị Garage</td>
   </tr><tr>
-    <td class="code">WS-03</td><td><b>Lắp đặt dây chuyền kiểm định KCS (Phanh, Đèn, Khói/Khí thải)</b></td><td>Thiết bị QCVN 121</td>
+    <td class="code">WS-03</td>
+    <td><b>Lắp đặt dây chuyền kiểm định KCS (Phanh, Đèn, Khói/Khí thải)</b><div style='font-size:10px; color:#475569; margin-top:3px; font-weight:normal;'>📌 Bắt buộc theo QCVN 121:2024</div></td>
+    <td>Thiết bị QCVN 121</td>
     <td class="center">15/11/2026 - 05/12/2026</td>
     <td class="center strong" style="color:#94A3B8">0%</td>
     <td class="center"><span class="pill" style="background:#94A3B8">Chưa thực hiện</span></td>
     <td>NCC Thiết bị kiểm định</td>
   </tr><tr>
-    <td class="code">WS-04</td><td><b>Trang bị dụng cụ bảo hộ cách điện &amp; bàn nâng pin Xe Điện/Hybrid</b></td><td>Trang bị Xe Điện (EV)</td>
+    <td class="code">WS-04</td>
+    <td><b>Trang bị dụng cụ bảo hộ cách điện &amp; bàn nâng pin Xe Điện/Hybrid</b><div style='font-size:10px; color:#475569; margin-top:3px; font-weight:normal;'>📌 Đặc thù bắt buộc cho EV/Hybrid</div></td>
+    <td>Trang bị Xe Điện (EV)</td>
     <td class="center">20/11/2026 - 10/12/2026</td>
     <td class="center strong" style="color:#94A3B8">0%</td>
     <td class="center"><span class="pill" style="background:#94A3B8">Chưa thực hiện</span></td>
     <td>Bộ phận Kỹ thuật / Dịch vụ</td>
   </tr><tr>
-    <td class="code">WS-05</td><td><b>Nghiệm thu PCCC &amp; Hệ thống xử lý nước thải dịch vụ</b></td><td>Môi trường &amp; PCCC</td>
+    <td class="code">WS-05</td>
+    <td><b>Nghiệm thu PCCC &amp; Hệ thống xử lý nước thải dịch vụ</b><div style='font-size:10px; color:#475569; margin-top:3px; font-weight:normal;'>📌 Điều kiện cần để cấp chứng nhận</div></td>
+    <td>Môi trường &amp; PCCC</td>
     <td class="center">25/11/2026 - 15/12/2026</td>
     <td class="center strong" style="color:#94A3B8">0%</td>
     <td class="center"><span class="pill" style="background:#94A3B8">Chưa thực hiện</span></td>
     <td>Cơ quan PCCC / Môi trường</td>
   </tr><tr>
-    <td class="code">OP-01</td><td><b>Đánh giá cấp Chứng nhận cơ sở bảo hành bảo dưỡng QCVN 121:2024/BGTVT</b></td><td>Kiểm định &amp; Chứng nhận</td>
+    <td class="code">OP-01</td>
+    <td><b>Đánh giá cấp Chứng nhận cơ sở bảo hành bảo dưỡng QCVN 121:2024/BGTVT</b><div style='font-size:10px; color:#475569; margin-top:3px; font-weight:normal;'>📌 Công bố hợp quy trước khi đưa cơ sở vào hoạt động</div></td>
+    <td>Kiểm định &amp; Chứng nhận</td>
     <td class="center">10/12/2026 - 25/12/2026</td>
     <td class="center strong" style="color:#94A3B8">0%</td>
     <td class="center"><span class="pill" style="background:#94A3B8">Chưa thực hiện</span></td>
-    <td>Tổ chức đánh giá / Cơ quan tiếp nhận</td>
+    <td>Tổ chức đánh giá sự phù hợp / Cơ quan tiếp nhận</td>
   </tr><tr>
-    <td class="code">OP-02</td><td><b>HTCV nghiệm thu tiêu chuẩn đại lý &amp; Khai trương hoạt động</b></td><td>Vận hành &amp; Khai trương</td>
+    <td class="code">OP-02</td>
+    <td><b>HTCV nghiệm thu tiêu chuẩn đại lý &amp; Khai trương hoạt động</b><div style='font-size:10px; color:#475569; margin-top:3px; font-weight:normal;'>📌 Chính thức đi vào hoạt động</div></td>
+    <td>Vận hành &amp; Khai trương</td>
     <td class="center">20/12/2026 - 31/12/2026</td>
     <td class="center strong" style="color:#94A3B8">0%</td>
     <td class="center"><span class="pill" style="background:#94A3B8">Chưa thực hiện</span></td>
     <td>Ban Giám Đốc &amp; HTCV</td>
-  </tr></tbody></table></section>
+  </tr>
+    </tbody>
+  </table>
+</section>
+
 <section class="quality">
-    <h2>2. ĐÁNH GIÁ TIÊU CHUẨN KỸ THUẬT & CHECKLIST (Đạt 31.0%)</h2>
-    <table><thead><tr><th>STT</th><th>Phân loại</th><th>Tiêu chuẩn kiểm định</th><th>Kết quả</th><th>Ghi chú thực tế</th></tr></thead><tbody>
-      <tr><td class="center">#1</td><td>I. Mặt bằng &amp; Cơ sở hạ tầng</td><td><b>Diện tích mặt bằng phù hợp với quy mô và tải trọng xe thương mại</b></td><td class="center"><span class="pill" style="background:#16A34A">Đạt</span></td><td>Diện tích &gt; 4.000m2
-Nguồn app.py, STT 1; nhập bản chụp 08/09/2026, chưa xác minh đánh giá lại tại hiện trường.</td></tr><tr><td class="center">#2</td><td>I. Mặt bằng &amp; Cơ sở hạ tầng</td><td><b>Khu vực tiếp nhận và trả xe rộng rãi, thông thoáng</b></td><td class="center"><span class="pill" style="background:#16A34A">Đạt</span></td><td>Bố trí tại cửa xưởng dịch vụ
-Nguồn app.py, STT 2; nhập bản chụp 08/09/2026, chưa xác minh đánh giá lại tại hiện trường.</td></tr><tr><td class="center">#3</td><td>I. Mặt bằng &amp; Cơ sở hạ tầng</td><td><b>Khu vực bảo dưỡng nhanh và sửa chữa chung phân khoang rõ ràng</b></td><td class="center"><span class="pill" style="background:#0284C7">Đang thi công</span></td><td>Có vạch sơn phân chia khoang
-Nguồn app.py, STT 3; nhập bản chụp 08/09/2026, chưa xác minh đánh giá lại tại hiện trường.</td></tr><tr><td class="center">#4</td><td>I. Mặt bằng &amp; Cơ sở hạ tầng</td><td><b>Khu vực kiểm tra chất lượng xuất xưởng (KCS)</b></td><td class="center"><span class="pill" style="background:#DC2626">Chưa đạt</span></td><td>Bố trí cuối dây chuyền
-Nguồn app.py, STT 4; nhập bản chụp 08/09/2026, chưa xác minh đánh giá lại tại hiện trường.</td></tr><tr><td class="center">#5</td><td>I. Mặt bằng &amp; Cơ sở hạ tầng</td><td><b>Khu vực rửa xe và làm sạch chi tiết</b></td><td class="center"><span class="pill" style="background:#0284C7">Đang thi công</span></td><td>Có hố thu gom bùn cát
-Nguồn app.py, STT 5; nhập bản chụp 08/09/2026, chưa xác minh đánh giá lại tại hiện trường.</td></tr><tr><td class="center">#6</td><td>I. Mặt bằng &amp; Cơ sở hạ tầng</td><td><b>Kho phụ tùng, vật tư thay thế chính hãng theo chuẩn GDSI</b></td><td class="center"><span class="pill" style="background:#0284C7">Đang thi công</span></td><td>Giá kệ tiêu chuẩn Hyundai
-Nguồn app.py, STT 6; nhập bản chụp 08/09/2026, chưa xác minh đánh giá lại tại hiện trường.</td></tr><tr><td class="center">#7</td><td>I. Mặt bằng &amp; Cơ sở hạ tầng</td><td><b>Bãi đỗ xe chờ sửa chữa và xe đã hoàn thiện</b></td><td class="center"><span class="pill" style="background:#16A34A">Đạt</span></td><td>Sức chứa &gt; 20 xe tải
-Nguồn app.py, STT 7; nhập bản chụp 08/09/2026, chưa xác minh đánh giá lại tại hiện trường.</td></tr><tr><td class="center">#8</td><td>I. Mặt bằng &amp; Cơ sở hạ tầng</td><td><b>Đường nội bộ thuận tiện cho xe tải nặng, xe khách quay đầu</b></td><td class="center"><span class="pill" style="background:#16A34A">Đạt</span></td><td>Lộ giới nội bộ &gt; 8 mét
-Nguồn app.py, STT 8; nhập bản chụp 08/09/2026, chưa xác minh đánh giá lại tại hiện trường.</td></tr><tr><td class="center">#9</td><td>I. Mặt bằng &amp; Cơ sở hạ tầng</td><td><b>Hệ thống thông gió, thu gom khí xả động cơ trong xưởng</b></td><td class="center"><span class="pill" style="background:#DC2626">Chưa đạt</span></td><td>Ống hút mềm chịu nhiệt
-Nguồn app.py, STT 9; nhập bản chụp 08/09/2026, chưa xác minh đánh giá lại tại hiện trường.</td></tr><tr><td class="center">#10</td><td>I. Mặt bằng &amp; Cơ sở hạ tầng</td><td><b>Hệ thống chiếu sáng tự nhiên và đèn LED đạt chuẩn độ rọi</b></td><td class="center"><span class="pill" style="background:#0284C7">Đang thi công</span></td><td>Độ rọi &gt; 300 lux
-Nguồn app.py, STT 10; nhập bản chụp 08/09/2026, chưa xác minh đánh giá lại tại hiện trường.</td></tr><tr><td class="center">#11</td><td>II. Thiết bị sửa chữa &amp; Nâng hạ</td><td><b>Cầu nâng xe ô tô tải trọng phù hợp (2 trụ/4 trụ/cắt kéo)</b></td><td class="center"><span class="pill" style="background:#D97706">Đang mua sắm</span></td><td>Đã có kiểm định an toàn
-Nguồn app.py, STT 11; nhập bản chụp 08/09/2026, chưa xác minh đánh giá lại tại hiện trường.</td></tr><tr><td class="center">#12</td><td>II. Thiết bị sửa chữa &amp; Nâng hạ</td><td><b>Kích cá sấu thủy lực, giá đỡ an toàn chữ A (Mễ kê tải nặng)</b></td><td class="center"><span class="pill" style="background:#D97706">Đang mua sắm</span></td><td>Tải trọng 5 - 15 tấn
-Nguồn app.py, STT 12; nhập bản chụp 08/09/2026, chưa xác minh đánh giá lại tại hiện trường.</td></tr><tr><td class="center">#13</td><td>II. Thiết bị sửa chữa &amp; Nâng hạ</td><td><b>Cần cẩu móc động cơ di động thủy lực</b></td><td class="center"><span class="pill" style="background:#D97706">Đang mua sắm</span></td><td>Sức nâng 2 - 3 tấn
-Nguồn app.py, STT 13; nhập bản chụp 08/09/2026, chưa xác minh đánh giá lại tại hiện trường.</td></tr><tr><td class="center">#14</td><td>II. Thiết bị sửa chữa &amp; Nâng hạ</td><td><b>Thiết bị kích nâng hạ hộp số chuyên dùng</b></td><td class="center"><span class="pill" style="background:#D97706">Đang mua sắm</span></td><td>Loại sàn/hầm chuyên dụng
-Nguồn app.py, STT 14; nhập bản chụp 08/09/2026, chưa xác minh đánh giá lại tại hiện trường.</td></tr><tr><td class="center">#15</td><td>II. Thiết bị sửa chữa &amp; Nâng hạ</td><td><b>Máy nén khí và hệ thống đường ống dẫn khí nén cao áp</b></td><td class="center"><span class="pill" style="background:#D97706">Đang mua sắm</span></td><td>Áp lực 10 - 12 bar
-Nguồn app.py, STT 15; nhập bản chụp 08/09/2026, chưa xác minh đánh giá lại tại hiện trường.</td></tr><tr><td class="center">#16</td><td>II. Thiết bị sửa chữa &amp; Nâng hạ</td><td><b>Thiết bị tháo lắp lốp xe thương mại hạng nặng</b></td><td class="center"><span class="pill" style="background:#D97706">Đang mua sắm</span></td><td>Đường kính mâm đến 26 inch
-Nguồn app.py, STT 16; nhập bản chụp 08/09/2026, chưa xác minh đánh giá lại tại hiện trường.</td></tr><tr><td class="center">#17</td><td>II. Thiết bị sửa chữa &amp; Nâng hạ</td><td><b>Máy cân bằng động bánh xe điện tử</b></td><td class="center"><span class="pill" style="background:#D97706">Đang mua sắm</span></td><td>Màn hình LED hiển thị
-Nguồn app.py, STT 17; nhập bản chụp 08/09/2026, chưa xác minh đánh giá lại tại hiện trường.</td></tr><tr><td class="center">#18</td><td>II. Thiết bị sửa chữa &amp; Nâng hạ</td><td><b>Bộ cờ lê cân lực (cần xiết lực có kiểm định hiệu chuẩn)</b></td><td class="center"><span class="pill" style="background:#D97706">Đang mua sắm</span></td><td>Dải đo từ 20 đến 800 Nm
-Nguồn app.py, STT 18; nhập bản chụp 08/09/2026, chưa xác minh đánh giá lại tại hiện trường.</td></tr><tr><td class="center">#19</td><td>II. Thiết bị sửa chữa &amp; Nâng hạ</td><td><b>Tủ đồ nghề dụng cụ cầm tay tiêu chuẩn cho KTV</b></td><td class="center"><span class="pill" style="background:#16A34A">Đạt</span></td><td>Trang bị theo từng khoang
-Nguồn app.py, STT 19; nhập bản chụp 08/09/2026, chưa xác minh đánh giá lại tại hiện trường.</td></tr><tr><td class="center">#20</td><td>II. Thiết bị sửa chữa &amp; Nâng hạ</td><td><b>Thiết bị chẩn đoán lỗi điện tử chuyên hãng Hyundai (GDS-M)</b></td><td class="center"><span class="pill" style="background:#16A34A">Đạt</span></td><td>Bản quyền chính hãng HTCV
-Nguồn app.py, STT 20; nhập bản chụp 08/09/2026, chưa xác minh đánh giá lại tại hiện trường.</td></tr><tr><td class="center">#21</td><td>II. Thiết bị sửa chữa &amp; Nâng hạ</td><td><b>Thiết bị kiểm tra, nạp và bảo dưỡng bình ắc quy</b></td><td class="center"><span class="pill" style="background:#D97706">Đang mua sắm</span></td><td>Đo nội trở và dung lượng
-Nguồn app.py, STT 21; nhập bản chụp 08/09/2026, chưa xác minh đánh giá lại tại hiện trường.</td></tr><tr><td class="center">#22</td><td>II. Thiết bị sửa chữa &amp; Nâng hạ</td><td><b>Máy hút, thu hồi và nạp gas điều hòa tự động</b></td><td class="center"><span class="pill" style="background:#D97706">Đang mua sắm</span></td><td>Gas R134a / R1234yf
-Nguồn app.py, STT 22; nhập bản chụp 08/09/2026, chưa xác minh đánh giá lại tại hiện trường.</td></tr><tr><td class="center">#23</td><td>II. Thiết bị sửa chữa &amp; Nâng hạ</td><td><b>Thiết bị thay dầu phanh và xả gió phanh tự động</b></td><td class="center"><span class="pill" style="background:#D97706">Đang mua sắm</span></td><td>Áp lực khí nén
-Nguồn app.py, STT 23; nhập bản chụp 08/09/2026, chưa xác minh đánh giá lại tại hiện trường.</td></tr><tr><td class="center">#24</td><td>II. Thiết bị sửa chữa &amp; Nâng hạ</td><td><b>Thiết bị hút/hứng dầu nhớt thải di động</b></td><td class="center"><span class="pill" style="background:#D97706">Đang mua sắm</span></td><td>Bình chứa 80 lít
-Nguồn app.py, STT 24; nhập bản chụp 08/09/2026, chưa xác minh đánh giá lại tại hiện trường.</td></tr><tr><td class="center">#25</td><td>II. Thiết bị sửa chữa &amp; Nâng hạ</td><td><b>Máy ép thủy lực trục đứng</b></td><td class="center"><span class="pill" style="background:#D97706">Đang mua sắm</span></td><td>Lực ép 30 - 50 tấn
-Nguồn app.py, STT 25; nhập bản chụp 08/09/2026, chưa xác minh đánh giá lại tại hiện trường.</td></tr><tr><td class="center">#26</td><td>III. Thiết bị kiểm định KCS</td><td><b>Thiết bị kiểm tra phanh xe thương mại (Băng thử rulo tải nặng)</b></td><td class="center"><span class="pill" style="background:#D97706">Đang mua sắm</span></td><td>Tải trọng trục 13 tấn
-Nguồn app.py, STT 26; nhập bản chụp 08/09/2026, chưa xác minh đánh giá lại tại hiện trường.</td></tr><tr><td class="center">#27</td><td>III. Thiết bị kiểm định KCS</td><td><b>Thiết bị kiểm tra độ trượt ngang bánh xe</b></td><td class="center"><span class="pill" style="background:#D97706">Đang mua sắm</span></td><td>Cảm biến điện tử chính xác
-Nguồn app.py, STT 27; nhập bản chụp 08/09/2026, chưa xác minh đánh giá lại tại hiện trường.</td></tr><tr><td class="center">#28</td><td>III. Thiết bị kiểm định KCS</td><td><b>Thiết bị kiểm tra và căn chỉnh góc chiếu đèn pha (Headlight tester)</b></td><td class="center"><span class="pill" style="background:#D97706">Đang mua sắm</span></td><td>Camera kỹ thuật số tự động
-Nguồn app.py, STT 28; nhập bản chụp 08/09/2026, chưa xác minh đánh giá lại tại hiện trường.</td></tr><tr><td class="center">#29</td><td>III. Thiết bị kiểm định KCS</td><td><b>Thiết bị đo độ mờ khói khí thải động cơ Diesel</b></td><td class="center"><span class="pill" style="background:#D97706">Đang mua sắm</span></td><td>Có tem kiểm định hiệu chuẩn
-Nguồn app.py, STT 29; nhập bản chụp 08/09/2026, chưa xác minh đánh giá lại tại hiện trường.</td></tr><tr><td class="center">#30</td><td>III. Thiết bị kiểm định KCS</td><td><b>Thiết bị đo nồng độ khí xả xe xăng (CO, HC, CO2, O2, Lambda)</b></td><td class="center"><span class="pill" style="background:#D97706">Đang mua sắm</span></td><td>Chuẩn OIML Class 0
-Nguồn app.py, STT 30; nhập bản chụp 08/09/2026, chưa xác minh đánh giá lại tại hiện trường.</td></tr><tr><td class="center">#31</td><td>III. Thiết bị kiểm định KCS</td><td><b>Thiết bị đo độ ồn phương tiện</b></td><td class="center"><span class="pill" style="background:#D97706">Đang mua sắm</span></td><td>Dải đo 30 - 130 dBA
-Nguồn app.py, STT 31; nhập bản chụp 08/09/2026, chưa xác minh đánh giá lại tại hiện trường.</td></tr><tr><td class="center">#32</td><td>III. Thiết bị kiểm định KCS</td><td><b>Thiết bị đo độ rơ và góc quay vô lăng lái</b></td><td class="center"><span class="pill" style="background:#D97706">Đang mua sắm</span></td><td>Thước đo chuyên dụng
-Nguồn app.py, STT 32; nhập bản chụp 08/09/2026, chưa xác minh đánh giá lại tại hiện trường.</td></tr><tr><td class="center">#33</td><td>V. PCCC, ATLĐ &amp; Môi trường</td><td><b>Hệ thống PCCC tự động và bình chữa cháy xách tay thẩm duyệt</b></td><td class="center"><span class="pill" style="background:#0284C7">Đang thi công</span></td><td>Đã có thẩm duyệt thiết kế PCCC
-Nguồn app.py, STT 41; nhập bản chụp 08/09/2026, chưa xác minh đánh giá lại tại hiện trường.</td></tr><tr><td class="center">#34</td><td>V. PCCC, ATLĐ &amp; Môi trường</td><td><b>Trang bị bảo hộ lao động cá nhân đầy đủ cho Kỹ thuật viên</b></td><td class="center"><span class="pill" style="background:#16A34A">Đạt</span></td><td>Quần áo, giày mũi thép, kính
-Nguồn app.py, STT 42; nhập bản chụp 08/09/2026, chưa xác minh đánh giá lại tại hiện trường.</td></tr><tr><td class="center">#35</td><td>V. PCCC, ATLĐ &amp; Môi trường</td><td><b>Hệ thống xử lý nước thải dịch vụ đạt tiêu chuẩn QCVN 40</b></td><td class="center"><span class="pill" style="background:#0284C7">Đang thi công</span></td><td>Bể tách mỡ &amp; hệ vi sinh
-Nguồn app.py, STT 43; nhập bản chụp 08/09/2026, chưa xác minh đánh giá lại tại hiện trường.</td></tr><tr><td class="center">#36</td><td>V. PCCC, ATLĐ &amp; Môi trường</td><td><b>Khu vực lưu chứa chất thải nguy hại (nhớt thải, lọc nhớt, ắc quy)</b></td><td class="center"><span class="pill" style="background:#0284C7">Đang thi công</span></td><td>Kho kín có gờ chống tràn
-Nguồn app.py, STT 44; nhập bản chụp 08/09/2026, chưa xác minh đánh giá lại tại hiện trường.</td></tr><tr><td class="center">#37</td><td>V. PCCC, ATLĐ &amp; Môi trường</td><td><b>Tủ thuốc và dụng cụ sơ cấp cứu y tế tại xưởng</b></td><td class="center"><span class="pill" style="background:#16A34A">Đạt</span></td><td>Đầy đủ vật tư cấp cứu ban đầu
-Nguồn app.py, STT 45; nhập bản chụp 08/09/2026, chưa xác minh đánh giá lại tại hiện trường.</td></tr><tr><td class="center">#38</td><td>V. PCCC, ATLĐ &amp; Môi trường</td><td><b>Nội quy an toàn lao động và quy trình vận hành thiết bị niêm yết</b></td><td class="center"><span class="pill" style="background:#16A34A">Đạt</span></td><td>Bảng mica tại từng vị trí máy
-Nguồn app.py, STT 46; nhập bản chụp 08/09/2026, chưa xác minh đánh giá lại tại hiện trường.</td></tr><tr><td class="center">#39</td><td>VI. Nhân sự &amp; Phần mềm quản lý</td><td><b>Quản đốc xưởng / Trưởng phòng dịch vụ có bằng cấp chuyên ngành</b></td><td class="center"><span class="pill" style="background:#16A34A">Đạt</span></td><td>Đại học Ô tô / Chứng chỉ HTCV
-Nguồn app.py, STT 47; nhập bản chụp 08/09/2026, chưa xác minh đánh giá lại tại hiện trường.</td></tr><tr><td class="center">#40</td><td>VI. Nhân sự &amp; Phần mềm quản lý</td><td><b>Đội ngũ Kỹ thuật viên có chứng chỉ đào tạo nghề ô tô hợp lệ</b></td><td class="center"><span class="pill" style="background:#16A34A">Đạt</span></td><td>100% KTV có bằng nghề
-Nguồn app.py, STT 48; nhập bản chụp 08/09/2026, chưa xác minh đánh giá lại tại hiện trường.</td></tr><tr><td class="center">#41</td><td>VI. Nhân sự &amp; Phần mềm quản lý</td><td><b>Phần mềm DMS quản lý tiếp nhận và lịch sử sửa chữa bảo dưỡng</b></td><td class="center"><span class="pill" style="background:#16A34A">Đạt</span></td><td>Hệ thống DMS của HTCV
-Nguồn app.py, STT 50; nhập bản chụp 08/09/2026, chưa xác minh đánh giá lại tại hiện trường.</td></tr><tr><td class="center">#42</td><td>VI. Nhân sự &amp; Phần mềm quản lý</td><td><b>Quy trình kiểm soát chất lượng dịch vụ và bảo hành bằng văn bản</b></td><td class="center"><span class="pill" style="background:#16A34A">Đạt</span></td><td>Ban hành quy trình chuẩn 3S
-Nguồn app.py, STT 51; nhập bản chụp 08/09/2026, chưa xác minh đánh giá lại tại hiện trường.</td></tr>
-    </tbody></table>
-  </section><section class="signatures"><div><b>ĐẠI DIỆN CHỦ ĐẦU TƯ</b><br><small>(Ký và ghi rõ họ tên)</small><div class="signature-line"></div><b>Thế giới xe tải</b></div><div><b>TƯ VẤN GIÁM SÁT</b><br><small>(Ký và ghi rõ họ tên)</small><div class="signature-line"></div><b>Trưởng đoàn TVGS</b></div><div><b>CHỈ HUY TRƯỞNG CÔNG TRÌNH</b><br><small>(Ký và ghi rõ họ tên)</small><div class="signature-line"></div><b>Ban Chỉ huy MPP</b></div></section>
+  <h2>2. ĐÁNH GIÁ TIÊU CHUẨN KỸ THUẬT &amp; CHECKLIST QCVN 121 (Đạt 31.0%)</h2>
+  <table>
+    <thead>
+      <tr>
+        <th style="width:45px; text-align:center">STT</th>
+        <th style="width:190px">Phân loại</th>
+        <th>Tiêu chuẩn kiểm định</th>
+        <th style="width:95px; text-align:center">Kết quả</th>
+        <th>Ghi chú thực tế</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+    <td class="center">#1</td>
+    <td>I. Mặt bằng &amp; Cơ sở hạ tầng</td>
+    <td><b>Diện tích mặt bằng phù hợp với quy mô và tải trọng xe thương mại</b></td>
+    <td class="center"><span class="pill" style="background:#16A34A">Đạt</span></td>
+    <td>Diện tích &gt; 4.000m2</td>
+  </tr><tr>
+    <td class="center">#2</td>
+    <td>I. Mặt bằng &amp; Cơ sở hạ tầng</td>
+    <td><b>Khu vực tiếp nhận và trả xe rộng rãi, thông thoáng</b></td>
+    <td class="center"><span class="pill" style="background:#16A34A">Đạt</span></td>
+    <td>Bố trí tại cửa xưởng dịch vụ</td>
+  </tr><tr>
+    <td class="center">#3</td>
+    <td>I. Mặt bằng &amp; Cơ sở hạ tầng</td>
+    <td><b>Khu vực bảo dưỡng nhanh và sửa chữa chung phân khoang rõ ràng</b></td>
+    <td class="center"><span class="pill" style="background:#0284C7">Đang thi công</span></td>
+    <td>Có vạch sơn phân chia khoang</td>
+  </tr><tr>
+    <td class="center">#4</td>
+    <td>I. Mặt bằng &amp; Cơ sở hạ tầng</td>
+    <td><b>Khu vực kiểm tra chất lượng xuất xưởng (KCS)</b></td>
+    <td class="center"><span class="pill" style="background:#DC2626">Chưa đạt</span></td>
+    <td>Bố trí cuối dây chuyền</td>
+  </tr><tr>
+    <td class="center">#5</td>
+    <td>I. Mặt bằng &amp; Cơ sở hạ tầng</td>
+    <td><b>Khu vực rửa xe và làm sạch chi tiết</b></td>
+    <td class="center"><span class="pill" style="background:#0284C7">Đang thi công</span></td>
+    <td>Có hố thu gom bùn cát</td>
+  </tr><tr>
+    <td class="center">#6</td>
+    <td>I. Mặt bằng &amp; Cơ sở hạ tầng</td>
+    <td><b>Kho phụ tùng, vật tư thay thế chính hãng theo chuẩn GDSI</b></td>
+    <td class="center"><span class="pill" style="background:#0284C7">Đang thi công</span></td>
+    <td>Giá kệ tiêu chuẩn Hyundai</td>
+  </tr><tr>
+    <td class="center">#7</td>
+    <td>I. Mặt bằng &amp; Cơ sở hạ tầng</td>
+    <td><b>Bãi đỗ xe chờ sửa chữa và xe đã hoàn thiện</b></td>
+    <td class="center"><span class="pill" style="background:#16A34A">Đạt</span></td>
+    <td>Sức chứa &gt; 20 xe tải</td>
+  </tr><tr>
+    <td class="center">#8</td>
+    <td>I. Mặt bằng &amp; Cơ sở hạ tầng</td>
+    <td><b>Đường nội bộ thuận tiện cho xe tải nặng, xe khách quay đầu</b></td>
+    <td class="center"><span class="pill" style="background:#16A34A">Đạt</span></td>
+    <td>Lộ giới nội bộ &gt; 8 mét</td>
+  </tr><tr>
+    <td class="center">#9</td>
+    <td>I. Mặt bằng &amp; Cơ sở hạ tầng</td>
+    <td><b>Hệ thống thông gió, thu gom khí xả động cơ trong xưởng</b></td>
+    <td class="center"><span class="pill" style="background:#DC2626">Chưa đạt</span></td>
+    <td>Ống hút mềm chịu nhiệt</td>
+  </tr><tr>
+    <td class="center">#10</td>
+    <td>I. Mặt bằng &amp; Cơ sở hạ tầng</td>
+    <td><b>Hệ thống chiếu sáng tự nhiên và đèn LED đạt chuẩn độ rọi</b></td>
+    <td class="center"><span class="pill" style="background:#0284C7">Đang thi công</span></td>
+    <td>Độ rọi &gt; 300 lux</td>
+  </tr><tr>
+    <td class="center">#11</td>
+    <td>II. Thiết bị sửa chữa &amp; Nâng hạ</td>
+    <td><b>Cầu nâng xe ô tô tải trọng phù hợp (2 trụ/4 trụ/cắt kéo)</b></td>
+    <td class="center"><span class="pill" style="background:#D97706">Đang mua sắm</span></td>
+    <td>Đã có kiểm định an toàn</td>
+  </tr><tr>
+    <td class="center">#12</td>
+    <td>II. Thiết bị sửa chữa &amp; Nâng hạ</td>
+    <td><b>Kích cá sấu thủy lực, giá đỡ an toàn chữ A (Mễ kê tải nặng)</b></td>
+    <td class="center"><span class="pill" style="background:#D97706">Đang mua sắm</span></td>
+    <td>Tải trọng 5 - 15 tấn</td>
+  </tr><tr>
+    <td class="center">#13</td>
+    <td>II. Thiết bị sửa chữa &amp; Nâng hạ</td>
+    <td><b>Cần cẩu móc động cơ di động thủy lực</b></td>
+    <td class="center"><span class="pill" style="background:#D97706">Đang mua sắm</span></td>
+    <td>Sức nâng 2 - 3 tấn</td>
+  </tr><tr>
+    <td class="center">#14</td>
+    <td>II. Thiết bị sửa chữa &amp; Nâng hạ</td>
+    <td><b>Thiết bị kích nâng hạ hộp số chuyên dùng</b></td>
+    <td class="center"><span class="pill" style="background:#D97706">Đang mua sắm</span></td>
+    <td>Loại sàn/hầm chuyên dụng</td>
+  </tr><tr>
+    <td class="center">#15</td>
+    <td>II. Thiết bị sửa chữa &amp; Nâng hạ</td>
+    <td><b>Máy nén khí và hệ thống đường ống dẫn khí nén cao áp</b></td>
+    <td class="center"><span class="pill" style="background:#D97706">Đang mua sắm</span></td>
+    <td>Áp lực 10 - 12 bar</td>
+  </tr><tr>
+    <td class="center">#16</td>
+    <td>II. Thiết bị sửa chữa &amp; Nâng hạ</td>
+    <td><b>Thiết bị tháo lắp lốp xe thương mại hạng nặng</b></td>
+    <td class="center"><span class="pill" style="background:#D97706">Đang mua sắm</span></td>
+    <td>Đường kính mâm đến 26 inch</td>
+  </tr><tr>
+    <td class="center">#17</td>
+    <td>II. Thiết bị sửa chữa &amp; Nâng hạ</td>
+    <td><b>Máy cân bằng động bánh xe điện tử</b></td>
+    <td class="center"><span class="pill" style="background:#D97706">Đang mua sắm</span></td>
+    <td>Màn hình LED hiển thị</td>
+  </tr><tr>
+    <td class="center">#18</td>
+    <td>II. Thiết bị sửa chữa &amp; Nâng hạ</td>
+    <td><b>Bộ cờ lê cân lực (cần xiết lực có kiểm định hiệu chuẩn)</b></td>
+    <td class="center"><span class="pill" style="background:#D97706">Đang mua sắm</span></td>
+    <td>Dải đo từ 20 đến 800 Nm</td>
+  </tr><tr>
+    <td class="center">#19</td>
+    <td>II. Thiết bị sửa chữa &amp; Nâng hạ</td>
+    <td><b>Tủ đồ nghề dụng cụ cầm tay tiêu chuẩn cho KTV</b></td>
+    <td class="center"><span class="pill" style="background:#16A34A">Đạt</span></td>
+    <td>Trang bị theo từng khoang</td>
+  </tr><tr>
+    <td class="center">#20</td>
+    <td>II. Thiết bị sửa chữa &amp; Nâng hạ</td>
+    <td><b>Thiết bị chẩn đoán lỗi điện tử chuyên hãng Hyundai (GDS-M)</b></td>
+    <td class="center"><span class="pill" style="background:#16A34A">Đạt</span></td>
+    <td>Bản quyền chính hãng HTCV</td>
+  </tr><tr>
+    <td class="center">#21</td>
+    <td>II. Thiết bị sửa chữa &amp; Nâng hạ</td>
+    <td><b>Thiết bị kiểm tra, nạp và bảo dưỡng bình ắc quy</b></td>
+    <td class="center"><span class="pill" style="background:#D97706">Đang mua sắm</span></td>
+    <td>Đo nội trở và dung lượng</td>
+  </tr><tr>
+    <td class="center">#22</td>
+    <td>II. Thiết bị sửa chữa &amp; Nâng hạ</td>
+    <td><b>Máy hút, thu hồi và nạp gas điều hòa tự động</b></td>
+    <td class="center"><span class="pill" style="background:#D97706">Đang mua sắm</span></td>
+    <td>Gas R134a / R1234yf</td>
+  </tr><tr>
+    <td class="center">#23</td>
+    <td>II. Thiết bị sửa chữa &amp; Nâng hạ</td>
+    <td><b>Thiết bị thay dầu phanh và xả gió phanh tự động</b></td>
+    <td class="center"><span class="pill" style="background:#D97706">Đang mua sắm</span></td>
+    <td>Áp lực khí nén</td>
+  </tr><tr>
+    <td class="center">#24</td>
+    <td>II. Thiết bị sửa chữa &amp; Nâng hạ</td>
+    <td><b>Thiết bị hút/hứng dầu nhớt thải di động</b></td>
+    <td class="center"><span class="pill" style="background:#D97706">Đang mua sắm</span></td>
+    <td>Bình chứa 80 lít</td>
+  </tr><tr>
+    <td class="center">#25</td>
+    <td>II. Thiết bị sửa chữa &amp; Nâng hạ</td>
+    <td><b>Máy ép thủy lực trục đứng</b></td>
+    <td class="center"><span class="pill" style="background:#D97706">Đang mua sắm</span></td>
+    <td>Lực ép 30 - 50 tấn</td>
+  </tr><tr>
+    <td class="center">#26</td>
+    <td>III. Thiết bị kiểm định KCS</td>
+    <td><b>Thiết bị kiểm tra phanh xe thương mại (Băng thử rulo tải nặng)</b></td>
+    <td class="center"><span class="pill" style="background:#D97706">Đang mua sắm</span></td>
+    <td>Tải trọng trục 13 tấn</td>
+  </tr><tr>
+    <td class="center">#27</td>
+    <td>III. Thiết bị kiểm định KCS</td>
+    <td><b>Thiết bị kiểm tra độ trượt ngang bánh xe</b></td>
+    <td class="center"><span class="pill" style="background:#D97706">Đang mua sắm</span></td>
+    <td>Cảm biến điện tử chính xác</td>
+  </tr><tr>
+    <td class="center">#28</td>
+    <td>III. Thiết bị kiểm định KCS</td>
+    <td><b>Thiết bị kiểm tra và căn chỉnh góc chiếu đèn pha (Headlight tester)</b></td>
+    <td class="center"><span class="pill" style="background:#D97706">Đang mua sắm</span></td>
+    <td>Camera kỹ thuật số tự động</td>
+  </tr><tr>
+    <td class="center">#29</td>
+    <td>III. Thiết bị kiểm định KCS</td>
+    <td><b>Thiết bị đo độ mờ khói khí thải động cơ Diesel</b></td>
+    <td class="center"><span class="pill" style="background:#D97706">Đang mua sắm</span></td>
+    <td>Có tem kiểm định hiệu chuẩn</td>
+  </tr><tr>
+    <td class="center">#30</td>
+    <td>III. Thiết bị kiểm định KCS</td>
+    <td><b>Thiết bị đo nồng độ khí xả xe xăng (CO, HC, CO2, O2, Lambda)</b></td>
+    <td class="center"><span class="pill" style="background:#D97706">Đang mua sắm</span></td>
+    <td>Chuẩn OIML Class 0</td>
+  </tr><tr>
+    <td class="center">#31</td>
+    <td>III. Thiết bị kiểm định KCS</td>
+    <td><b>Thiết bị đo độ ồn phương tiện</b></td>
+    <td class="center"><span class="pill" style="background:#D97706">Đang mua sắm</span></td>
+    <td>Dải đo 30 - 130 dBA</td>
+  </tr><tr>
+    <td class="center">#32</td>
+    <td>III. Thiết bị kiểm định KCS</td>
+    <td><b>Thiết bị đo độ rơ và góc quay vô lăng lái</b></td>
+    <td class="center"><span class="pill" style="background:#D97706">Đang mua sắm</span></td>
+    <td>Thước đo chuyên dụng</td>
+  </tr><tr>
+    <td class="center">#41</td>
+    <td>V. PCCC, ATLĐ &amp; Môi trường</td>
+    <td><b>Hệ thống PCCC tự động và bình chữa cháy xách tay thẩm duyệt</b></td>
+    <td class="center"><span class="pill" style="background:#0284C7">Đang thi công</span></td>
+    <td>Đã có thẩm duyệt thiết kế PCCC</td>
+  </tr><tr>
+    <td class="center">#42</td>
+    <td>V. PCCC, ATLĐ &amp; Môi trường</td>
+    <td><b>Trang bị bảo hộ lao động cá nhân đầy đủ cho Kỹ thuật viên</b></td>
+    <td class="center"><span class="pill" style="background:#16A34A">Đạt</span></td>
+    <td>Quần áo, giày mũi thép, kính</td>
+  </tr><tr>
+    <td class="center">#43</td>
+    <td>V. PCCC, ATLĐ &amp; Môi trường</td>
+    <td><b>Hệ thống xử lý nước thải dịch vụ đạt tiêu chuẩn QCVN 40</b></td>
+    <td class="center"><span class="pill" style="background:#0284C7">Đang thi công</span></td>
+    <td>Bể tách mỡ &amp; hệ vi sinh</td>
+  </tr><tr>
+    <td class="center">#44</td>
+    <td>V. PCCC, ATLĐ &amp; Môi trường</td>
+    <td><b>Khu vực lưu chứa chất thải nguy hại (nhớt thải, lọc nhớt, ắc quy)</b></td>
+    <td class="center"><span class="pill" style="background:#0284C7">Đang thi công</span></td>
+    <td>Kho kín có gờ chống tràn</td>
+  </tr><tr>
+    <td class="center">#45</td>
+    <td>V. PCCC, ATLĐ &amp; Môi trường</td>
+    <td><b>Tủ thuốc và dụng cụ sơ cấp cứu y tế tại xưởng</b></td>
+    <td class="center"><span class="pill" style="background:#16A34A">Đạt</span></td>
+    <td>Đầy đủ vật tư cấp cứu ban đầu</td>
+  </tr><tr>
+    <td class="center">#46</td>
+    <td>V. PCCC, ATLĐ &amp; Môi trường</td>
+    <td><b>Nội quy an toàn lao động và quy trình vận hành thiết bị niêm yết</b></td>
+    <td class="center"><span class="pill" style="background:#16A34A">Đạt</span></td>
+    <td>Bảng mica tại từng vị trí máy</td>
+  </tr><tr>
+    <td class="center">#47</td>
+    <td>VI. Nhân sự &amp; Phần mềm quản lý</td>
+    <td><b>Quản đốc xưởng / Trưởng phòng dịch vụ có bằng cấp chuyên ngành</b></td>
+    <td class="center"><span class="pill" style="background:#16A34A">Đạt</span></td>
+    <td>Đại học Ô tô / Chứng chỉ HTCV</td>
+  </tr><tr>
+    <td class="center">#48</td>
+    <td>VI. Nhân sự &amp; Phần mềm quản lý</td>
+    <td><b>Đội ngũ Kỹ thuật viên có chứng chỉ đào tạo nghề ô tô hợp lệ</b></td>
+    <td class="center"><span class="pill" style="background:#16A34A">Đạt</span></td>
+    <td>100% KTV có bằng nghề</td>
+  </tr><tr>
+    <td class="center">#50</td>
+    <td>VI. Nhân sự &amp; Phần mềm quản lý</td>
+    <td><b>Phần mềm DMS quản lý tiếp nhận và lịch sử sửa chữa bảo dưỡng</b></td>
+    <td class="center"><span class="pill" style="background:#16A34A">Đạt</span></td>
+    <td>Hệ thống DMS của HTCV</td>
+  </tr><tr>
+    <td class="center">#51</td>
+    <td>VI. Nhân sự &amp; Phần mềm quản lý</td>
+    <td><b>Quy trình kiểm soát chất lượng dịch vụ và bảo hành bằng văn bản</b></td>
+    <td class="center"><span class="pill" style="background:#16A34A">Đạt</span></td>
+    <td>Ban hành quy trình chuẩn 3S</td>
+  </tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="signatures">
+  <div>
+    <b>ĐẠI DIỆN CHỦ ĐẦU TƯ</b><br><small>(Ký và ghi rõ họ tên)</small>
+    <div class="signature-line"></div>
+    <b>Thế giới xe tải</b>
+  </div>
+  <div>
+    <b>TƯ VẤN GIÁM SÁT</b><br><small>(Ký và ghi rõ họ tên)</small>
+    <div class="signature-line"></div>
+    <b>Trưởng đoàn TVGS</b>
+  </div>
+  <div>
+    <b>CHỈ HUY TRƯỞNG CÔNG TRÌNH</b><br><small>(Ký và ghi rõ họ tên)</small>
+    <div class="signature-line"></div>
+    <b>Ban Chỉ huy MPP</b>
+  </div>
+</section>
 </body></html>

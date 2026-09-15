@@ -1449,12 +1449,196 @@ with tab_report:
         return ""
 
     pdf_bytes = _find_report_bytes(pdf_filename)
-    html_text = _find_report_text(html_filename)
+    cur_date_display = PROJECT_TODAY.strftime("%d/%m/%Y")
+
+    # Hàm xây dựng Form HTML in ấn động từ dữ liệu thực tế hiện tại
+    def build_dynamic_printable_html(progress_df, qcvn_df, report_date_str):
+        total_tasks = len(progress_df)
+        completed_tasks = int((progress_df["Tiến độ (%)"] >= 100).sum() + ((progress_df["Trạng thái"] == "Đã hoàn thiện") & (progress_df["Tiến độ (%)"] < 100)).sum())
+        overall_progress = round(float(progress_df["Tiến độ (%)"].mean()), 1) if total_tasks > 0 else 0
+
+        # Số ngày còn lại đến 31/12/2026
+        try:
+            today_d = datetime.datetime.strptime(report_date_str, "%d/%m/%Y").date()
+        except Exception:
+            today_d = PROJECT_TODAY
+        days_left = max((datetime.date(2026, 12, 31) - today_d).days, 0)
+
+        # Đánh giá Checklist
+        total_check = len(qcvn_df)
+        achieved_check = int((qcvn_df["Đánh giá"] == "Đạt").sum())
+        qcvn_pct = round((achieved_check / total_check * 100), 1) if total_check > 0 else 0
+
+        wbs_rows = []
+        for _, r in progress_df.iterrows():
+            pct = int(r.get("Tiến độ (%)", 0))
+            stt_val = str(r.get("Trạng thái", ""))
+            pill_color = "#10B981" if (pct >= 100 or stt_val == "Đã hoàn thiện") else ("#0284C7" if pct > 0 else "#94A3B8")
+            start_str = pd.to_datetime(r.get("Bắt đầu")).strftime('%d/%m/%Y') if pd.notnull(r.get("Bắt đầu")) else ""
+            end_str = pd.to_datetime(r.get("Hoàn thành")).strftime('%d/%m/%Y') if pd.notnull(r.get("Hoàn thành")) else ""
+            task_name = html.escape(str(r.get("Hạng mục công việc", "")))
+            note_val = html.escape(str(r.get("Ghi chú", "")).strip())
+            note_html = f"<div style='font-size:10px; color:#475569; margin-top:3px; font-weight:normal;'>📌 {note_val}</div>" if note_val else ""
+
+            wbs_rows.append(f"""<tr>
+    <td class="code">{html.escape(str(r.get('Mã', '')))}</td>
+    <td><b>{task_name}</b>{note_html}</td>
+    <td>{html.escape(str(r.get('Phân khu', '')))}</td>
+    <td class="center">{start_str} - {end_str}</td>
+    <td class="center strong" style="color:{pill_color}">{pct}%</td>
+    <td class="center"><span class="pill" style="background:{pill_color}">{html.escape(stt_val)}</span></td>
+    <td>{html.escape(str(r.get('Người phụ trách', '')))}</td>
+  </tr>""")
+
+        qcvn_rows = []
+        for idx, r in qcvn_df.reset_index(drop=True).iterrows():
+            stt_num = r.get("STT", idx + 1)
+            group_name = html.escape(str(r.get("Nhóm") or r.get("Nhóm tiêu chuẩn") or ""))
+            item_name = html.escape(str(r.get("Hạng mục") or r.get("Nội dung kiểm soát") or ""))
+            eval_val = str(r.get("Đánh giá", ""))
+            note_text = html.escape(str(r.get("Ghi chú") or r.get("Ghi chú / Yêu cầu chứng minh") or ""))
+            pill_bg = "#16A34A" if eval_val == "Đạt" else ("#0284C7" if "Đang thi công" in eval_val else ("#D97706" if "Đang mua sắm" in eval_val else "#DC2626"))
+            qcvn_rows.append(f"""<tr>
+    <td class="center">#{stt_num}</td>
+    <td>{group_name}</td>
+    <td><b>{item_name}</b></td>
+    <td class="center"><span class="pill" style="background:{pill_bg}">{html.escape(eval_val)}</span></td>
+    <td>{note_text}</td>
+  </tr>""")
+
+        wbs_content = "\n".join(wbs_rows)
+        qcvn_content = "\n".join(qcvn_rows)
+
+        template = f"""<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Báo cáo tiến độ - HMT-CANTHO-2026</title>
+<style>
+  @page {{ size: A4; margin: 12mm 15mm; }}
+  * {{ box-sizing: border-box; }}
+  body {{ margin: 25px; color: #0F172A; background: #fff; font: 12.5px/1.45 "Segoe UI", Arial, sans-serif; }}
+  .header {{ display: flex; justify-content: space-between; gap: 20px; align-items: flex-start; border-bottom: 3px solid #002C6C; padding-bottom: 12px; }}
+  .header h1 {{ margin: 0; color: #002C6C; font-size: 19px; line-height: 1.35; font-weight: 800; text-transform: uppercase; }}
+  .subtitle {{ color: #475569; margin-top: 3px; font-size: 12px; }}
+  .meta {{ text-align: right; min-width: 140px; }}
+  .meta-label, .kpi-label {{ color: #64748B; font-size: 11px; font-weight: 600; text-transform: uppercase; }}
+  .meta-date {{ color: #002C6C; font-size: 15px; font-weight: 800; margin-top: 2px; }}
+  .meta-brand {{ color: #94A3B8; font-size: 10px; margin-top: 3px; }}
+  .kpis {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 16px 0; }}
+  .kpi {{ padding: 10px; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; text-align: center; }}
+  .kpi-value {{ color: #00AAD2; font-size: 22px; font-weight: 800; }}
+  .kpi-value.blue {{ color: #0284C7; }}
+  .kpi-value.green {{ color: #10B981; }}
+  .kpi-value.amber {{ color: #D97706; }}
+  h2 {{ margin: 20px 0 10px; padding-bottom: 4px; border-bottom: 2px solid #00AAD2; color: #002C6C; font-size: 14px; }}
+  table {{ width: 100%; border-collapse: collapse; font-size: 11px; }}
+  th, td {{ padding: 7px 9px; border: 1px solid #E2E8F0; vertical-align: top; }}
+  th {{ background: #002C6C; color: #fff; font-weight: 700; text-align: left; }}
+  tbody tr:nth-child(even) {{ background: #F8FAFC; }}
+  .center {{ text-align: center; }}
+  .strong {{ font-weight: 800; }}
+  .code {{ font-family: Consolas, monospace; font-weight: 800; }}
+  .pill {{ display: inline-block; padding: 2px 7px; border-radius: 10px; color: #fff; font-size: 10px; white-space: nowrap; font-weight: 600; }}
+  .quality {{ margin-top: 22px; }}
+  .signatures {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 35px; break-inside: avoid; text-align: center; font-size: 11px; }}
+  .signatures small {{ color: #64748B; }}
+  .signature-line {{ height: 65px; border-bottom: 1px solid #CBD5E1; margin: 0 14px 8px; }}
+  .btn-print {{ position: fixed; top: 15px; right: 15px; background: #002C6C; color: #fff; padding: 8px 16px; border-radius: 6px; font-weight: 700; border: none; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }}
+  @media print {{
+    body {{ margin: 0; }}
+    .no-print {{ display: none !important; }}
+    thead {{ display: table-header-group; }}
+    tr {{ break-inside: avoid; }}
+  }}
+</style></head><body>
+<button onclick="window.print()" class="btn-print no-print">🖨️ In Báo Cáo (Ctrl + P)</button>
+<header class="header">
+  <div>
+    <h1>BÁO CÁO TIẾN ĐỘ THI CÔNG & GIÁM SÁT HIỆN TRƯỜNG</h1>
+    <div class="subtitle">Dự án: <b>Đại lý 3S Xe Thương Mại Hyundai Miền Tây</b> | Mã: <b>HMT-CANTHO-2026</b></div>
+    <div class="subtitle">Chủ đầu tư: <b>Thế giới xe tải</b> | Địa điểm: <b>TP. Cần Thơ</b></div>
+  </div>
+  <div class="meta">
+    <div class="meta-label">Mốc cập nhật</div>
+    <div class="meta-date">{report_date_str}</div>
+    <div class="meta-brand">Hệ thống QLDA Streamlit<br>Hyundai Miền Tây</div>
+  </div>
+</header>
+<p class="subtitle" style="margin-top:8px;">
+  Số liệu trích xuất thời gian thực từ cơ sở dữ liệu hệ thống. Tiến độ các hạng mục đã được đối soát theo nhật ký hiện trường mới nhất.
+</p>
+<section class="kpis">
+  <div class="kpi"><div class="kpi-value">{overall_progress}%</div><div class="kpi-label">Tiến độ tổng thể</div></div>
+  <div class="kpi"><div class="kpi-value blue">{completed_tasks}/{total_tasks}</div><div class="kpi-label">Hạng mục hoàn thành</div></div>
+  <div class="kpi"><div class="kpi-value green">{days_left} ngày</div><div class="kpi-label">Số ngày còn lại (31/12)</div></div>
+  <div class="kpi"><div class="kpi-value amber">16 tỷ VND</div><div class="kpi-label">Ngân sách phê duyệt</div></div>
+</section>
+
+<section>
+  <h2>1. DANH MỤC HẠNG MỤC THI CÔNG CHI TIẾT (WBS)</h2>
+  <table>
+    <thead>
+      <tr>
+        <th style="width:65px">Mã</th>
+        <th>Tên hạng mục công việc &amp; Ghi chú hiện trường</th>
+        <th style="width:130px">Phân khu</th>
+        <th style="width:145px; text-align:center">Thời gian thực hiện</th>
+        <th style="width:65px; text-align:center">Tiến độ</th>
+        <th style="width:95px; text-align:center">Trạng thái</th>
+        <th style="width:140px">Phụ trách</th>
+      </tr>
+    </thead>
+    <tbody>
+      {wbs_content}
+    </tbody>
+  </table>
+</section>
+
+<section class="quality">
+  <h2>2. ĐÁNH GIÁ TIÊU CHUẨN KỸ THUẬT &amp; CHECKLIST QCVN 121 (Đạt {qcvn_pct}%)</h2>
+  <table>
+    <thead>
+      <tr>
+        <th style="width:45px; text-align:center">STT</th>
+        <th style="width:190px">Phân loại</th>
+        <th>Tiêu chuẩn kiểm định</th>
+        <th style="width:95px; text-align:center">Kết quả</th>
+        <th>Ghi chú thực tế</th>
+      </tr>
+    </thead>
+    <tbody>
+      {qcvn_content}
+    </tbody>
+  </table>
+</section>
+
+<section class="signatures">
+  <div>
+    <b>ĐẠI DIỆN CHỦ ĐẦU TƯ</b><br><small>(Ký và ghi rõ họ tên)</small>
+    <div class="signature-line"></div>
+    <b>Thế giới xe tải</b>
+  </div>
+  <div>
+    <b>TƯ VẤN GIÁM SÁT</b><br><small>(Ký và ghi rõ họ tên)</small>
+    <div class="signature-line"></div>
+    <b>Trưởng đoàn TVGS</b>
+  </div>
+  <div>
+    <b>CHỈ HUY TRƯỞNG CÔNG TRÌNH</b><br><small>(Ký và ghi rõ họ tên)</small>
+    <div class="signature-line"></div>
+    <b>Ban Chỉ huy MPP</b>
+  </div>
+</section>
+</body></html>"""
+        return template
+
+    # Biên dịch ngay bản in HTML theo dữ liệu thời gian thực
+    live_printable_html = build_dynamic_printable_html(st.session_state.progress_df, df_q, cur_date_display)
+    cur_overall_pct = round(float(st.session_state.progress_df["Tiến độ (%)"].mean()), 1) if not st.session_state.progress_df.empty else 0
+    cur_completed = int((st.session_state.progress_df["Tiến độ (%)"] >= 100).sum() + ((st.session_state.progress_df["Trạng thái"] == "Đã hoàn thiện") & (st.session_state.progress_df["Tiến độ (%)"] < 100)).sum())
 
     col_rep1, col_rep2, col_rep3 = st.columns(3)
 
     with col_rep1:
-        st.markdown("""
+        st.markdown(f"""
         <div style="border:1px solid #E2E8F0; border-radius:10px; padding:16px; background:#F8FAFC; min-height:220px; display:flex; flex-direction:column; justify-content:space-between;">
             <div>
                 <h4 style="color:#002C6C; margin:0 0 8px 0;">📑 Báo Cáo Điều Hành (.PDF)</h4>
@@ -1462,18 +1646,18 @@ with tab_report:
                     Bản báo cáo điều hành toàn diện kèm số liệu giám sát hiện trường, bảng đánh giá đường găng tiến độ và phân tích rủi ro.
                 </p>
                 <div style="font-size:0.8rem; color:#64748B;">
-                    • Định dạng: <b>PDF</b> (185 KB)<br>
-                    • Mốc nhật ký: <b>08/09/2026</b><br>
-                    • Đơn vị: <b>Ban QLDA / CĐT</b>
+                    • Tiến độ cập nhật: <b>{cur_overall_pct}% ({cur_completed}/16 việc)</b><br>
+                    • Mốc cập nhật: <b>{cur_date_display}</b><br>
+                    • Định dạng: <b>PDF khổ in A4</b>
                 </div>
             </div>
         </div>
         """, unsafe_allow_html=True)
         if pdf_bytes:
             st.download_button(
-                label="📥 TẢI BÁO CÁO PDF",
+                label="📥 TẢI BÁO CÁO PDF (MỚI NHẤT)",
                 data=pdf_bytes,
-                file_name=pdf_filename,
+                file_name=f"Bao_cao_dieu_hanh_HMT-CANTHO_{PROJECT_TODAY.strftime('%Y%m%d')}.pdf",
                 mime="application/pdf",
                 key="download_pdf_report",
                 use_container_width=True
@@ -1482,32 +1666,29 @@ with tab_report:
             st.warning("Chưa tìm thấy tệp PDF.")
 
     with col_rep2:
-        st.markdown("""
+        st.markdown(f"""
         <div style="border:1px solid #E2E8F0; border-radius:10px; padding:16px; background:#F8FAFC; min-height:220px; display:flex; flex-direction:column; justify-content:space-between;">
             <div>
                 <h4 style="color:#002C6C; margin:0 0 8px 0;">🌐 Bản In Chủ Đầu Tư (.HTML)</h4>
                 <p style="font-size:0.85rem; color:#475569; margin-bottom:8px;">
-                    Form báo cáo tiến độ A4 chuẩn in ấn, tích hợp bảng WBS 16 việc, checklist QCVN 121 và phần ký duyệt 3 bên.
+                    Form báo cáo tiến độ A4 chuẩn in ấn, tích hợp WBS 16 việc, checklist QCVN 121 và phần ký duyệt 3 bên.
                 </p>
                 <div style="font-size:0.8rem; color:#64748B;">
-                    • Định dạng: <b>HTML (Print-ready)</b><br>
-                    • Khổ in: <b>A4 chuẩn</b><br>
-                    • In ấn: <b>Ctrl + P xuất PDF</b>
+                    • Dữ liệu: <b>Thời gian thực (Live 100%)</b><br>
+                    • Khổ in: <b>A4 chuẩn in ấn</b><br>
+                    • In ấn: <b>Có nút In ngay (Ctrl + P)</b>
                 </div>
             </div>
         </div>
         """, unsafe_allow_html=True)
-        if html_text:
-            st.download_button(
-                label="📥 TẢI BẢN IN HTML",
-                data=html_text.encode("utf-8"),
-                file_name=html_filename,
-                mime="text/html",
-                key="download_html_report",
-                use_container_width=True
-            )
-        else:
-            st.warning("Chưa tìm thấy tệp HTML.")
+        st.download_button(
+            label="📥 TẢI BẢN IN HTML (MỚI NHẤT)",
+            data=live_printable_html.encode("utf-8"),
+            file_name=f"Bao_cao_in_chu_dau_tu_HMT-CANTHO_{PROJECT_TODAY.strftime('%Y%m%d')}.html",
+            mime="text/html",
+            key="download_html_report",
+            use_container_width=True
+        )
 
     with col_rep3:
         st.markdown("""
@@ -1544,94 +1725,11 @@ with tab_report:
             use_container_width=True
         )
 
-    # Hàm xây dựng Form HTML in ấn động từ dữ liệu thực tế hiện tại
-    def build_dynamic_printable_html(progress_df, qcvn_df, report_date_str):
-        total_tasks = len(progress_df)
-        completed_tasks = int((progress_df["Tiến độ (%)"] >= 100).sum())
-        overall_progress = round(float(progress_df["Tiến độ (%)"].mean()), 1) if total_tasks > 0 else 0
-        total_check = len(qcvn_df)
-        achieved_check = int((qcvn_df["Đánh giá"] == "Đạt").sum())
-        qcvn_pct = round((achieved_check / total_check * 100), 1) if total_check > 0 else 0
-
-        wbs_rows = []
-        for _, r in progress_df.iterrows():
-            pct = int(r.get("Tiến độ (%)", 0))
-            stt_val = str(r.get("Trạng thái", ""))
-            pill_color = "#10B981" if pct >= 100 else ("#0284C7" if pct > 0 else "#94A3B8")
-            start_str = pd.to_datetime(r.get("Bắt đầu")).strftime('%d/%m/%Y') if pd.notnull(r.get("Bắt đầu")) else ""
-            end_str = pd.to_datetime(r.get("Hoàn thành")).strftime('%d/%m/%Y') if pd.notnull(r.get("Hoàn thành")) else ""
-            wbs_rows.append(f"""<tr>
-    <td class="code">{html.escape(str(r.get('Mã', '')))}</td>
-    <td><b>{html.escape(str(r.get('Hạng mục công việc', '')))}</b></td>
-    <td>{html.escape(str(r.get('Phân khu', '')))}</td>
-    <td class="center">{start_str} - {end_str}</td>
-    <td class="center strong" style="color:{pill_color}">{pct}%</td>
-    <td class="center"><span class="pill" style="background:{pill_color}">{html.escape(stt_val)}</span></td>
-    <td>{html.escape(str(r.get('Người phụ trách', '')))}</td>
-  </tr>""")
-
-        qcvn_rows = []
-        for idx, r in qcvn_df.reset_index(drop=True).iterrows():
-            eval_val = str(r.get("Đánh giá", ""))
-            pill_bg = "#16A34A" if eval_val == "Đạt" else ("#0284C7" if "Đang thi công" in eval_val else ("#D97706" if "Đang mua sắm" in eval_val else "#DC2626"))
-            qcvn_rows.append(f"""<tr>
-    <td class="center">#{idx + 1}</td>
-    <td>{html.escape(str(r.get('Nhóm tiêu chuẩn', '')))}</td>
-    <td><b>{html.escape(str(r.get('Nội dung kiểm soát', '')))}</b></td>
-    <td class="center"><span class="pill" style="background:{pill_bg}">{html.escape(eval_val)}</span></td>
-    <td>{html.escape(str(r.get('Ghi chú / Yêu cầu chứng minh', '')))}</td>
-  </tr>""")
-
-        wbs_content = "\\n".join(wbs_rows)
-        qcvn_content = "\\n".join(qcvn_rows)
-
-        template = f"""<!doctype html>
-<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Báo cáo tiến độ - HMT-CANTHO-2026</title>
-<style>
-  @page{{size:A4;margin:15mm}}*{{box-sizing:border-box}}body{{margin:30px;color:#0F172A;background:#fff;font:13px/1.45 "Segoe UI",Arial,sans-serif}}.header{{display:flex;justify-content:space-between;gap:24px;align-items:flex-start;border-bottom:3px solid #002C6C;padding-bottom:15px}}.header h1{{margin:0;color:#002C6C;font-size:20px;line-height:1.35;font-weight:800;text-transform:uppercase}}.subtitle{{color:#475569;margin-top:4px}}.meta{{text-align:right;min-width:120px}}.meta-label,.kpi-label{{color:#64748B;font-size:11px;font-weight:600;text-transform:uppercase}}.meta-date{{color:#002C6C;font-size:14px;font-weight:800}}.meta-brand{{color:#94A3B8;font-size:10px;margin-top:4px}}.kpis{{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:20px 0}}.kpi{{padding:12px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;text-align:center}}.kpi-value{{color:#00AAD2;font-size:22px;font-weight:800}}.kpi-value.blue{{color:#0284C7}}.kpi-value.green{{color:#10B981}}.kpi-value.amber{{color:#D97706}}h2{{margin:25px 0 10px;padding-bottom:5px;border-bottom:2px solid #00AAD2;color:#002C6C;font-size:15px}}table{{width:100%;border-collapse:collapse;font-size:11px}}th,td{{padding:8px 10px;border:1px solid #E2E8F0;vertical-align:top}}th{{background:#002C6C;color:#fff;font-weight:700}}tbody tr:nth-child(even){{background:#F8FAFC}}.center{{text-align:center}}.strong{{font-weight:800}}.code{{font-family:Consolas,monospace;font-weight:800}}.pill{{display:inline-block;padding:2px 8px;border-radius:10px;color:#fff;font-size:10px;white-space:nowrap}}.quality{{margin-top:25px}}.signatures{{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin-top:42px;break-inside:avoid;text-align:center}}.signatures small{{color:#64748B}}.signature-line{{height:76px;border-bottom:1px solid #CBD5E1;margin:0 14px 9px}}@media print{{body{{margin:0}}.no-print{{display:none}}thead{{display:table-header-group}}tr{{break-inside:avoid}}}}
-</style></head><body>
-<header class="header"><div><h1>BÁO CÁO TIẾN ĐỘ THI CÔNG & GIÁM SÁT HIỆN TRƯỜNG</h1><div class="subtitle">Dự án: <b>Đại lý 3S Xe Thương Mại Hyundai Miền Tây</b> | Mã: <b>HMT-CANTHO-2026</b></div><div class="subtitle">Chủ đầu tư: <b>Thế giới xe tải</b> | Địa điểm: <b>TP. Cần Thơ</b></div></div><div class="meta"><div class="meta-label">Mốc xuất báo cáo</div><div class="meta-date">{report_date_str}</div><div class="meta-brand">Hệ thống QLDA Streamlit</div></div></header>
-<p class="subtitle">Báo cáo cập nhật thời gian thực từ cơ sở dữ liệu hệ thống quản trị dự án Hyundai Miền Tây.</p>
-<section class="kpis"><div class="kpi"><div class="kpi-value">{overall_progress}%</div><div class="kpi-label">Tiến độ tổng thể</div></div><div class="kpi"><div class="kpi-value blue">{completed_tasks}/{total_tasks}</div><div class="kpi-label">Hạng mục hoàn thành</div></div><div class="kpi"><div class="kpi-value green">{achieved_check}/{total_check}</div><div class="kpi-label">Checklist QCVN 121</div></div><div class="kpi"><div class="kpi-value amber">16 tỷ VND</div><div class="kpi-label">Ngân sách phê duyệt</div></div></section>
-<section><h2>1. DANH MỤC HẠNG MỤC THI CÔNG CHI TIẾT (WBS)</h2><table><thead><tr><th>Mã</th><th>Tên hạng mục công việc</th><th>Phân khu</th><th>Thời gian thực hiện</th><th>Tiến độ</th><th>Trạng thái</th><th>Phụ trách</th></tr></thead><tbody>
-{wbs_content}
-</tbody></table></section>
-<section class="quality">
-  <h2>2. ĐÁNH GIÁ TIÊU CHUẨN KỸ THUẬT & CHECKLIST (Đạt {qcvn_pct}%)</h2>
-  <table><thead><tr><th>STT</th><th>Phân loại</th><th>Tiêu chuẩn kiểm định</th><th>Kết quả</th><th>Ghi chú thực tế</th></tr></thead><tbody>
-{qcvn_content}
-  </tbody></table>
-</section>
-<section class="signatures"><div><b>ĐẠI DIỆN CHỦ ĐẦU TƯ</b><br><small>(Ký và ghi rõ họ tên)</small><div class="signature-line"></div><b>Thế giới xe tải</b></div><div><b>TƯ VẤN GIÁM SÁT</b><br><small>(Ký và ghi rõ họ tên)</small><div class="signature-line"></div><b>Trưởng đoàn TVGS</b></div><div><b>CHỈ HUY TRƯỞNG CÔNG TRÌNH</b><br><small>(Ký và ghi rõ họ tên)</small><div class="signature-line"></div><b>Ban Chỉ huy MPP</b></div></section>
-</body></html>"""
-        return template
-
     st.markdown("<br>", unsafe_allow_html=True)
-    with st.expander("⚡ Xuất Form In HTML Động (Cập nhật từ dữ liệu hiện tại)", expanded=False):
-        st.caption("Hệ thống tự động biên dịch bảng WBS và Checklist hiện tại thành bản in A4 HTML mới nhất.")
-        cur_date_str = datetime.date.today().strftime("%d/%m/%Y")
-        dynamic_html = build_dynamic_printable_html(st.session_state.progress_df, df_q, cur_date_str)
-        st.download_button(
-            label="⚡ TẢI FORM IN HTML DỮ LIỆU MỚI NHẤT",
-            data=dynamic_html.encode("utf-8"),
-            file_name=f"Bao_cao_in_chu_dau_tu_HMT-CANTHO_{datetime.date.today().strftime('%Y%m%d')}.html",
-            mime="text/html",
-            key="download_dynamic_html",
-            use_container_width=True
-        )
-
     with st.expander("👁️ Xem Trước Bản In A4 Trực Tiếp (Print Preview)", expanded=True):
-        preview_mode = st.radio(
-            "Chọn bản xem trước:",
-            ["Bản lưu trữ chuẩn 08/09/2026 (Kèm số liệu hiện trường)", "Bản cập nhật động từ dữ liệu hiện tại"],
-            horizontal=True
-        )
-        content_to_preview = html_text if (preview_mode.startswith("Bản lưu trữ chuẩn") and html_text) else build_dynamic_printable_html(st.session_state.progress_df, df_q, datetime.date.today().strftime("%d/%m/%Y"))
-        if content_to_preview:
-            components.html(content_to_preview, height=650, scrolling=True)
-            st.caption("💡 **Mẹo in ấn**: Mở file HTML bằng Chrome/Edge, bấm **Ctrl + P**, chọn khổ giấy **A4** và **Save as PDF** để có bản in đẹp nhất.")
-        else:
-            st.info("Chưa có nội dung để hiển thị xem trước.")
+        st.caption(f"Trình xem trước bản in A4 đồng bộ trực tiếp theo dữ liệu hệ thống (Mốc ngày: **{cur_date_display}** | Tiến độ: **{cur_overall_pct}%** | Hoàn thành: **{cur_completed}/16** hạng mục).")
+        components.html(live_printable_html, height=650, scrolling=True)
+        st.caption("💡 **Mẹo in ấn**: Mở tệp HTML tải về bằng Chrome hoặc Edge, bấm **Ctrl + P**, chọn khổ giấy **A4** và **Save as PDF** để có bản in đẹp nhất.")
 
 
 # ------------------------------------------------------------------------------
