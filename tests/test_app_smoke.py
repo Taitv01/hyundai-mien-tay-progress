@@ -27,3 +27,7 @@ def test_app_starts_without_runtime_exception():
     app.selectbox(key='gantt_level').select('Hạng mục lớn').run()
     assert len(gantt_labels()) == 1
     assert len(app.session_state.progress_df) == 62
+    subheaders = [s.value for s in app.subheader]
+    assert any("Quản lý file" in s for s in subheaders)
+    expander_labels = [e.label for e in app.expander]
+    assert any("Chú thích & Quy ước biểu đồ" in l for l in expander_labels)
