@@ -727,10 +727,11 @@ st.markdown("<br>", unsafe_allow_html=True)
 # 7. CÁC PHÂN HỆ TAB CHỨC NĂNG CHÍNH
 # ==============================================================================
 
-tab_gantt, tab_progress, tab_update, tab_qcvn, tab_report, tab_users = st.tabs([
+tab_gantt, tab_progress, tab_update, tab_files, tab_qcvn, tab_report, tab_users = st.tabs([
     "📊 BIỂU ĐỒ GANTT",
     "📋 TIẾN ĐỘ CHI TIẾT",
-    "📷 CẬP NHẬT HIỆN TRƯỜNG & FILE",
+    "📷 CẬP NHẬT HIỆN TRƯỜNG",
+    "📂 QUẢN LÝ FILE",
     "⚡ CHECKLIST QCVN 121",
     "📑 BÁO CÁO",
     "ℹ️ HƯỚNG DẪN",
@@ -742,18 +743,23 @@ tab_gantt, tab_progress, tab_update, tab_qcvn, tab_report, tab_users = st.tabs([
 # ------------------------------------------------------------------------------
 with tab_gantt:
     st.subheader("📊 Biểu đồ Gantt tiến độ dự án")
-    st.caption("🔴 **Đường Line đỏ thẳng đứng** thể hiện mốc thời gian thực. Các hạng mục nằm bên trái đường đỏ mà chưa hoàn thành sẽ được cảnh báo chậm tiến độ.")
 
-    st.caption("Cam kết CĐT 15/09/2026: thanh màu nâu từ mục 7. Mục 15 tạm ẩn trên Gantt, vẫn giữ ở bảng chi tiết.")
-    st.caption(WEEK_NOTE)
-    gantt_level = st.selectbox("Mức hiển thị Gantt", ["Hạng mục lớn", "Công việc chi tiết"], key="gantt_level")
+    with st.expander("ℹ️ Chú thích & Quy ước biểu đồ (Nhấn để xem)", expanded=False):
+        st.caption("🔴 **Đường Line đỏ thẳng đứng** thể hiện mốc thời gian thực. Các hạng mục nằm bên trái đường đỏ mà chưa hoàn thành sẽ được cảnh báo chậm tiến độ.")
+        st.caption("Cam kết CĐT 15/09/2026: thanh màu nâu từ mục 7. Mục 15 tạm ẩn trên Gantt, vẫn giữ ở bảng chi tiết.")
+        st.caption(WEEK_NOTE)
+        st.caption(SUMMARY_NOTE)
+
+    col_ctrl1, col_ctrl2 = st.columns([1, 2])
+    with col_ctrl1:
+        gantt_level = st.selectbox("Mức hiển thị Gantt", ["Hạng mục lớn", "Công việc chi tiết"], key="gantt_level")
     gantt_source = st.session_state.progress_df
     if gantt_level == "Hạng mục lớn":
         gantt_source = calculate_progress_alerts(summarize_progress(gantt_source), current_date=PROJECT_TODAY)
-        st.caption(SUMMARY_NOTE)
     gantt_data = gantt_progress(gantt_source)
     gantt_data["Hạng mục lớn"] = gantt_data["Mã"].map(major_label)
-    selected_areas = st.multiselect("Chọn hạng mục lớn", options=list(gantt_data["Hạng mục lớn"].unique()), key="gantt_major_groups")
+    with col_ctrl2:
+        selected_areas = st.multiselect("Chọn hạng mục lớn", options=list(gantt_data["Hạng mục lớn"].unique()), key="gantt_major_groups")
     if selected_areas:
         gantt_data = gantt_data[gantt_data["Hạng mục lớn"].isin(selected_areas)]
     gantt_data["Bắt đầu_dt"] = pd.to_datetime(gantt_data["Bắt đầu"])
@@ -1022,15 +1028,14 @@ with tab_progress:
 # TAB 3: CẬP NHẬT HIỆN TRƯỜNG & QUẢN LÝ FILE
 # ------------------------------------------------------------------------------
 with tab_update:
-    st.subheader("📷 Cập nhật hiện trường & Quản lý file")
-    st.caption("Ghi nhận tiến độ, đính kèm ảnh hiện trường & tệp PDF (bản vẽ, biên bản nghiệm thu) và quản lý thư viện tài liệu dự án.")
+    st.subheader("📷 Cập nhật hiện trường")
+    st.caption("Ghi nhận tiến độ thi công thực tế, cập nhật trạng thái hạng mục và theo dõi nhật ký hiện trường.")
 
     if not ONLINE_MODE:
         st.info("Tính năng này sẽ hoạt động sau khi cấu hình Supabase trên bản online.")
     else:
-        subtab_form, subtab_files, subtab_log = st.tabs([
+        subtab_form, subtab_log = st.tabs([
             "📝 Cập nhật tiến độ & Tải tệp",
-            "📂 Quản lý file & Hồ sơ hiện trường",
             "📜 Nhật ký cập nhật gần đây",
         ])
 
@@ -1188,141 +1193,7 @@ with tab_update:
                                 st.error(f"Lỗi khi tải tài liệu: {exc}")
 
         # ----------------------------------------------------------------------
-        # SUB-TAB 2: QUẢN LÝ FILE & HỒ SƠ HIỆN TRƯỜNG
-        # ----------------------------------------------------------------------
-        with subtab_files:
-            try:
-                fresh_service = get_online_service(online_settings)
-                all_files = fresh_service.list_all_files(limit=300)
-            except Exception as exc:
-                st.warning(f"Chưa thể tải danh sách tệp: {exc}")
-                all_files = []
-
-            # Thống kê tổng quan
-            total_count = len(all_files)
-            pdf_count = sum(1 for f in all_files if f["file_type"] == "pdf")
-            img_count = sum(1 for f in all_files if f["file_type"] == "image")
-            task_with_files = len(set(f["task_code"] for f in all_files if f.get("task_code")))
-
-            m_col1, m_col2, m_col3, m_col4 = st.columns(4)
-            m_col1.metric("📦 Tổng số tệp", f"{total_count} tệp")
-            m_col2.metric("📄 Tệp tài liệu PDF", f"{pdf_count} tệp")
-            m_col3.metric("🖼️ Hình ảnh hiện trường", f"{img_count} ảnh")
-            m_col4.metric("🏗️ Hạng mục có hồ sơ", f"{task_with_files} hạng mục")
-
-            st.divider()
-
-            # Bộ lọc và tìm kiếm
-            f_col1, f_col2, f_col3 = st.columns([2, 2, 3])
-            with f_col1:
-                filter_task_opts = ["Tất cả hạng mục"] + task_options
-                selected_filter_task = st.selectbox(
-                    "Lọc theo hạng mục",
-                    filter_task_opts,
-                    format_func=lambda code: (
-                        "Tất cả hạng mục" if code == "Tất cả hạng mục"
-                        else f"[{code}] " + progress_source.loc[progress_source["Mã"] == code, "Hạng mục công việc"].iloc[0]
-                    ),
-                    key="mgr_filter_task",
-                )
-            with f_col2:
-                selected_filter_type = st.selectbox(
-                    "Lọc theo loại tệp",
-                    ["Tất cả", "📄 Chỉ tệp PDF", "🖼️ Chỉ hình ảnh"],
-                    key="mgr_filter_type",
-                )
-            with f_col3:
-                search_term = st.text_input(
-                    "🔍 Tìm kiếm tên tệp hoặc ghi chú",
-                    placeholder="Nhập tên tệp (ví dụ: bantin, ngiem_thu, layout...)",
-                    key="mgr_search_term",
-                )
-
-            # Lọc danh sách
-            filtered_files = all_files
-            if selected_filter_task != "Tất cả hạng mục":
-                filtered_files = [f for f in filtered_files if f["task_code"] == selected_filter_task]
-
-            if selected_filter_type == "📄 Chỉ tệp PDF":
-                filtered_files = [f for f in filtered_files if f["file_type"] == "pdf"]
-            elif selected_filter_type == "🖼️ Chỉ hình ảnh":
-                filtered_files = [f for f in filtered_files if f["file_type"] == "image"]
-
-            if search_term.strip():
-                kw = search_term.strip().lower()
-                filtered_files = [
-                    f for f in filtered_files
-                    if kw in f["original_name"].lower()
-                    or kw in f["task_code"].lower()
-                    or kw in f.get("task_name", "").lower()
-                ]
-
-            st.markdown(f"**Danh sách tệp ({len(filtered_files)} kết quả):**")
-
-            if not filtered_files:
-                st.info("Chưa có tệp nào phù hợp với điều kiện tìm kiếm/lọc.")
-            else:
-                for file_item in filtered_files:
-                    is_pdf = file_item["file_type"] == "pdf"
-                    file_id = file_item["id"]
-                    file_name = file_item["original_name"]
-                    file_url = file_item.get("url")
-
-                    created_str = ""
-                    if file_item.get("created_at"):
-                        try:
-                            dt_val = pd.to_datetime(file_item["created_at"], utc=True).tz_convert("Asia/Ho_Chi_Minh")
-                            created_str = dt_val.strftime("%d/%m/%Y %H:%M")
-                        except Exception:
-                            created_str = str(file_item["created_at"])[:16]
-
-                    with st.container(border=True):
-                        row_left, row_meta, row_actions = st.columns([5, 3, 3])
-                        with row_left:
-                            if is_pdf:
-                                st.markdown(f"📄 **{file_name}**")
-                                st.caption(f"🏷️ Loại: `Tài liệu PDF` · Hạng mục: **[{file_item['task_code']}] {file_item.get('task_name', '')}**")
-                            else:
-                                st.markdown(f"🖼️ **{file_name}**")
-                                st.caption(f"🏷️ Loại: `Hình ảnh` · Hạng mục: **[{file_item['task_code']}] {file_item.get('task_name', '')}**")
-
-                        with row_meta:
-                            st.write(f"👤 **Người đăng:** {file_item.get('uploader_name', 'Hệ thống')}")
-                            st.caption(f"🕒 **Ngày tải:** {created_str}")
-
-                        with row_actions:
-                            act_col1, act_col2 = st.columns(2)
-                            with act_col1:
-                                if file_url:
-                                    st.link_button("↗️ Mở tệp", file_url, width="stretch")
-                            with act_col2:
-                                if CURRENT_USER.can_edit:
-                                    with st.popover("🗑️ Xóa", width="stretch"):
-                                        st.markdown(f"**Xác nhận xóa tệp?**")
-                                        st.caption(f"Tệp `{file_name}` sẽ bị xóa vĩnh viễn khỏi hệ thống.")
-                                        if st.button("Xác nhận xóa", type="primary", key=f"del_btn_{file_id}", width="stretch"):
-                                            try:
-                                                fresh_service = get_online_service(online_settings)
-                                                fresh_service.delete_file(CURRENT_USER, file_id)
-                                                st.toast(f"Đã xóa tệp '{file_name}' thành công.", icon="✅")
-                                                st.rerun()
-                                            except Exception as exc:
-                                                st.error(f"Lỗi khi xóa: {exc}")
-
-                        # Vùng xem trước tệp
-                        if file_url:
-                            with st.expander(f"👁️ Xem trước: {file_name}", expanded=False):
-                                if is_pdf:
-                                    st.markdown(
-                                        f'<iframe src="{file_url}#toolbar=1" width="100%" height="520px" style="border: 1px solid #CBD5E1; border-radius: 8px;"></iframe>',
-                                        unsafe_allow_html=True,
-                                    )
-                                    st.link_button("Tải tệp PDF về máy / Mở tab riêng", file_url, icon=":material/download:")
-                                else:
-                                    st.image(file_url, caption=file_name, width="stretch")
-
-        # ----------------------------------------------------------------------
-        # SUB-TAB 3: NHẬT KÝ CẬP NHẬT HIỆN TRƯỜNG
+        # SUB-TAB 2: NHẬT KÝ CẬP NHẬT HIỆN TRƯỜNG
         # ----------------------------------------------------------------------
         with subtab_log:
             try:
@@ -1369,7 +1240,229 @@ with tab_update:
 
 
 # ------------------------------------------------------------------------------
-# TAB 4: QUẢN LÝ TIÊU CHUẨN QCVN 121
+# TAB 4: QUẢN LÝ FILE & TÀI LIỆU DỰ ÁN
+# ------------------------------------------------------------------------------
+with tab_files:
+    st.subheader("📂 Quản lý file & Hồ sơ dự án")
+    st.caption("Thư viện lưu trữ tập trung toàn bộ bản vẽ thiết kế, hồ sơ pháp lý, biên bản nghiệm thu và hình ảnh hiện trường thi công.")
+
+    if not ONLINE_MODE:
+        st.info("Tính năng quản lý file tập trung trên đám mây hoạt động khi kết nối Supabase.")
+        st.markdown("##### 📁 Các tệp tài liệu dự án có sẵn tại thư mục gốc:")
+        local_docs = [
+            ("260915_Tiến độ xây dựng Hyundai Cần Thơ.pdf", "Cam kết tiến độ xây dựng của Chủ đầu tư (15/09/2026)", "📄 PDF"),
+            ("Bao_cao_dieu_hanh_HMT-CANTHO-2026_2026-09-08.pdf", "Báo cáo điều hành tiến độ thi công Hyundai Miền Tây", "📄 PDF"),
+            ("Bao_cao_in_chu_dau_tu_HMT-CANTHO-2026_2026-09-08.html", "Bản in báo cáo tiến độ A4 Landscape chuẩn CĐT", "🌐 HTML"),
+            ("commitment_20260915.json", "Dữ liệu WBS 58 hạng mục đối chiếu cam kết", "⚙️ JSON"),
+        ]
+        base_dir = Path(__file__).resolve().parents[1]
+        app_dir = Path(__file__).resolve().parent
+        for fname, desc, ftype in local_docs:
+            p1 = base_dir / fname
+            p2 = app_dir / fname
+            fpath = p1 if p1.exists() else (p2 if p2.exists() else None)
+            with st.container(border=True):
+                rc1, rc2 = st.columns([5, 2])
+                with rc1:
+                    st.markdown(f"{ftype} **{fname}**")
+                    st.caption(f"{desc} · Trạng thái: {'Sẵn sàng' if fpath else 'Chưa tìm thấy'}")
+                with rc2:
+                    if fpath and fpath.exists():
+                        size_kb = fpath.stat().st_size / 1024
+                        st.caption(f"Dung lượng: {size_kb:.1f} KB")
+                        with open(fpath, "rb") as f:
+                            st.download_button(
+                                "📥 Tải tệp về máy",
+                                data=f.read(),
+                                file_name=fname,
+                                mime="application/pdf" if fname.endswith(".pdf") else "application/octet-stream",
+                                key=f"dl_local_{fname}",
+                                width="stretch",
+                            )
+    else:
+        progress_source = st.session_state.progress_df
+        task_options = progress_source["Mã"].tolist()
+
+        try:
+            fresh_service = get_online_service(online_settings)
+            all_files = fresh_service.list_all_files(limit=300)
+        except Exception as exc:
+            st.warning(f"Chưa thể tải danh sách tệp: {exc}")
+            all_files = []
+
+        # Thống kê tổng quan
+        total_count = len(all_files)
+        pdf_count = sum(1 for f in all_files if f["file_type"] == "pdf")
+        img_count = sum(1 for f in all_files if f["file_type"] == "image")
+        task_with_files = len(set(f["task_code"] for f in all_files if f.get("task_code")))
+
+        m_col1, m_col2, m_col3, m_col4 = st.columns(4)
+        m_col1.metric("📦 Tổng số tệp", f"{total_count} tệp")
+        m_col2.metric("📄 Tệp tài liệu PDF", f"{pdf_count} tệp")
+        m_col3.metric("🖼️ Hình ảnh hiện trường", f"{img_count} ảnh")
+        m_col4.metric("🏗️ Hạng mục có hồ sơ", f"{task_with_files} hạng mục")
+
+        st.divider()
+
+        # Tiện ích tải tệp / tài liệu mới
+        if CURRENT_USER.can_edit:
+            with st.expander("➕ Tải lên tài liệu / hồ sơ mới cho hạng mục", expanded=False):
+                st.caption("Bổ sung bản vẽ, biên bản nghiệm thu, chứng chỉ vật tư hoặc ảnh hiện trường cho hạng mục.")
+                with st.form("tab_files_quick_upload_form", border=False):
+                    up_c1, up_c2 = st.columns(2)
+                    with up_c1:
+                        target_task = st.selectbox(
+                            "Chọn hạng mục gán tài liệu",
+                            task_options,
+                            format_func=lambda code: (
+                                f"[{code}] " + progress_source.loc[progress_source["Mã"] == code, "Hạng mục công việc"].iloc[0]
+                            ),
+                            key="tab_files_task_code",
+                        )
+                    with up_c2:
+                        up_file = st.file_uploader(
+                            "Chọn tệp tải lên (PDF, JPG, PNG, WebP)",
+                            type=["pdf", "jpg", "jpeg", "png", "webp"],
+                            key="tab_files_uploader",
+                        )
+                    up_note = st.text_input(
+                        "Ghi chú tài liệu (ví dụ: Biên bản nghiệm thu, Bản vẽ mặt bằng cập nhật...)",
+                        key="tab_files_note",
+                    )
+                    up_submit = st.form_submit_button("Tải tệp lên hệ thống", type="primary", icon=":material/cloud_upload:")
+
+                if up_submit:
+                    if up_file is None:
+                        st.warning("Vui lòng chọn tệp cần tải lên.")
+                    else:
+                        try:
+                            with st.spinner("Đang tải tài liệu lên đám mây..."):
+                                fresh_service = get_online_service(online_settings)
+                                fresh_service.upload_task_document(
+                                    CURRENT_USER,
+                                    target_task,
+                                    up_file.name,
+                                    up_file.getvalue(),
+                                    note=up_note,
+                                )
+                                reload_online_data(fresh_service, PROJECT_TODAY)
+                            st.toast(f"Đã tải tệp '{up_file.name}' lên thành công.", icon="✅")
+                            st.rerun()
+                        except Exception as exc:
+                            st.error(f"Lỗi khi tải tài liệu: {exc}")
+
+        # Bộ lọc và tìm kiếm
+        f_col1, f_col2, f_col3 = st.columns([2, 2, 3])
+        with f_col1:
+            filter_task_opts = ["Tất cả hạng mục"] + task_options
+            selected_filter_task = st.selectbox(
+                "Lọc theo hạng mục",
+                filter_task_opts,
+                format_func=lambda code: (
+                    "Tất cả hạng mục" if code == "Tất cả hạng mục"
+                    else f"[{code}] " + progress_source.loc[progress_source["Mã"] == code, "Hạng mục công việc"].iloc[0]
+                ),
+                key="tab_files_mgr_filter_task",
+            )
+        with f_col2:
+            selected_filter_type = st.selectbox(
+                "Lọc theo loại tệp",
+                ["Tất cả", "📄 Chỉ tệp PDF", "🖼️ Chỉ hình ảnh"],
+                key="tab_files_mgr_filter_type",
+            )
+        with f_col3:
+            search_term = st.text_input(
+                "🔍 Tìm kiếm tên tệp hoặc ghi chú",
+                placeholder="Nhập tên tệp (ví dụ: bantin, ngiem_thu, layout...)",
+                key="tab_files_mgr_search_term",
+            )
+
+        # Lọc danh sách
+        filtered_files = all_files
+        if selected_filter_task != "Tất cả hạng mục":
+            filtered_files = [f for f in filtered_files if f["task_code"] == selected_filter_task]
+
+        if selected_filter_type == "📄 Chỉ tệp PDF":
+            filtered_files = [f for f in filtered_files if f["file_type"] == "pdf"]
+        elif selected_filter_type == "🖼️ Chỉ hình ảnh":
+            filtered_files = [f for f in filtered_files if f["file_type"] == "image"]
+
+        if search_term.strip():
+            kw = search_term.strip().lower()
+            filtered_files = [
+                f for f in filtered_files
+                if kw in f["original_name"].lower()
+                or kw in f["task_code"].lower()
+                or kw in f.get("task_name", "").lower()
+            ]
+
+        st.markdown(f"**Danh sách tệp ({len(filtered_files)} kết quả):**")
+
+        if not filtered_files:
+            st.info("Chưa có tệp nào phù hợp với điều kiện tìm kiếm/lọc.")
+        else:
+            for file_item in filtered_files:
+                is_pdf = file_item["file_type"] == "pdf"
+                file_id = file_item["id"]
+                file_name = file_item["original_name"]
+                file_url = file_item.get("url")
+
+                created_str = ""
+                if file_item.get("created_at"):
+                    try:
+                        dt_val = pd.to_datetime(file_item["created_at"], utc=True).tz_convert("Asia/Ho_Chi_Minh")
+                        created_str = dt_val.strftime("%d/%m/%Y %H:%M")
+                    except Exception:
+                        created_str = str(file_item["created_at"])[:16]
+
+                with st.container(border=True):
+                    row_left, row_meta, row_actions = st.columns([5, 3, 3])
+                    with row_left:
+                        if is_pdf:
+                            st.markdown(f"📄 **{file_name}**")
+                            st.caption(f"🏷️ Loại: `Tài liệu PDF` · Hạng mục: **[{file_item['task_code']}] {file_item.get('task_name', '')}**")
+                        else:
+                            st.markdown(f"🖼️ **{file_name}**")
+                            st.caption(f"🏷️ Loại: `Hình ảnh` · Hạng mục: **[{file_item['task_code']}] {file_item.get('task_name', '')}**")
+
+                    with row_meta:
+                        st.write(f"👤 **Người đăng:** {file_item.get('uploader_name', 'Hệ thống')}")
+                        st.caption(f"🕒 **Ngày tải:** {created_str}")
+
+                    with row_actions:
+                        act_col1, act_col2 = st.columns(2)
+                        with act_col1:
+                            if file_url:
+                                st.link_button("↗️ Mở tệp", file_url, width="stretch")
+                        with act_col2:
+                            if CURRENT_USER.can_edit:
+                                with st.popover("🗑️ Xóa", width="stretch"):
+                                    st.markdown(f"**Xác nhận xóa tệp?**")
+                                    st.caption(f"Tệp `{file_name}` sẽ bị xóa vĩnh viễn khỏi hệ thống.")
+                                    if st.button("Xác nhận xóa", type="primary", key=f"del_btn_{file_id}", width="stretch"):
+                                        try:
+                                            fresh_service = get_online_service(online_settings)
+                                            fresh_service.delete_file(CURRENT_USER, file_id)
+                                            st.toast(f"Đã xóa tệp '{file_name}' thành công.", icon="✅")
+                                            st.rerun()
+                                        except Exception as exc:
+                                            st.error(f"Lỗi khi xóa: {exc}")
+
+                    # Vùng xem trước tệp
+                    if file_url:
+                        with st.expander(f"👁️ Xem trước: {file_name}", expanded=False):
+                            if is_pdf:
+                                st.markdown(
+                                    f'<iframe src="{file_url}#toolbar=1" width="100%" height="520px" style="border: 1px solid #CBD5E1; border-radius: 8px;"></iframe>',
+                                    unsafe_allow_html=True,
+                                )
+                                st.link_button("Tải tệp PDF về máy / Mở tab riêng", file_url, icon=":material/download:")
+                            else:
+                                st.image(file_url, caption=file_name, width="stretch")
+
+
+# ------------------------------------------------------------------------------
+# TAB 5: QUẢN LÝ TIÊU CHUẨN QCVN 121
 # ------------------------------------------------------------------------------
 with tab_qcvn:
     st.subheader("⚡ Checklist nội bộ tham chiếu QCVN 121:2024/BGTVT")
@@ -1434,7 +1527,7 @@ with tab_qcvn:
 
 
 # ------------------------------------------------------------------------------
-# TAB 5: LỘ TRÌNH CỘT MỐC & XUẤT BÁO CÁO
+# TAB 6: LỘ TRÌNH CỘT MỐC & XUẤT BÁO CÁO
 # ------------------------------------------------------------------------------
 with tab_report:
     st.subheader("📑 Lộ Trình Cột Mốc Trọng Tâm & Xuất Hồ Sơ Báo Cáo")
@@ -1553,7 +1646,7 @@ with tab_report:
 
 
 # ------------------------------------------------------------------------------
-# TAB 6: HƯỚNG DẪN TRUY CẬP / QUẢN LÝ TÀI KHOẢN
+# TAB 7: HƯỚNG DẪN TRUY CẬP / QUẢN LÝ TÀI KHOẢN
 # ------------------------------------------------------------------------------
 with tab_users:
     st.subheader("Hướng dẫn truy cập")
