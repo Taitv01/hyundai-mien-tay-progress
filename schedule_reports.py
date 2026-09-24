@@ -499,11 +499,9 @@ def build_pdf(df, report_date):
     HEADER_H2 = 14   # hàng tuần
     ROW_H     = 25   # mỗi hàng công việc
 
-    gantt_pages = []
     PER_PAGE_GANTT = 16
     for start in range(0, len(visible), PER_PAGE_GANTT):
         page = doc.new_page(width=PW, height=PH)
-        gantt_pages.append(page)
         y0 = draw_header(page)
 
         # Sub-title
@@ -583,12 +581,10 @@ def build_pdf(df, report_date):
     HEADER_H   = 22
     ROW_H_DET  = 46
 
-    detail_pages = []
     PER_PAGE_DET = 10
     heading_key = '2. TỔNG HỢP HẠNG MỤC LỚN' if summary else '2. BẢNG CHI TIẾT'
     for start in range(0, len(df), PER_PAGE_DET):
         page = doc.new_page(width=PW, height=PH)
-        detail_pages.append(page)
         y0 = draw_header(page)
 
         chunk_label = f'{heading_key} · {start+1}–{min(start+PER_PAGE_DET,len(df))}/{len(df)}'
@@ -654,9 +650,9 @@ def build_pdf(df, report_date):
                 x += w
 
     # ── Footer số trang ────────────────────────────────────────────────────────
-    all_pages = gantt_pages + detail_pages
-    for i, page in enumerate(all_pages):
-        draw_footer(page, i + 1, len(all_pages))
+    total_pages = len(doc)
+    for i, page in enumerate(doc):
+        draw_footer(page, i + 1, total_pages)
 
     doc.subset_fonts()
     content = doc.tobytes(garbage=4, deflate=True)
