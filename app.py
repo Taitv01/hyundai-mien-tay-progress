@@ -908,13 +908,14 @@ with tab_gantt:
     st.plotly_chart(fig_timeline, width="stretch")
 
     # Bảng Tra cứu Lịch trình Nhanh kèm Cảnh báo
-    st.markdown("##### 📅 Bảng Lịch Trình Chi Tiết Bắt Đầu - Hoàn Thành & Tình Trạng Quá Hạn:")
-    gantt_data["Tình trạng hôm nay"] = gantt_data["Đang diễn ra"].apply(lambda x: "Trong kỳ kế hoạch" if x else "—")
-    schedule_table = gantt_data[["Mã", "Hạng mục công việc", "Phân khu", "Bắt đầu_str", "Hoàn thành_str", "Số ngày", "Tiến độ (%)", "Trạng thái", "Tình trạng hôm nay", "Cảnh báo Tiến độ"]].copy()
-    schedule_table.columns = ["Mã CV", "Hạng mục công việc", "Phân khu", "Ngày Bắt Đầu", "Ngày Hoàn Thành", "Thời lượng (ngày)", "Tiến độ (%)", "Trạng thái", "Tiến độ hiện tại", "Tình trạng Cảnh báo"]
-    st.dataframe(schedule_table, width="stretch", hide_index=True)
-    with st.expander("Đối chiếu đầy đủ 58 công việc với PDF cam kết"):
-        st.dataframe(commitment_details(st.session_state.progress_df), hide_index=True, width="stretch")
+    # ẨN: Bảng này chưa cập nhật theo hiện trường — tạm ẩn cho đến khi có dữ liệu thực tế
+    # st.markdown("##### 📅 Bảng Lịch Trình Chi Tiết Bắt Đầu - Hoàn Thành & Tình Trạng Quá Hạn:")
+    # gantt_data["Tình trạng hôm nay"] = gantt_data["Đang diễn ra"].apply(lambda x: "Trong kỳ kế hoạch" if x else "—")
+    # schedule_table = gantt_data[["Mã", "Hạng mục công việc", "Phân khu", "Bắt đầu_str", "Hoàn thành_str", "Số ngày", "Tiến độ (%)", "Trạng thái", "Tình trạng hôm nay", "Cảnh báo Tiến độ"]].copy()
+    # schedule_table.columns = ["Mã CV", "Hạng mục công việc", "Phân khu", "Ngày Bắt Đầu", "Ngày Hoàn Thành", "Thời lượng (ngày)", "Tiến độ (%)", "Trạng thái", "Tiến độ hiện tại", "Tình trạng Cảnh báo"]
+    # st.dataframe(schedule_table, width="stretch", hide_index=True)
+    # with st.expander("Đối chiếu đầy đủ 58 công việc với PDF cam kết"):
+    #     st.dataframe(commitment_details(st.session_state.progress_df), hide_index=True, width="stretch")
 
     # 2 Biểu đồ Phân tích
     st.markdown("<br>", unsafe_allow_html=True)
