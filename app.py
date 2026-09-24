@@ -8,6 +8,7 @@ Tích hợp: Cảnh báo Quá hạn, Nhắc nhở Chậm tiến độ & Đườn
 import streamlit as st
 import pandas as pd
 import datetime
+import hashlib
 import plotly.express as px
 import html
 from pathlib import Path
@@ -450,6 +451,30 @@ def reload_online_data(service, current_date):
     st.session_state.progress_df = active_progress(all_progress)
     st.session_state.qcvn_df = service.load_qcvn()
     st.session_state.online_data_loaded = True
+    # Xóa cache để toàn bộ biểu đồ, báo cáo PDF & HTML luôn cập nhật dữ liệu hiện trường mới nhất
+    try:
+        st.cache_data.clear()
+    except Exception:
+        pass
+    st.session_state.pop("cached_pdf_bytes", None)
+    st.session_state.pop("cached_pdf_key", None)
+
+
+def compute_data_version(df):
+    """Tạo chuỗi định danh phiên bản dữ liệu từ các cột tiến độ thực tế."""
+    if df is None or df.empty:
+        return "empty"
+    items = []
+    for _, r in df.iterrows():
+        items.append((str(r.get("Mã", "")), int(r.get("Tiến độ (%)", 0)), str(r.get("Trạng thái", "")), str(r.get("Ghi chú", ""))[:30]))
+    return hashlib.md5(str(items).encode("utf-8")).hexdigest()[:12]
+
+
+@st.cache_data(show_spinner=False, max_entries=8)
+def cached_pdf(progress, report_date, data_version):
+    """Hàm tạo PDF được cache an toàn theo mốc ngày và fingerprint dữ liệu."""
+    return build_pdf(progress, report_date)
+
 
 
 # ==============================================================================
@@ -1544,11 +1569,12 @@ with tab_report:
         st.dataframe(report_df[["Phân khu", "Bắt đầu", "Hoàn thành", "Tiến độ (%)", "Trạng thái"]], hide_index=True, width="stretch")
     cur_date_display = PROJECT_TODAY.strftime("%d/%m/%Y")
 
-    @st.cache_data(show_spinner=False, max_entries=8)
-    def cached_pdf(progress, report_date):
-        return build_pdf(progress, report_date)
+    cur_data_version = compute_data_version(report_df)
+    pdf_cache_key = f"{report_suffix}_{cur_data_version}_{PROJECT_TODAY.isoformat()}"
 
-    pdf_bytes = None
+    # Nếu mức báo cáo hoặc dữ liệu thay đổi so với PDF đã lưu, xóa PDF cũ
+    if st.session_state.get("cached_pdf_key") != pdf_cache_key:
+        st.session_state.pop("cached_pdf_bytes", None)
 
     # Biên dịch ngay bản in HTML theo dữ liệu thời gian thực
     live_printable_html = build_printable_html(report_df, PROJECT_TODAY)
@@ -1573,8 +1599,13 @@ with tab_report:
         </div>
         """, unsafe_allow_html=True)
         if st.button("Tạo PDF theo dữ liệu hiện tại", key="build_current_pdf", width="stretch"):
-            with st.spinner("Đang tạo báo cáo PDF..."):
-                pdf_bytes = cached_pdf(report_df, PROJECT_TODAY)
+            with st.spinner("Đang tạo báo cáo PDF theo dữ liệu mới nhất..."):
+                generated_pdf = cached_pdf(report_df, PROJECT_TODAY, cur_data_version)
+                st.session_state["cached_pdf_bytes"] = generated_pdf
+                st.session_state["cached_pdf_key"] = pdf_cache_key
+                st.rerun()
+
+        pdf_bytes = st.session_state.get("cached_pdf_bytes")
         if pdf_bytes:
             st.download_button(
                 label="📥 TẢI BÁO CÁO PDF (MỚI NHẤT)",
@@ -1584,6 +1615,7 @@ with tab_report:
                 key="download_pdf_report",
                 width="stretch"
             )
+            st.caption("✅ Báo cáo PDF đã sẵn sàng tải về.")
         else:
             st.caption("Bấm Tạo PDF để xuất đúng tiến độ và ghi chú đang hiển thị.")
 
