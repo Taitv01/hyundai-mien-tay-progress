@@ -7,24 +7,205 @@ import pandas as pd
 
 from commitment_schedule import BROWN, SOURCE, WEEK_NOTE, SUMMARY_NOTE, commitment_details, gantt_progress, source_rows, week_date, week_label, major_group
 
+# ─── Màu sắc thương hiệu ──────────────────────────────────────────────────────
+NAVY       = '#002C6C'
+NAVY_LIGHT = '#1A4A8A'
+SILVER     = '#E8EDF2'
+BORDER     = '#B0BBC6'
+TEXT_DARK  = '#172B3A'
+TEXT_MUTED = '#586875'
+GREEN_OK   = '#059669'
+RED_LATE   = '#C83232'
+AMBER      = '#D97706'
+
 CSS = '''
-@page { size:A4 landscape; margin:9mm; }
-body { font-family: sans-serif; font-size:10px; color:#172B3A; margin:0; }
-h1 { font-size:18px; color:#002C6C; margin:0 0 5px; }
-h2 { font-size:13px; color:#002C6C; margin:8px 0; }
-p { margin:4px 0 8px; }
-table { width:100%; border-collapse:collapse; table-layout:fixed; }
-th { background:#002C6C; color:white; font-weight:bold; }
-td,th { border:1px solid #CCD3DA; padding:5px; vertical-align:top; }
-.gantt td,.gantt th { padding:4px 2px; font-size:9px; }
-.gantt td { height:22px; }
-.detail td { font-size:9px; line-height:1.3; }
-.muted { color:#586875; font-size:9px; }
-.page { page-break-after:always; margin-bottom:28px; }
-.page:last-child { page-break-after:auto; }
-thead { display:table-header-group; }
-tr { break-inside:avoid; }
-@media print { .page { margin-bottom:0; } .no-print { display:none; } body { print-color-adjust:exact; -webkit-print-color-adjust:exact; } }
+@page {
+    size: A4 landscape;
+    margin: 10mm 9mm 13mm 9mm;
+}
+* { box-sizing: border-box; }
+body {
+    font-family: "Segoe UI", Arial, sans-serif;
+    font-size: 10px;
+    color: #172B3A;
+    margin: 0; padding: 0;
+    background: #fff;
+}
+
+/* ── HEADER ── */
+.report-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    border-bottom: 3px solid #002C6C;
+    padding-bottom: 6px;
+    margin-bottom: 8px;
+}
+.report-header .brand {
+    display: flex;
+    flex-direction: column;
+}
+.report-header h1 {
+    font-size: 17px;
+    font-weight: 800;
+    color: #002C6C;
+    margin: 0 0 2px;
+    letter-spacing: .3px;
+}
+.report-header .sub-title {
+    font-size: 9.5px;
+    color: #586875;
+    margin: 0;
+}
+.report-header .meta-box {
+    text-align: right;
+    font-size: 9px;
+    color: #586875;
+    line-height: 1.6;
+}
+.report-header .badge {
+    display: inline-block;
+    background: #002C6C;
+    color: white;
+    font-weight: bold;
+    font-size: 8.5px;
+    padding: 1px 6px;
+    border-radius: 3px;
+    margin-bottom: 2px;
+}
+
+/* ── SECTION TITLE ── */
+h2 {
+    font-size: 11px;
+    font-weight: 700;
+    color: #002C6C;
+    margin: 6px 0 4px;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+}
+p { margin: 2px 0 5px; }
+
+/* ── LEGEND ── */
+.legend {
+    font-size: 8.5px;
+    color: #586875;
+    background: #F0F4F8;
+    border-left: 3px solid #002C6C;
+    padding: 3px 6px;
+    margin-bottom: 6px;
+    border-radius: 0 3px 3px 0;
+}
+
+/* ── GANTT TABLE ── */
+.gantt {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+.gantt th {
+    background: #002C6C;
+    color: white;
+    font-weight: 700;
+    font-size: 8px;
+    padding: 3px 2px;
+    text-align: center;
+    border: 1px solid #1A4A8A;
+}
+.gantt th.label-col {
+    text-align: left;
+    padding-left: 5px;
+    font-size: 8.5px;
+}
+.gantt td {
+    border: 1px solid #D1D9E0;
+    padding: 0;
+    height: 24px;
+    vertical-align: middle;
+}
+.gantt td.label-col {
+    padding: 4px 5px;
+    font-size: 8.5px;
+    vertical-align: top;
+    line-height: 1.4;
+    height: auto;
+}
+.gantt tr:nth-child(even) td.label-col { background: #F7F9FB; }
+.gantt tr:nth-child(even) td           { background: #FAFBFC; }
+
+/* ── DETAIL TABLE ── */
+.detail {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+.detail th {
+    background: #002C6C;
+    color: white;
+    font-weight: 700;
+    font-size: 8.5px;
+    padding: 4px 5px;
+    border: 1px solid #1A4A8A;
+    vertical-align: middle;
+}
+.detail td {
+    font-size: 8.5px;
+    line-height: 1.4;
+    padding: 5px 5px;
+    border: 1px solid #D1D9E0;
+    vertical-align: top;
+}
+.detail tr:nth-child(even) td { background: #F4F7FA; }
+.detail tr:hover td            { background: #EAF0F7; }
+
+/* ── PROGRESS BAR ── */
+.progress-wrap {
+    background: #E2E8F0;
+    border-radius: 3px;
+    height: 7px;
+    margin-top: 2px;
+    overflow: hidden;
+}
+.progress-bar {
+    height: 7px;
+    border-radius: 3px;
+}
+
+/* ── STATUS BADGES ── */
+.badge-done     { color: #059669; font-weight: 700; }
+.badge-inprog   { color: #1A4A8A; font-weight: 700; }
+.badge-late     { color: #C83232; font-weight: 700; }
+.badge-pending  { color: #586875; }
+.muted          { color: #586875; font-size: 8px; }
+
+/* ── PAGE BREAK ── */
+.page { page-break-after: always; margin-bottom: 22px; }
+.page:last-child { page-break-after: auto; }
+thead { display: table-header-group; }
+tr { break-inside: avoid; }
+
+/* ── FOOTER ── */
+.footer {
+    position: fixed;
+    bottom: 6mm;
+    left: 9mm; right: 9mm;
+    font-size: 7.5px;
+    color: #8A9BAB;
+    display: flex;
+    justify-content: space-between;
+    border-top: 1px solid #D1D9E0;
+    padding-top: 2px;
+}
+
+@media print {
+    .no-print { display: none; }
+    .page { margin-bottom: 0; }
+    body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    .footer { display: flex; }
+}
+@media screen {
+    .footer { display: none; }
+    body { padding: 12px; }
+}
 '''
 
 
@@ -45,16 +226,57 @@ def report_metadata(df):
     return metadata
 
 
+def _status_badge(status_text):
+    s = str(status_text).strip()
+    if 'hoàn' in s.lower():
+        return f'<span class="badge-done">✔ {esc(s)}</span>'
+    if 'đang' in s.lower() or 'thi công' in s.lower():
+        return f'<span class="badge-inprog">▶ {esc(s)}</span>'
+    if 'quá' in s.lower() or 'hạn' in s.lower():
+        return f'<span class="badge-late">⚠ {esc(s)}</span>'
+    return f'<span class="badge-pending">{esc(s)}</span>'
+
+
+def _progress_bar_html(pct, color=None):
+    if color is None:
+        color = GREEN_OK if pct >= 100 else (NAVY_LIGHT if pct >= 50 else AMBER)
+    return (f'<b>{pct}%</b>'
+            f'<div class="progress-wrap">'
+            f'<div class="progress-bar" style="width:{min(pct,100)}%;background:{color}"></div>'
+            f'</div>')
+
+
+def _make_header_html(report_date, unit_count, unit_label, summary):
+    badge_html = f'<span class="badge">PDF · A4 Ngang</span><br>'
+    return f'''
+<div class="report-header">
+  <div class="brand">
+    <h1>🏗 TIẾN ĐỘ DỰ ÁN — HYUNDAI MIỀN TÂY · CẦN THƠ</h1>
+    <p class="sub-title">Chủ đầu tư: <b>Thế Giới Xe Tải</b> &nbsp;|&nbsp; Nguồn cam kết: <b>{esc(SOURCE)}</b>
+      &nbsp;|&nbsp; Theo dõi: <b>{unit_count} {unit_label}</b>
+      {"&nbsp;|&nbsp; <i>" + SUMMARY_NOTE + "</i>" if summary else ""}
+    </p>
+  </div>
+  <div class="meta-box">
+    {badge_html}
+    Mốc theo dõi: <b>{report_date:%d/%m/%Y}</b><br>
+    Xuất lúc: {dt.datetime.now():%H:%M %d/%m/%Y}
+  </div>
+</div>
+'''
+
+
 def report_sections(df, report_date):
     metadata = report_metadata(df)
     summary = is_summary(df)
     unit = 'hạng mục lớn' if summary else 'công việc'
-    title = f'<h1>TIẾN ĐỘ DỰ ÁN HYUNDAI MIỀN TÂY — CẦN THƠ</h1><p>Chủ đầu tư: Thế Giới Xe Tải · Mốc theo dõi: <b>{report_date:%d/%m/%Y}</b><br>Nguồn cam kết: {esc(SOURCE)} · {len(df)} {unit} đang theo dõi.</p>'
-    if summary:
-        title += f'<p class="muted">{SUMMARY_NOTE}</p>'
-    legend = f'<p class="muted"><b style="color:{BROWN}">■ Màu nâu: kế hoạch áp dụng từ mục 7.</b> Mục 15 tạm ẩn trên Gantt; vẫn có trong bảng chi tiết.<br>{WEEK_NOTE}</p>'
+    legend = (f'<div class="legend">'
+              f'<b style="color:{BROWN}">■ Màu nâu:</b> Cam kết áp dụng từ mục 7. '
+              f'Mục 15 tạm ẩn trên biểu đồ Gantt; vẫn có đầy đủ trong bảng chi tiết. '
+              f'{WEEK_NOTE}'
+              f'</div>')
+
     visible = gantt_progress(df)
-    # Historical purchasing milestones have no new dates; do not extend the new Gantt back to May.
     dated = visible.loc[[bool(metadata.get(c, {}).get('current_weeks', True)) for c in visible['Mã']]]
     first = min(pd.to_datetime(dated['Bắt đầu']).min().date(), dt.date(2026, 9, 1)).replace(day=1)
     last = max(pd.to_datetime(dated['Hoàn thành']).max().date(), dt.date(2026, 12, 31))
@@ -63,126 +285,379 @@ def report_sections(df, report_date):
     while cursor <= last:
         months.append((cursor.year, cursor.month))
         cursor = dt.date(cursor.year+cursor.month//12, cursor.month%12+1, 1)
-    weeks = [dict(year=y, month=m, week=w) for y,m in months for w in range(1,5)]
-    head = '<thead><tr><th rowspan="2" style="width:34%">Mã / Hạng mục — Diễn giải</th>' + ''.join(f'<th colspan="4">{m:02}/{y}</th>' for y,m in months) + '</tr><tr>' + ''.join(f'<th>W{w["week"]}</th>' for w in weeks) + '</tr></thead>'
+    weeks = [dict(year=y, month=m, week=w) for y, m in months for w in range(1, 5)]
+
+    # Tên tháng tiếng Việt viết tắt
+    vi_months = {1:'T1',2:'T2',3:'T3',4:'T4',5:'T5',6:'T6',7:'T7',8:'T8',9:'T9',10:'T10',11:'T11',12:'T12'}
+    head = ('<thead>'
+            '<tr>'
+            '<th class="label-col" rowspan="2" style="width:33%">Mã / Hạng mục — Diễn giải</th>'
+            + ''.join(f'<th colspan="4">{vi_months[m]}/{y}</th>' for y, m in months)
+            + '</tr><tr>'
+            + ''.join(f'<th>T{w["week"]}</th>' for w in weeks)
+            + '</tr></thead>')
+
     sections = []
-    for start in range(0, len(visible), 18):
+    per_page = 18
+    for start in range(0, len(visible), per_page):
+        chunk = visible.iloc[start:start+per_page]
+        header_html = _make_header_html(report_date, len(df), unit, summary)
         lines = []
-        for _, r in visible.iloc[start:start+18].iterrows():
+        for _, r in chunk.iterrows():
             code = r['Mã']
             item = metadata.get(code)
-            label = f'<b>{esc(code)}</b> · {esc(r["Hạng mục công việc"])}<br><span class="muted">{esc(r["Phân khu"])}</span>'
+            label = (f'<b>{esc(code)}</b> · {esc(r["Hạng mục công việc"])}'
+                     f'<br><span class="muted">📍 {esc(r["Phân khu"])}</span>')
             cells = []
             historical = item and not item['current_weeks']
             if historical:
-                cells = [f'<td colspan="{len(weeks)}" style="color:#059669">Đã hoàn thiện theo mốc cũ trong PDF; chưa có mốc mới.</td>']
+                cells = [f'<td colspan="{len(weeks)}" style="color:{GREEN_OK};font-style:italic">'
+                         f'✔ Đã hoàn thiện theo mốc cũ trong PDF cam kết; chưa có mốc mới.</td>']
             else:
                 for w in weeks:
                     overlaps = r['Bắt đầu'] <= week_date(w, True) and r['Hoàn thành'] >= week_date(w)
-                    color = BROWN if item and item.get('group',7) >= 7 else '#059669' if r['Tiến độ (%)'] == 100 else '#64748B'
+                    color = BROWN if item and item.get('group', 7) >= 7 else GREEN_OK if r['Tiến độ (%)'] == 100 else '#64748B'
                     in_week = week_date(w) <= report_date <= week_date(w, True)
-                    style = f'background-color:{color};color:white;' if overlaps else 'background-color:#FFFFFF;'
+                    style = f'background:{color};' if overlaps else 'background:#F8FAFC;'
                     if in_week:
-                        style += 'border-left:2px solid #C83232;'
-                    cells.append(f'<td style="{style}">{"&#160;"}</td>')
-            lines.append(f'<tr><td>{label}</td>{"".join(cells)}</tr>')
-        sections.append(title + f'<h2>1. BIỂU ĐỒ GANTT THEO TUẦN · Công việc {start+1}–{min(start+18,len(visible))}/{len(visible)}</h2>' + legend + '<table class="gantt">' + head + '<tbody>' + ''.join(lines) + '</tbody></table>')
+                        style += f'border-left:2px solid {RED_LATE};'
+                    cells.append(f'<td style="{style}">&nbsp;</td>')
+            lines.append(f'<tr><td class="label-col">{label}</td>{"".join(cells)}</tr>')
+
+        pg_label = f'Công việc {start+1}–{min(start+per_page, len(visible))}/{len(visible)}'
+        sections.append(
+            header_html
+            + f'<h2>📊 1. Biểu đồ Gantt theo tuần &nbsp;<small style="font-weight:400;color:{TEXT_MUTED}">({pg_label})</small></h2>'
+            + legend
+            + f'<table class="gantt">{head}<tbody>{"".join(lines)}</tbody></table>'
+        )
+
+    # Bảng chi tiết
+    heading_key = '2. Tổng hợp hạng mục lớn' if summary else '2. Bảng chi tiết công việc'
+    detail_head = (
+        '<thead><tr>'
+        '<th style="width:11%">Mã / Phân khu</th>'
+        '<th style="width:22%">Diễn giải công việc</th>'
+        '<th style="width:17%">Mốc cam kết theo tuần</th>'
+        '<th style="width:11%">Thực tế / Tiến độ</th>'
+        '<th style="width:8%">P.I.C</th>'
+        '<th style="width:31%">Nguồn & Ghi chú</th>'
+        '</tr></thead>'
+    )
     for start in range(0, len(df), 10):
+        chunk = df.iloc[start:start+10]
+        header_html = _make_header_html(report_date, len(df), unit, summary)
         lines = []
-        for _, r in df.iloc[start:start+10].iterrows():
+        for _, r in chunk.iterrows():
             item = metadata.get(r['Mã'])
-            weeks = item['current_weeks'] if item else []
-            period = f'{week_label(weeks[0])}<br>→ {week_label(weeks[-1])}' if weeks else 'Chưa có mốc mới trên PDF' if item else 'Ngoài phạm vi mục 7–15'
-            period += f'<br><span class="muted">Hiển thị: {r["Bắt đầu"]:%d/%m/%Y} – {r["Hoàn thành"]:%d/%m/%Y}</span>'
-            lines.append('<tr>' + ''.join(f'<td>{v}</td>' for v in [f'<b>{esc(r["Mã"])}</b><br>{esc(r["Phân khu"])}',esc(r['Hạng mục công việc']),period,f'{r["Tiến độ (%)"]}%<br>{esc(r["Trạng thái"])}',esc(r['Người phụ trách']),esc(r['Ghi chú'])]) + '</tr>')
-        head = '<thead><tr><th style="width:12%">Mã / Hạng mục</th><th style="width:21%">Diễn giải công việc</th><th style="width:19%">Mốc cam kết theo tuần</th><th style="width:10%">Thực tế</th><th style="width:9%">P.I.C</th><th style="width:29%">Nguồn và ghi chú</th></tr></thead>'
-        heading = '2. TỔNG HỢP HẠNG MỤC LỚN' if summary else '2. BẢNG CHI TIẾT'
-        sections.append(title + f'<h2>{heading} · {start+1}–{min(start+10,len(df))}/{len(df)}</h2><p class="muted">{WEEK_NOTE} Tiến độ thực tế không suy ra từ độ dài thanh kế hoạch.</p><table class="detail">' + head + '<tbody>' + ''.join(lines) + '</tbody></table>')
+            current = item['current_weeks'] if item else []
+            if current:
+                period = f'{week_label(current[0])}<br>→ {week_label(current[-1])}'
+            elif item:
+                period = '<i style="color:#D97706">Chỉ có mốc cũ trên PDF</i>'
+            else:
+                period = f'<span class="muted">Ngoài phạm vi mục 7–15</span>'
+            period += (f'<br><span class="muted">📅 {r["Bắt đầu"]:%d/%m/%Y}'
+                       f' – {r["Hoàn thành"]:%d/%m/%Y}</span>')
+
+            pct = int(r['Tiến độ (%)'])
+            bar_color = GREEN_OK if pct >= 100 else (NAVY_LIGHT if pct >= 50 else AMBER)
+            progress_html = _progress_bar_html(pct, bar_color)
+            status_html = _status_badge(r['Trạng thái'])
+
+            values = [
+                f'<b>{esc(r["Mã"])}</b><br><span class="muted">📍 {esc(r["Phân khu"])}</span>',
+                esc(r['Hạng mục công việc']),
+                period,
+                f'{progress_html}<br>{status_html}',
+                esc(r['Người phụ trách']),
+                esc(r['Ghi chú']),
+            ]
+            lines.append('<tr>' + ''.join(f'<td>{v}</td>' for v in values) + '</tr>')
+
+        pg_label = f'{start+1}–{min(start+10, len(df))}/{len(df)}'
+        sections.append(
+            header_html
+            + f'<h2>📋 {heading_key} &nbsp;<small style="font-weight:400;color:{TEXT_MUTED}">({pg_label})</small></h2>'
+            + f'<p class="muted">⚡ {WEEK_NOTE} &nbsp; Tiến độ thực tế không suy ra từ độ dài thanh kế hoạch.</p>'
+            + f'<table class="detail">{detail_head}<tbody>{"".join(lines)}</tbody></table>'
+        )
+
     return sections
 
 
 def build_printable_html(df, report_date):
     sections = report_sections(df, report_date)
-    return '<!doctype html><html lang="vi"><head><meta charset="utf-8"><title>Tiến độ cam kết Hyundai Miền Tây 15/09/2026</title><style>'+CSS+'</style></head><body><button class="no-print" onclick="window.print()">In báo cáo</button>' + ''.join('<section class="page">'+s+'</section>' for s in sections) + '</body></html>'
+    footer = (f'<div class="footer">'
+              f'<span>🏗 Dự án Hyundai Miền Tây – Cần Thơ &nbsp;|&nbsp; Chủ đầu tư: Thế Giới Xe Tải</span>'
+              f'<span>Xuất: {dt.datetime.now():%H:%M %d/%m/%Y} &nbsp;|&nbsp; Nguồn: {esc(SOURCE)}</span>'
+              f'</div>')
+    body_sections = ''.join(f'<section class="page">{s}</section>' for s in sections)
+    return (f'<!doctype html><html lang="vi"><head><meta charset="utf-8">'
+            f'<title>Tiến độ Hyundai Miền Tây – Cần Thơ {report_date:%d/%m/%Y}</title>'
+            f'<style>{CSS}</style></head><body>'
+            f'<button class="no-print" onclick="window.print()" '
+            f'style="margin-bottom:10px;padding:8px 20px;background:#002C6C;color:white;border:none;'
+            f'border-radius:5px;font-size:13px;cursor:pointer">🖨 In báo cáo</button>'
+            f'{body_sections}'
+            f'{footer}'
+            f'</body></html>')
 
+
+# ─── PDF bằng PyMuPDF ─────────────────────────────────────────────────────────
 
 def build_pdf(df, report_date):
     import fitz
     doc = fitz.open()
     metadata = report_metadata(df)
     summary = is_summary(df)
+
     def color(h):
-        return tuple(int(h[i:i+2],16)/255 for i in (1,3,5))
-    def box(page, rect, text, background=None, size=8, foreground='#172B3A'):
-        rect = fitz.Rect(rect)
-        page.draw_rect(rect, color=color('#CCD3DA'), fill=color(background) if background else None, width=.4)
-        if not text:
-            return
-        content = f'<div style="font-family:sans-serif;font-size:{size}px;color:{foreground}">{text}</div>'
-        page.insert_htmlbox(rect + (3,2,-3,-2), content)
-    def new_page(subtitle):
-        page = doc.new_page(width=842,height=595)
-        content = (f'<h2 style="color:#002C6C;margin:0;font-size:16px">TIẾN ĐỘ DỰ ÁN HYUNDAI MIỀN TÂY — CẦN THƠ</h2>'
-                   f'<p style="margin:4px 0;font-size:9px">Chủ đầu tư: Thế Giới Xe Tải · Mốc theo dõi: {report_date:%d/%m/%Y} · Nguồn cam kết: PDF 15/09/2026<br>'
-                   f'{esc(subtitle)}<br>{WEEK_NOTE}' + (f'<br>{SUMMARY_NOTE}' if summary else '') + '</p>')
-        page.insert_htmlbox(fitz.Rect(26,18,816,87),content)
-        return page
+        h = h.lstrip('#')
+        return tuple(int(h[i:i+2], 16)/255 for i in (0, 2, 4))
+
+    NAVY_RGB   = color(NAVY)
+    SILVER_RGB = color(SILVER)
+    BORDER_RGB = color(BORDER)
+    WHITE_RGB  = (1.0, 1.0, 1.0)
+    BROWN_RGB  = color(BROWN)
+    GREEN_RGB  = color(GREEN_OK)
+    AMBER_RGB  = color(AMBER)
+    SLATE_RGB  = color('#64748B')
+    RED_RGB    = color(RED_LATE)
+    ZEBRA_RGB  = color('#F4F7FA')
+
+    # ── Layout constants (A4 landscape: 842×595 pt) ───────────────────────────
+    PW, PH = 842, 595
+    MARGIN_L, MARGIN_R = 24, 24
+    MARGIN_T, MARGIN_B = 18, 30        # bottom reserved for footer
+    CONTENT_W = PW - MARGIN_L - MARGIN_R
+
+    def draw_rect_filled(page, rect, fill_rgb, stroke_rgb=None, stroke_w=0.4):
+        page.draw_rect(fitz.Rect(rect), color=stroke_rgb or BORDER_RGB,
+                       fill=fill_rgb, width=stroke_w)
+
+    def insert_html(page, rect, content, font_size=8):
+        wrapped = (f'<div style="font-family:\'Segoe UI\',Arial,sans-serif;'
+                   f'font-size:{font_size}px;color:#172B3A;line-height:1.4">{content}</div>')
+        page.insert_htmlbox(fitz.Rect(rect) + (3, 2, -3, -2), wrapped)
+
+    def draw_header(page):
+        """Vẽ header chuẩn cho mỗi trang."""
+        # Đường kẻ ngang navy trên cùng
+        page.draw_rect(fitz.Rect(MARGIN_L, MARGIN_T, PW - MARGIN_R, MARGIN_T + 3),
+                       color=NAVY_RGB, fill=NAVY_RGB, width=0)
+        # Tiêu đề
+        title_html = (
+            f'<b style="font-size:15px;color:{NAVY}">🏗 TIẾN ĐỘ DỰ ÁN — HYUNDAI MIỀN TÂY · CẦN THƠ</b><br>'
+            f'<span style="font-size:8px;color:{TEXT_MUTED}">'
+            f'Chủ đầu tư: <b>Thế Giới Xe Tải</b> &nbsp;·&nbsp; '
+            f'Nguồn cam kết: <b>{esc(SOURCE)}</b>'
+            + (f' &nbsp;·&nbsp; <i>{SUMMARY_NOTE}</i>' if summary else '')
+            + f'</span>'
+        )
+        page.insert_htmlbox(fitz.Rect(MARGIN_L, MARGIN_T + 4, CONTENT_W * 0.72, MARGIN_T + 38), title_html)
+        # Meta box phía phải
+        meta_html = (
+            f'<div style="text-align:right;font-size:8px;color:{TEXT_MUTED};line-height:1.6">'
+            f'<b style="background:{NAVY};color:white;padding:1px 5px;border-radius:2px">PDF · A4 Ngang</b><br>'
+            f'Mốc theo dõi: <b>{report_date:%d/%m/%Y}</b><br>'
+            f'Xuất: {dt.datetime.now():%H:%M %d/%m/%Y}'
+            f'</div>'
+        )
+        page.insert_htmlbox(fitz.Rect(CONTENT_W * 0.72 + MARGIN_L, MARGIN_T + 4, PW - MARGIN_R, MARGIN_T + 38), meta_html)
+        # Đường kẻ phân cách header/nội dung
+        page.draw_line((MARGIN_L, MARGIN_T + 40), (PW - MARGIN_R, MARGIN_T + 40),
+                       color=NAVY_RGB, width=1)
+        return MARGIN_T + 44   # y bắt đầu nội dung
+
+    def draw_footer(page, page_num, total_pages):
+        y = PH - MARGIN_B + 4
+        page.draw_line((MARGIN_L, y), (PW - MARGIN_R, y), color=BORDER_RGB, width=0.5)
+        left_txt = f'Dự án Hyundai Miền Tây – Cần Thơ  ·  Chủ đầu tư: Thế Giới Xe Tải'
+        right_txt = f'Trang {page_num}/{total_pages}  ·  Nguồn: {SOURCE}'
+        page.insert_text((MARGIN_L, y + 9), left_txt,
+                         fontsize=7, color=color('#8A9BAB'))
+        page.insert_text((PW - MARGIN_R - 160, y + 9), right_txt,
+                         fontsize=7, color=color('#8A9BAB'))
+
+    # ── Gantt ─────────────────────────────────────────────────────────────────
     visible = gantt_progress(df)
     dated = visible.loc[[bool(metadata.get(c, {}).get('current_weeks', True)) for c in visible['Mã']]]
-    first = min(pd.to_datetime(dated['Bắt đầu']).min().date(),dt.date(2026,9,1)).replace(day=1)
-    last = max(pd.to_datetime(dated['Hoàn thành']).max().date(),dt.date(2026,12,31))
+    first = min(pd.to_datetime(dated['Bắt đầu']).min().date(), dt.date(2026, 9, 1)).replace(day=1)
+    last  = max(pd.to_datetime(dated['Hoàn thành']).max().date(), dt.date(2026, 12, 31))
     months = []
     cursor = first
     while cursor <= last:
-        months.append((cursor.year,cursor.month))
-        cursor = dt.date(cursor.year+cursor.month//12,cursor.month%12+1,1)
-    weeks = [dict(year=y,month=m,week=w) for y,m in months for w in range(1,5)]
-    left, label_width, width = 26, 310, 790
-    cell_w = (width-label_width)/len(weeks)
-    for start in range(0,len(visible),16):
-        page = new_page(f'1. GANTT · Công việc {start+1}–{min(start+16,len(visible))}/{len(visible)} · Màu nâu: cam kết áp dụng. Mục 15 tạm ẩn trên biểu đồ.')
-        box(page,(left,88,left+label_width,124),'<b>Mã / Hạng mục — Diễn giải</b>','#002C6C',9,'#FFFFFF')
-        for i,(y,m) in enumerate(months):
-            x = left+label_width+i*4*cell_w
-            box(page,(x,88,x+4*cell_w,106),f'<b>{m:02}/{y}</b>','#002C6C',8,'#FFFFFF')
-        for i,w in enumerate(weeks):
-            x = left+label_width+i*cell_w
-            box(page,(x,106,x+cell_w,124),f'W{w["week"]}','#002C6C',8,'#FFFFFF')
-        for i,(_,r) in enumerate(visible.iloc[start:start+16].iterrows()):
-            y = 124+i*26
-            item = metadata.get(r['Mã'])
-            box(page,(left,y,left+label_width,y+26),f'<b>{esc(r["Mã"])}</b> · {esc(r["Hạng mục công việc"])}<br><span style="font-size:7px;color:#586875">{esc(r["Phân khu"])}</span>',size=8)
-            if item and not item['current_weeks']:
-                box(page,(left+label_width,y,816,y+26),'Đã hoàn thiện theo mốc cũ trên PDF; chưa có mốc mới.',size=8,foreground='#059669')
-                continue
-            for j,w in enumerate(weeks):
-                x = left+label_width+j*cell_w
-                overlaps = r['Bắt đầu'] <= week_date(w,True) and r['Hoàn thành'] >= week_date(w)
-                fill = BROWN if item and item.get('group',7) >= 7 else '#059669' if r['Tiến độ (%)']==100 else '#64748B'
-                box(page,(x,y,x+cell_w,y+26),'',fill if overlaps else None)
-                if week_date(w) <= report_date <= week_date(w,True):
-                    page.draw_line((x,y),(x,y+26),color=color('#C83232'),width=1)
-    widths = [77,163,150,66,58,276]
-    for start in range(0,len(df),10):
-        heading = '2. TỔNG HỢP HẠNG MỤC LỚN' if summary else '2. BẢNG CHI TIẾT'
-        page = new_page(f'{heading} · {start+1}–{min(start+10,len(df))}/{len(df)} · Bao gồm đầy đủ mục 15.')
-        x = 26
-        for label,w in zip(['Mã / Mục','Diễn giải công việc','Mốc cam kết theo tuần','Thực tế','P.I.C','Nguồn / Ghi chú'],widths):
-            box(page,(x,88,x+w,112),f'<b>{label}</b>','#002C6C',8,'#FFFFFF')
+        months.append((cursor.year, cursor.month))
+        cursor = dt.date(cursor.year + cursor.month // 12, cursor.month % 12 + 1, 1)
+    weeks = [dict(year=y, month=m, week=w) for y, m in months for w in range(1, 5)]
+
+    LABEL_W   = 290
+    cell_w    = (CONTENT_W - LABEL_W) / len(weeks)
+    HEADER_H1 = 16   # hàng tháng
+    HEADER_H2 = 14   # hàng tuần
+    ROW_H     = 25   # mỗi hàng công việc
+
+    gantt_pages = []
+    PER_PAGE_GANTT = 16
+    for start in range(0, len(visible), PER_PAGE_GANTT):
+        page = doc.new_page(width=PW, height=PH)
+        gantt_pages.append(page)
+        y0 = draw_header(page)
+
+        # Sub-title
+        chunk_label = f'1. BIỂU ĐỒ GANTT · Công việc {start+1}–{min(start+PER_PAGE_GANTT,len(visible))}/{len(visible)}'
+        page.insert_htmlbox(
+            fitz.Rect(MARGIN_L, y0, PW - MARGIN_R, y0 + 12),
+            f'<b style="font-size:10px;color:{NAVY}">{chunk_label}</b>'
+            f'<span style="font-size:7.5px;color:{TEXT_MUTED}"> &nbsp;·&nbsp; '
+            f'■ Nâu = cam kết áp dụng. Mục 15 tạm ẩn trên biểu đồ.</span>'
+        )
+        y0 += 14
+
+        x0 = MARGIN_L
+        # Header cột nhãn
+        draw_rect_filled(page, (x0, y0, x0 + LABEL_W, y0 + HEADER_H1 + HEADER_H2), NAVY_RGB)
+        page.insert_htmlbox(
+            fitz.Rect(x0 + 3, y0 + 3, x0 + LABEL_W - 3, y0 + HEADER_H1 + HEADER_H2 - 3),
+            f'<b style="font-size:8.5px;color:white">Mã / Hạng mục — Diễn giải &amp; Phân khu</b>'
+        )
+        # Header tháng + tuần
+        for i, (y, m) in enumerate(months):
+            x = x0 + LABEL_W + i * 4 * cell_w
+            draw_rect_filled(page, (x, y0, x + 4 * cell_w, y0 + HEADER_H1), NAVY_RGB, NAVY_RGB)
+            page.insert_htmlbox(
+                fitz.Rect(x + 1, y0 + 1, x + 4 * cell_w - 1, y0 + HEADER_H1 - 1),
+                f'<b style="font-size:8px;color:white;text-align:center">{m:02}/{y}</b>'
+            )
+        for i, w in enumerate(weeks):
+            x = x0 + LABEL_W + i * cell_w
+            draw_rect_filled(page, (x, y0 + HEADER_H1, x + cell_w, y0 + HEADER_H1 + HEADER_H2),
+                             color(NAVY_LIGHT), color(NAVY_LIGHT))
+            page.insert_htmlbox(
+                fitz.Rect(x + 1, y0 + HEADER_H1 + 1, x + cell_w - 1, y0 + HEADER_H1 + HEADER_H2 - 1),
+                f'<span style="font-size:7px;color:white">T{w["week"]}</span>'
+            )
+
+        y0 += HEADER_H1 + HEADER_H2
+
+        for idx, (_, r) in enumerate(visible.iloc[start:start + PER_PAGE_GANTT].iterrows()):
+            ry = y0 + idx * ROW_H
+            zebra = ZEBRA_RGB if idx % 2 == 0 else WHITE_RGB
+            code = r['Mã']
+            item = metadata.get(code)
+
+            # Label cell
+            draw_rect_filled(page, (x0, ry, x0 + LABEL_W, ry + ROW_H), zebra)
+            label_html = (f'<b style="font-size:8px">{esc(code)}</b>'
+                          f' <span style="font-size:8px">· {esc(r["Hạng mục công việc"])}</span>'
+                          f'<br><span style="font-size:7px;color:{TEXT_MUTED}">📍 {esc(r["Phân khu"])}</span>')
+            page.insert_htmlbox(fitz.Rect(x0 + 3, ry + 2, x0 + LABEL_W - 3, ry + ROW_H - 2), label_html)
+
+            # Bar cells
+            historical = item and not item['current_weeks']
+            if historical:
+                draw_rect_filled(page, (x0 + LABEL_W, ry, PW - MARGIN_R, ry + ROW_H), zebra)
+                page.insert_htmlbox(
+                    fitz.Rect(x0 + LABEL_W + 4, ry + 4, PW - MARGIN_R - 4, ry + ROW_H - 4),
+                    f'<span style="color:{GREEN_OK};font-size:7.5px;font-style:italic">'
+                    f'✔ Đã hoàn thiện theo mốc cũ; chưa có mốc mới.</span>'
+                )
+            else:
+                fill_color = (BROWN_RGB if item and item.get('group', 7) >= 7
+                              else GREEN_RGB if r['Tiến độ (%)'] == 100
+                              else SLATE_RGB)
+                for j, w in enumerate(weeks):
+                    wx = x0 + LABEL_W + j * cell_w
+                    overlaps = r['Bắt đầu'] <= week_date(w, True) and r['Hoàn thành'] >= week_date(w)
+                    cell_bg = fill_color if overlaps else zebra
+                    draw_rect_filled(page, (wx, ry, wx + cell_w, ry + ROW_H), cell_bg, BORDER_RGB, 0.3)
+                    if week_date(w) <= report_date <= week_date(w, True):
+                        page.draw_line((wx, ry), (wx, ry + ROW_H), color=RED_RGB, width=1.2)
+
+    # ── Bảng chi tiết ─────────────────────────────────────────────────────────
+    COL_WIDTHS = [82, 168, 135, 90, 65, 254]
+    COL_LABELS = ['Mã / Phân khu', 'Diễn giải công việc',
+                  'Mốc cam kết theo tuần', 'Thực tế / Tiến độ', 'P.I.C', 'Nguồn & Ghi chú']
+    HEADER_H   = 22
+    ROW_H_DET  = 46
+
+    detail_pages = []
+    PER_PAGE_DET = 10
+    heading_key = '2. TỔNG HỢP HẠNG MỤC LỚN' if summary else '2. BẢNG CHI TIẾT'
+    for start in range(0, len(df), PER_PAGE_DET):
+        page = doc.new_page(width=PW, height=PH)
+        detail_pages.append(page)
+        y0 = draw_header(page)
+
+        chunk_label = f'{heading_key} · {start+1}–{min(start+PER_PAGE_DET,len(df))}/{len(df)}'
+        page.insert_htmlbox(
+            fitz.Rect(MARGIN_L, y0, PW - MARGIN_R, y0 + 12),
+            f'<b style="font-size:10px;color:{NAVY}">{chunk_label}</b>'
+            f'<span style="font-size:7.5px;color:{TEXT_MUTED}"> &nbsp;·&nbsp; '
+            f'Bao gồm đầy đủ mục 15. Tiến độ thực tế không suy ra từ thanh Gantt.</span>'
+        )
+        y0 += 14
+
+        # Header hàng
+        x = MARGIN_L
+        for label, w in zip(COL_LABELS, COL_WIDTHS):
+            draw_rect_filled(page, (x, y0, x + w, y0 + HEADER_H), NAVY_RGB)
+            page.insert_htmlbox(
+                fitz.Rect(x + 3, y0 + 3, x + w - 3, y0 + HEADER_H - 3),
+                f'<b style="font-size:8px;color:white">{label}</b>'
+            )
             x += w
-        for i,(_,r) in enumerate(df.iloc[start:start+10].iterrows()):
-            y = 112+i*44
+        y0 += HEADER_H
+
+        for idx, (_, r) in enumerate(df.iloc[start:start + PER_PAGE_DET].iterrows()):
+            ry = y0 + idx * ROW_H_DET
+            zebra = ZEBRA_RGB if idx % 2 == 0 else WHITE_RGB
             item = metadata.get(r['Mã'])
             current = item['current_weeks'] if item else []
-            period = f'{week_label(current[0])}<br>→ {week_label(current[-1])}' if current else 'Chỉ có mốc cũ trên PDF' if item else 'Ngoài phạm vi mục 7–15'
-            period += f'<br><span style="font-size:7px">{r["Bắt đầu"]:%d/%m/%Y} – {r["Hoàn thành"]:%d/%m/%Y}</span>'
-            values = [f'<b>{esc(r["Mã"])}</b><br>{esc(r["Phân khu"])}',esc(r['Hạng mục công việc']),period,f'{r["Tiến độ (%)"]}%<br>{esc(r["Trạng thái"])}',esc(r['Người phụ trách']),esc(r['Ghi chú'])]
-            x = 26
-            for value,w in zip(values,widths):
-                box(page,(x,y,x+w,y+44),value,size=8)
+            if current:
+                period = f'{week_label(current[0])} → {week_label(current[-1])}'
+            elif item:
+                period = '<i>Chỉ có mốc cũ trên PDF</i>'
+            else:
+                period = 'Ngoài phạm vi mục 7–15'
+            period += f'<br><span style="font-size:7px;color:{TEXT_MUTED}">📅 {r["Bắt đầu"]:%d/%m/%Y} – {r["Hoàn thành"]:%d/%m/%Y}</span>'
+
+            pct = int(r['Tiến độ (%)'])
+            bar_color_rgb = GREEN_RGB if pct >= 100 else (color(NAVY_LIGHT) if pct >= 50 else AMBER_RGB)
+            progress_html = (f'<b style="font-size:9px">{pct}%</b><br>'
+                             f'<div style="background:#E2E8F0;border-radius:3px;height:6px;margin:2px 0;overflow:hidden">'
+                             f'<div style="width:{min(pct,100)}%;height:6px;background:{"#"+NAVY_LIGHT[1:]};border-radius:3px"></div>'
+                             f'</div>')
+
+            status = str(r['Trạng thái'])
+            if 'hoàn' in status.lower():
+                status_html = f'<span style="color:{GREEN_OK};font-weight:bold;font-size:7.5px">✔ {esc(status)}</span>'
+            elif 'đang' in status.lower():
+                status_html = f'<span style="color:{NAVY_LIGHT};font-weight:bold;font-size:7.5px">▶ {esc(status)}</span>'
+            else:
+                status_html = f'<span style="color:{TEXT_MUTED};font-size:7.5px">{esc(status)}</span>'
+
+            values = [
+                f'<b style="font-size:8px">{esc(r["Mã"])}</b><br><span style="font-size:7px;color:{TEXT_MUTED}">📍 {esc(r["Phân khu"])}</span>',
+                f'<span style="font-size:8px">{esc(r["Hạng mục công việc"])}</span>',
+                f'<span style="font-size:7.5px">{period}</span>',
+                progress_html + status_html,
+                f'<span style="font-size:8px">{esc(r["Người phụ trách"])}</span>',
+                f'<span style="font-size:7.5px">{esc(r["Ghi chú"])}</span>',
+            ]
+            x = MARGIN_L
+            for value, w in zip(values, COL_WIDTHS):
+                draw_rect_filled(page, (x, ry, x + w, ry + ROW_H_DET), zebra)
+                page.insert_htmlbox(fitz.Rect(x + 3, ry + 3, x + w - 3, ry + ROW_H_DET - 3), value)
                 x += w
-    for i, page in enumerate(doc):
-        page.insert_text((770, 583), f'{i+1}/{len(doc)}', fontsize=8, color=(.35,.4,.45))
+
+    # ── Footer số trang ────────────────────────────────────────────────────────
+    all_pages = gantt_pages + detail_pages
+    for i, page in enumerate(all_pages):
+        draw_footer(page, i + 1, len(all_pages))
+
     doc.subset_fonts()
     content = doc.tobytes(garbage=4, deflate=True)
     doc.close()
@@ -193,7 +668,11 @@ def build_excel(df, qcvn):
     from openpyxl.styles import PatternFill, Font, Alignment
     output = io.BytesIO()
     with pd.ExcelWriter(output, engine='openpyxl') as writer:
-        (df if is_summary(df) else commitment_details(df)).to_excel(writer, sheet_name='Tong_Hop_Hang_Muc' if is_summary(df) else 'Tien_Do_Thi_Cong', index=False)
+        (df if is_summary(df) else commitment_details(df)).to_excel(
+            writer,
+            sheet_name='Tong_Hop_Hang_Muc' if is_summary(df) else 'Tien_Do_Thi_Cong',
+            index=False
+        )
         qcvn.to_excel(writer, sheet_name='QCVN_121_Checklist', index=False)
         for sheet in writer.book:
             sheet.freeze_panes = 'C2'
