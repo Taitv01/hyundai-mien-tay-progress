@@ -333,7 +333,7 @@ def report_sections(df, report_date):
         )
 
     # Bảng chi tiết
-    heading_key = '2. Tổng hợp hạng mục lớn' if summary else '2. Bảng chi tiết công việc'
+    heading_key = '2. TỔNG HỢP HẠNG MỤC LỚN' if summary else '2. BẢNG CHI TIẾT'
     detail_head = (
         '<thead><tr>'
         '<th style="width:11%">Mã / Phân khu</th>'
