@@ -473,7 +473,10 @@ def build_pdf(df, report_date):
 
     def draw_footer(page, page_num, total_pages):
         y = PH - MARGIN_B + 4
-        page.draw_line((MARGIN_L, y), (PW - MARGIN_R, y), color=BORDER_RGB, width=0.5)
+        try:
+            page.draw_line((MARGIN_L, y), (PW - MARGIN_R, y), color=BORDER_RGB, width=0.5)
+        except Exception:
+            pass
         left_txt = f'Dự án Hyundai Miền Tây – Cần Thơ  ·  Chủ đầu tư: Thế Giới Xe Tải'
         right_txt = f'Trang {page_num}/{total_pages}  ·  Nguồn: {SOURCE}'
         page.insert_text((MARGIN_L, y + 9), left_txt,
@@ -500,9 +503,15 @@ def build_pdf(df, report_date):
     ROW_H     = 25   # mỗi hàng công việc
 
     PER_PAGE_GANTT = 16
-    for start in range(0, len(visible), PER_PAGE_GANTT):
+    PER_PAGE_DET = 10
+    total_gantt_pages = max(1, (len(visible) + PER_PAGE_GANTT - 1) // PER_PAGE_GANTT)
+    total_detail_pages = max(1, (len(df) + PER_PAGE_DET - 1) // PER_PAGE_DET)
+    total_pages = total_gantt_pages + total_detail_pages
+
+    for page_idx_gantt, start in enumerate(range(0, len(visible), PER_PAGE_GANTT)):
         page = doc.new_page(width=PW, height=PH)
         y0 = draw_header(page)
+        draw_footer(page, page_idx_gantt + 1, total_pages)
 
         # Sub-title
         chunk_label = f'1. BIỂU ĐỒ GANTT · Công việc {start+1}–{min(start+PER_PAGE_GANTT,len(visible))}/{len(visible)}'
@@ -583,9 +592,10 @@ def build_pdf(df, report_date):
 
     PER_PAGE_DET = 10
     heading_key = '2. TỔNG HỢP HẠNG MỤC LỚN' if summary else '2. BẢNG CHI TIẾT'
-    for start in range(0, len(df), PER_PAGE_DET):
+    for page_idx_det, start in enumerate(range(0, len(df), PER_PAGE_DET)):
         page = doc.new_page(width=PW, height=PH)
         y0 = draw_header(page)
+        draw_footer(page, total_gantt_pages + page_idx_det + 1, total_pages)
 
         chunk_label = f'{heading_key} · {start+1}–{min(start+PER_PAGE_DET,len(df))}/{len(df)}'
         page.insert_htmlbox(
@@ -648,11 +658,6 @@ def build_pdf(df, report_date):
                 draw_rect_filled(page, (x, ry, x + w, ry + ROW_H_DET), zebra)
                 page.insert_htmlbox(fitz.Rect(x + 3, ry + 3, x + w - 3, ry + ROW_H_DET - 3), value)
                 x += w
-
-    # ── Footer số trang ────────────────────────────────────────────────────────
-    total_pages = len(doc)
-    for i, page in enumerate(doc):
-        draw_footer(page, i + 1, total_pages)
 
     doc.subset_fonts()
     content = doc.tobytes(garbage=4, deflate=True)
