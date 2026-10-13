@@ -175,6 +175,26 @@ def normalize_qcvn_data(df: pd.DataFrame) -> pd.DataFrame:
     return result.sort_values("STT").reset_index(drop=True)
 
 
+def apply_qcvn_updates(target_df: pd.DataFrame, edited_df: pd.DataFrame) -> pd.DataFrame:
+    """Cập nhật các chỉnh sửa từ bảng checklist hiển thị vào DataFrame checklist đầy đủ."""
+    _require_columns(target_df, QCVN_COLUMNS, "Checklist QCVN 121 gốc")
+    updated = target_df.copy()
+    editable_cols = [
+        col for col in ["Hạng mục", "Đặc thù EV", "Đánh giá", "Ghi chú"]
+        if col in edited_df.columns
+    ]
+    for _, row in edited_df.iterrows():
+        stt_val = int(row["STT"])
+        mask = updated["STT"] == stt_val
+        for col in editable_cols:
+            val = row[col]
+            if pd.isna(val) and col in ("Hạng mục", "Đánh giá", "Ghi chú"):
+                val = ""
+            updated.loc[mask, col] = val
+    return normalize_qcvn_data(updated)
+
+
+
 def credentials_from_config(config: Mapping[str, Any]) -> dict[str, Any]:
     """Đọc Service Account từ cấu hình secrets mà không đưa khóa ra giao diện."""
 

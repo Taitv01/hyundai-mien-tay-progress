@@ -15,6 +15,7 @@ from pathlib import Path
 import streamlit.components.v1 as components
 
 from data_service import (
+    apply_qcvn_updates,
     credentials_from_config,
     load_from_google_sheets,
     normalize_progress_data,
@@ -1511,6 +1512,7 @@ with tab_qcvn:
     display_qcvn = df_q.copy()
     if selected_nhom != "Tất cả":
         display_qcvn = display_qcvn[display_qcvn["Nhóm"] == selected_nhom]
+    display_qcvn = display_qcvn.reset_index(drop=True)
 
     qcvn_config = {
         "STT": st.column_config.NumberColumn("STT", width="small", disabled=True),
@@ -1525,22 +1527,24 @@ with tab_qcvn:
         "Ghi chú": st.column_config.TextColumn("Thông số kỹ thuật / Ghi chú", width="medium")
     }
 
+    qcvn_display_cols = ["STT", "Nhóm", "Hạng mục", "Đánh giá", "Ghi chú"]
+    if SHOW_EV_HYBRID_CHECKLIST:
+        qcvn_display_cols.insert(3, "Đặc thù EV")
+
     edited_qcvn = st.data_editor(
-        display_qcvn,
+        display_qcvn[qcvn_display_cols],
         column_config=qcvn_config,
         width="stretch",
         hide_index=True,
         num_rows="fixed",
-        column_order=["STT", "Nhóm", "Hạng mục", "Đánh giá", "Ghi chú"],
+        column_order=qcvn_display_cols,
         disabled=not (ONLINE_MODE and CURRENT_USER.can_edit) if ONLINE_MODE else False,
-        key="master_qcvn_editor_v3"
+        key=f"master_qcvn_editor_v3_{selected_nhom}"
     )
 
-    if not edited_qcvn.equals(display_qcvn):
+    if not edited_qcvn[qcvn_display_cols].equals(display_qcvn[qcvn_display_cols]):
         try:
-            updated_qcvn = st.session_state.qcvn_df.copy()
-            for _, row in edited_qcvn.iterrows():
-                updated_qcvn.loc[updated_qcvn["STT"] == row["STT"], :] = row
+            updated_qcvn = apply_qcvn_updates(st.session_state.qcvn_df, edited_qcvn)
             if ONLINE_MODE:
                 online_service.save_qcvn(updated_qcvn, CURRENT_USER)
                 reload_online_data(online_service, PROJECT_TODAY)
