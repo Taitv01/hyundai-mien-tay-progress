@@ -566,7 +566,7 @@ class SupabaseService:
         if response.data:
             return str(response.data[0]["password_hash"])
 
-        initial_hash = self.settings.delete_pin_hash or DEFAULT_DELETE_PIN_HASH
+        initial_hash = getattr(self.settings, "delete_pin_hash", "") or DEFAULT_DELETE_PIN_HASH
         try:
             self.client.table("app_users").insert(
                 {
@@ -598,7 +598,8 @@ class SupabaseService:
         pin_hash = self.get_or_init_delete_pin_hash()
         if verify_password(cleaned, pin_hash):
             return True
-        if self.settings.delete_pin_hash and verify_password(cleaned, self.settings.delete_pin_hash):
+        cfg_hash = getattr(self.settings, "delete_pin_hash", "")
+        if cfg_hash and verify_password(cleaned, cfg_hash):
             return True
         return False
 
