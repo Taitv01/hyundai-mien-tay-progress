@@ -3,7 +3,14 @@ import io
 import pytest
 from PIL import Image
 
-from supabase_service import hash_password, prepare_image, prepare_pdf, verify_password
+from supabase_service import (
+    DEFAULT_DELETE_PIN_HASH,
+    hash_delete_pin,
+    hash_password,
+    prepare_image,
+    prepare_pdf,
+    verify_password,
+)
 
 
 def test_password_hash_is_salted_and_verifiable():
@@ -19,6 +26,16 @@ def test_password_hash_is_salted_and_verifiable():
 def test_password_must_have_at_least_ten_characters():
     with pytest.raises(ValueError, match="10 ký tự"):
         hash_password("qua-ngan")
+
+
+def test_delete_pin_hash_supports_short_pin_and_verifies_default():
+    pin_hash = hash_delete_pin("2026")
+    assert verify_password("2026", pin_hash)
+    assert not verify_password("9999", pin_hash)
+    assert verify_password("HMT2026", DEFAULT_DELETE_PIN_HASH)
+
+    with pytest.raises(ValueError, match="4 ký tự"):
+        hash_delete_pin("123")
 
 
 def test_prepare_image_converts_and_resizes_to_jpeg():
@@ -59,4 +76,5 @@ def test_prepare_pdf_rejects_oversized():
     fake_large_pdf = b"%PDF-1.4\n" + b"0" * (26 * 1024 * 1024)
     with pytest.raises(ValueError, match="vượt quá 25 MB"):
         prepare_pdf(fake_large_pdf)
+
 
