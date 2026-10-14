@@ -22,6 +22,10 @@ from data_service import (
     normalize_qcvn_data,
     save_to_google_sheets,
 )
+import importlib
+import supabase_service as _supabase_service_mod
+importlib.invalidate_caches()
+importlib.reload(_supabase_service_mod)
 from supabase_service import AppUser, OnlineSettings, ROLE_LABELS, SupabaseService
 from commitment_schedule import (
     VERSION as COMMITMENT_VERSION, BROWN, WEEK_NOTE, LEGACY_CODES,
@@ -433,10 +437,6 @@ def get_online_settings():
         bootstrap_display_name=str(
             config.get("bootstrap_display_name", "Quản trị hệ thống")
         ),
-        delete_pin_hash=str(
-            config.get("delete_pin_hash")
-            or secrets_root.get("ADMIN_DELETE_PIN_HASH", "")
-        ).strip(),
     )
 
 
