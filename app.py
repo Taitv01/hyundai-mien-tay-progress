@@ -433,6 +433,10 @@ def get_online_settings():
         bootstrap_display_name=str(
             config.get("bootstrap_display_name", "Quản trị hệ thống")
         ),
+        delete_pin_hash=str(
+            config.get("delete_pin_hash")
+            or secrets_root.get("ADMIN_DELETE_PIN_HASH", "")
+        ).strip(),
     )
 
 
@@ -1331,52 +1335,109 @@ with tab_files:
 
         st.divider()
 
-        # Tiện ích tải tệp / tài liệu mới
+        # Tiện ích tải tệp / tài liệu mới & Quản lý quyền xóa tệp
         if CURRENT_USER.can_edit:
-            with st.expander("➕ Tải lên tài liệu / hồ sơ mới cho hạng mục", expanded=False):
-                st.caption("Bổ sung bản vẽ, biên bản nghiệm thu, chứng chỉ vật tư hoặc ảnh hiện trường cho hạng mục.")
-                with st.form("tab_files_quick_upload_form", border=False):
-                    up_c1, up_c2 = st.columns(2)
-                    with up_c1:
-                        target_task = st.selectbox(
-                            "Chọn hạng mục gán tài liệu",
-                            task_options,
-                            format_func=lambda code: (
-                                f"[{code}] " + progress_source.loc[progress_source["Mã"] == code, "Hạng mục công việc"].iloc[0]
-                            ),
-                            key="tab_files_task_code",
+            is_delete_unlocked = bool(st.session_state.get("file_delete_unlocked", False)) or CURRENT_USER.is_admin
+            up_exp_col, sec_exp_col = st.columns([3, 2])
+            with up_exp_col:
+                with st.expander("➕ Tải lên tài liệu / hồ sơ mới cho hạng mục", expanded=False):
+                    st.caption("Bổ sung bản vẽ, biên bản nghiệm thu, chứng chỉ vật tư hoặc ảnh hiện trường cho hạng mục.")
+                    with st.form("tab_files_quick_upload_form", border=False):
+                        up_c1, up_c2 = st.columns(2)
+                        with up_c1:
+                            target_task = st.selectbox(
+                                "Chọn hạng mục gán tài liệu",
+                                task_options,
+                                format_func=lambda code: (
+                                    f"[{code}] " + progress_source.loc[progress_source["Mã"] == code, "Hạng mục công việc"].iloc[0]
+                                ),
+                                key="tab_files_task_code",
+                            )
+                        with up_c2:
+                            up_file = st.file_uploader(
+                                "Chọn tệp tải lên (PDF, JPG, PNG, WebP)",
+                                type=["pdf", "jpg", "jpeg", "png", "webp"],
+                                key="tab_files_uploader",
+                            )
+                        up_note = st.text_input(
+                            "Ghi chú tài liệu (ví dụ: Biên bản nghiệm thu, Bản vẽ mặt bằng cập nhật...)",
+                            key="tab_files_note",
                         )
-                    with up_c2:
-                        up_file = st.file_uploader(
-                            "Chọn tệp tải lên (PDF, JPG, PNG, WebP)",
-                            type=["pdf", "jpg", "jpeg", "png", "webp"],
-                            key="tab_files_uploader",
-                        )
-                    up_note = st.text_input(
-                        "Ghi chú tài liệu (ví dụ: Biên bản nghiệm thu, Bản vẽ mặt bằng cập nhật...)",
-                        key="tab_files_note",
-                    )
-                    up_submit = st.form_submit_button("Tải tệp lên hệ thống", type="primary", icon=":material/cloud_upload:")
+                        up_submit = st.form_submit_button("Tải tệp lên hệ thống", type="primary", icon=":material/cloud_upload:")
 
-                if up_submit:
-                    if up_file is None:
-                        st.warning("Vui lòng chọn tệp cần tải lên.")
-                    else:
-                        try:
-                            with st.spinner("Đang tải tài liệu lên đám mây..."):
-                                fresh_service = get_online_service(online_settings)
-                                fresh_service.upload_task_document(
-                                    CURRENT_USER,
-                                    target_task,
-                                    up_file.name,
-                                    up_file.getvalue(),
-                                    note=up_note,
-                                )
-                                reload_online_data(fresh_service, PROJECT_TODAY)
-                            st.toast(f"Đã tải tệp '{up_file.name}' lên thành công.", icon="✅")
+                    if up_submit:
+                        if up_file is None:
+                            st.warning("Vui lòng chọn tệp cần tải lên.")
+                        else:
+                            try:
+                                with st.spinner("Đang tải tài liệu lên đám mây..."):
+                                    fresh_service = get_online_service(online_settings)
+                                    fresh_service.upload_task_document(
+                                        CURRENT_USER,
+                                        target_task,
+                                        up_file.name,
+                                        up_file.getvalue(),
+                                        note=up_note,
+                                    )
+                                    reload_online_data(fresh_service, PROJECT_TODAY)
+                                st.toast(f"Đã tải tệp '{up_file.name}' lên thành công.", icon="✅")
+                                st.rerun()
+                            except Exception as exc:
+                                st.error(f"Lỗi khi tải tài liệu: {exc}")
+
+            with sec_exp_col:
+                lock_status_label = (
+                    "🔓 Quyền xóa file: Đã mở khóa (Đổi PIN / Khóa lại)"
+                    if is_delete_unlocked
+                    else "🔒 Quyền xóa file: Đang bảo vệ (Mở khóa / Đổi PIN)"
+                )
+                with st.expander(lock_status_label, expanded=False):
+                    if is_delete_unlocked and not CURRENT_USER.is_admin:
+                        st.success("Phiên làm việc của bạn đã mở khóa quyền xóa tệp.")
+                        if st.button("🔒 Khóa lại quyền xóa tệp", key="lock_delete_session_btn", width="stretch"):
+                            st.session_state["file_delete_unlocked"] = False
+                            st.toast("Đã khóa lại quyền xóa tệp.", icon="🔒")
                             st.rerun()
-                        except Exception as exc:
-                            st.error(f"Lỗi khi tải tài liệu: {exc}")
+                    elif not is_delete_unlocked:
+                        st.caption("Mọi người có thể xem và tải tệp lên, nhưng chỉ người có Mật khẩu / Mã PIN mới xóa được tệp.")
+                        with st.form("quick_unlock_delete_form", border=False):
+                            quick_pin = st.text_input(
+                                "Nhập Mật khẩu / Mã PIN để mở khóa xóa nhanh",
+                                type="password",
+                                key="quick_unlock_pin_input",
+                            )
+                            unlock_submit = st.form_submit_button("🔓 Mở khóa trong phiên này", width="stretch")
+                        if unlock_submit:
+                            try:
+                                fresh_service = get_online_service(online_settings)
+                                if fresh_service.verify_delete_pin(quick_pin):
+                                    st.session_state["file_delete_unlocked"] = True
+                                    st.toast("Đã mở khóa quyền xóa tệp trong phiên làm việc này.", icon="✅")
+                                    st.rerun()
+                                else:
+                                    st.error("Mật khẩu / Mã PIN không đúng.")
+                            except Exception as exc:
+                                st.error(f"Lỗi xác thực: {exc}")
+
+                    st.markdown("---")
+                    st.markdown("###### 🔑 Đổi Mật khẩu / Mã PIN xóa tệp")
+                    with st.form("change_delete_pin_form", border=False):
+                        cur_pin_val = st.text_input("Mật khẩu / Mã PIN hiện tại", type="password", key="chg_cur_pin")
+                        new_pin_val = st.text_input("Mật khẩu / Mã PIN mới (tối thiểu 4 ký tự)", type="password", key="chg_new_pin")
+                        cfm_pin_val = st.text_input("Nhập lại Mật khẩu / Mã PIN mới", type="password", key="chg_cfm_pin")
+                        chg_pin_submit = st.form_submit_button("Lưu Mật khẩu / Mã PIN mới", type="primary", width="stretch")
+                    if chg_pin_submit:
+                        if new_pin_val != cfm_pin_val:
+                            st.error("Mật khẩu / Mã PIN mới nhập lại không khớp.")
+                        else:
+                            try:
+                                fresh_service = get_online_service(online_settings)
+                                fresh_service.change_delete_pin(cur_pin_val, new_pin_val)
+                                st.session_state["file_delete_unlocked"] = True
+                                st.toast("Đã đổi Mật khẩu / Mã PIN xóa tệp thành công!", icon="✅")
+                                st.success("Đã cập nhật Mật khẩu / Mã PIN xóa tệp mới.")
+                            except Exception as exc:
+                                st.error(f"Không thể đổi Mật khẩu / Mã PIN: {exc}")
 
         # Bộ lọc và tìm kiếm
         f_col1, f_col2, f_col3 = st.columns([2, 2, 3])
@@ -1428,6 +1489,7 @@ with tab_files:
         if not filtered_files:
             st.info("Chưa có tệp nào phù hợp với điều kiện tìm kiếm/lọc.")
         else:
+            is_delete_unlocked = bool(st.session_state.get("file_delete_unlocked", False)) or CURRENT_USER.is_admin
             for file_item in filtered_files:
                 is_pdf = file_item["file_type"] == "pdf"
                 file_id = file_item["id"]
@@ -1464,16 +1526,42 @@ with tab_files:
                         with act_col2:
                             if CURRENT_USER.can_edit:
                                 with st.popover("🗑️ Xóa", width="stretch"):
-                                    st.markdown(f"**Xác nhận xóa tệp?**")
+                                    st.markdown("**Xác nhận xóa tệp?**")
                                     st.caption(f"Tệp `{file_name}` sẽ bị xóa vĩnh viễn khỏi hệ thống.")
-                                    if st.button("Xác nhận xóa", type="primary", key=f"del_btn_{file_id}", width="stretch"):
-                                        try:
-                                            fresh_service = get_online_service(online_settings)
-                                            fresh_service.delete_file(CURRENT_USER, file_id)
-                                            st.toast(f"Đã xóa tệp '{file_name}' thành công.", icon="✅")
-                                            st.rerun()
-                                        except Exception as exc:
-                                            st.error(f"Lỗi khi xóa: {exc}")
+                                    if is_delete_unlocked:
+                                        st.caption("🔓 *Đã xác thực quyền xóa trong phiên làm việc này.*")
+                                        if st.button("Xác nhận xóa", type="primary", key=f"del_btn_{file_id}", width="stretch"):
+                                            try:
+                                                fresh_service = get_online_service(online_settings)
+                                                fresh_service.delete_file(CURRENT_USER, file_id, is_unlocked=True)
+                                                st.toast(f"Đã xóa tệp '{file_name}' thành công.", icon="✅")
+                                                st.rerun()
+                                            except Exception as exc:
+                                                st.error(f"Lỗi khi xóa: {exc}")
+                                    else:
+                                        del_pin_input = st.text_input(
+                                            "🔒 Mật khẩu / Mã PIN xóa tệp",
+                                            type="password",
+                                            placeholder="Nhập mật khẩu/PIN của bạn...",
+                                            help="Chỉ cần nhập đúng 1 lần, hệ thống sẽ nhớ cho phiên làm việc hiện tại của bạn.",
+                                            key=f"del_pin_{file_id}",
+                                        )
+                                        if st.button("🔓 Mở khóa & Xóa tệp", type="primary", key=f"del_btn_{file_id}", width="stretch"):
+                                            if not del_pin_input.strip():
+                                                st.warning("Vui lòng nhập Mật khẩu / Mã PIN xóa tệp.")
+                                            else:
+                                                try:
+                                                    fresh_service = get_online_service(online_settings)
+                                                    fresh_service.delete_file(
+                                                        CURRENT_USER,
+                                                        file_id,
+                                                        delete_pin=del_pin_input,
+                                                    )
+                                                    st.session_state["file_delete_unlocked"] = True
+                                                    st.toast(f"Đã mở khóa và xóa tệp '{file_name}' thành công.", icon="✅")
+                                                    st.rerun()
+                                                except Exception as exc:
+                                                    st.error(f"Lỗi khi xóa: {exc}")
 
                     # Vùng xem trước tệp
                     if file_url:
@@ -1688,7 +1776,11 @@ with tab_report:
 with tab_users:
     st.subheader("Hướng dẫn truy cập")
     if PUBLIC_ACCESS_MODE:
-        st.success("Không cần đăng nhập. Mở link là có thể xem và cập nhật.")
+        st.success("Không cần đăng nhập. Mở link là có thể xem, cập nhật tiến độ và tải tệp hiện trường lên.")
+        st.info(
+            "🔒 **Bảo vệ xóa tệp:** Mọi người có link đều có thể xem và tải tài liệu/ảnh lên, "
+            "nhưng **chỉ Quản trị viên có Mật khẩu / Mã PIN xóa tệp** mới được phép xóa tệp trong tab **📂 QUẢN LÝ FILE**."
+        )
         st.warning(
             "Hãy chỉ chia sẻ link cho Ban QLDA và Đại lý vì người có link "
             "có thể thay đổi tiến độ và tải ảnh hiện trường."
