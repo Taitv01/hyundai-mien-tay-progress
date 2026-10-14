@@ -26,6 +26,12 @@ ROLE_LABELS = {
     "editor": "Đại lý cập nhật",
     "viewer": "Chỉ xem",
 }
+DELETE_ADMIN_USERNAME = "file-delete-admin"
+DEFAULT_DELETE_PIN_HASH = (
+    "pbkdf2_sha256$310000$"
+    "Wk1_RqwzKByqLbVntk-9cw==$"
+    "aogCYzmx0dlU-Rv-FEgKbMWyApCpxt8GM8O7gGYlCrU="
+)
 
 
 @dataclass(frozen=True)
@@ -36,6 +42,7 @@ class OnlineSettings:
     bootstrap_username: str = ""
     bootstrap_password_hash: str = ""
     bootstrap_display_name: str = "Quản trị hệ thống"
+    delete_pin_hash: str = ""
 
 
 @dataclass(frozen=True)
@@ -62,6 +69,22 @@ def hash_password(password: str, salt: bytes | None = None) -> str:
     salt = salt or secrets.token_bytes(16)
     iterations = 310_000
     digest = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt, iterations)
+    return "pbkdf2_sha256${}${}${}".format(
+        iterations,
+        base64.urlsafe_b64encode(salt).decode("ascii"),
+        base64.urlsafe_b64encode(digest).decode("ascii"),
+    )
+
+
+def hash_delete_pin(pin: str, salt: bytes | None = None) -> str:
+    """Tạo chuỗi PBKDF2 có salt cho Mật khẩu / Mã PIN xóa tệp (tối thiểu 4 ký tự)."""
+
+    cleaned = (pin or "").strip()
+    if len(cleaned) < 4:
+        raise ValueError("Mật khẩu / Mã PIN xóa tệp phải có ít nhất 4 ký tự.")
+    salt = salt or secrets.token_bytes(16)
+    iterations = 310_000
+    digest = hashlib.pbkdf2_hmac("sha256", cleaned.encode("utf-8"), salt, iterations)
     return "pbkdf2_sha256${}${}${}".format(
         iterations,
         base64.urlsafe_b64encode(salt).decode("ascii"),
@@ -531,10 +554,82 @@ class SupabaseService:
         ).execute()
         return update_id
 
-    def delete_file(self, actor: AppUser, file_id: str) -> None:
-        """Xóa tệp đính kèm (ảnh hoặc PDF) khỏi storage và database."""
+    def get_or_init_delete_pin_hash(self) -> str:
+        """Lấy hoặc khởi tạo mã băm Mật khẩu / Mã PIN xóa tệp trên Supabase."""
+        response = (
+            self.client.table("app_users")
+            .select("id,password_hash")
+            .eq("username", DELETE_ADMIN_USERNAME)
+            .limit(1)
+            .execute()
+        )
+        if response.data:
+            return str(response.data[0]["password_hash"])
+
+        initial_hash = self.settings.delete_pin_hash or DEFAULT_DELETE_PIN_HASH
+        try:
+            self.client.table("app_users").insert(
+                {
+                    "username": DELETE_ADMIN_USERNAME,
+                    "display_name": "Quản trị xóa tệp",
+                    "password_hash": initial_hash,
+                    "role": "admin",
+                    "is_active": True,
+                }
+            ).execute()
+        except Exception:
+            pass
+        response = (
+            self.client.table("app_users")
+            .select("id,password_hash")
+            .eq("username", DELETE_ADMIN_USERNAME)
+            .limit(1)
+            .execute()
+        )
+        if response.data:
+            return str(response.data[0]["password_hash"])
+        return initial_hash
+
+    def verify_delete_pin(self, pin: str) -> bool:
+        """Kiểm tra Mật khẩu / Mã PIN xóa tệp có hợp lệ không."""
+        cleaned = (pin or "").strip()
+        if not cleaned:
+            return False
+        pin_hash = self.get_or_init_delete_pin_hash()
+        if verify_password(cleaned, pin_hash):
+            return True
+        if self.settings.delete_pin_hash and verify_password(cleaned, self.settings.delete_pin_hash):
+            return True
+        return False
+
+    def change_delete_pin(self, current_pin: str, new_pin: str) -> None:
+        """Đổi Mật khẩu / Mã PIN xóa tệp và lưu lên Supabase."""
+        if not self.verify_delete_pin(current_pin):
+            raise ValueError("Mật khẩu / Mã PIN hiện tại không đúng.")
+        new_hash = hash_delete_pin(new_pin)
+        self.get_or_init_delete_pin_hash()
+        self.client.table("app_users").update(
+            {
+                "password_hash": new_hash,
+                "updated_at": dt.datetime.now(dt.UTC).isoformat(),
+            }
+        ).eq("username", DELETE_ADMIN_USERNAME).execute()
+
+    def delete_file(
+        self,
+        actor: AppUser,
+        file_id: str,
+        delete_pin: str | None = None,
+        is_unlocked: bool = False,
+    ) -> None:
+        """Xóa tệp đính kèm (ảnh hoặc PDF) khỏi storage và database (yêu cầu quyền Admin hoặc Mã PIN xóa tệp)."""
         if not actor.can_edit:
             raise PermissionError("Tài khoản chỉ có quyền xem.")
+        if not actor.is_admin and not is_unlocked:
+            if not delete_pin or not self.verify_delete_pin(delete_pin):
+                raise PermissionError(
+                    "Mật khẩu / Mã PIN xóa tệp không đúng. Chỉ quản trị viên mới được phép xóa tệp."
+                )
         res = (
             self.client.table("progress_photos")
             .select("id,storage_path")
