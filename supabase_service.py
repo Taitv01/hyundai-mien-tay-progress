@@ -32,6 +32,8 @@ DEFAULT_DELETE_PIN_HASH = (
     "Wk1_RqwzKByqLbVntk-9cw==$"
     "aogCYzmx0dlU-Rv-FEgKbMWyApCpxt8GM8O7gGYlCrU="
 )
+SIGNED_URL_FALLBACK_EXPIRES_IN = 315_360_000  # 10 năm (phòng hờ khi bucket không ở chế độ public)
+_PUBLIC_BUCKET_VERIFIED: set[str] = set()
 
 
 @dataclass(frozen=True)
@@ -648,6 +650,48 @@ class SupabaseService:
                 pass
         self.client.table("progress_photos").delete().eq("id", file_id).execute()
 
+    def _ensure_public_bucket(self) -> bool:
+        """Đảm bảo bucket lưu trữ ở chế độ public để URL mở tệp không bao giờ hết hạn JWT (exp claim)."""
+        bucket = self.settings.photos_bucket
+        key = f"{self.settings.url}:{bucket}"
+        if key in _PUBLIC_BUCKET_VERIFIED:
+            return True
+        try:
+            self.client.storage.update_bucket(bucket, {"public": True})
+            _PUBLIC_BUCKET_VERIFIED.add(key)
+            return True
+        except Exception:
+            try:
+                info = self.client.storage.get_bucket(bucket)
+                if getattr(info, "public", False):
+                    _PUBLIC_BUCKET_VERIFIED.add(key)
+                    return True
+            except Exception:
+                pass
+            return False
+
+    def get_file_url(self, storage_path: str) -> str | None:
+        """Tạo đường dẫn mở tệp vĩnh viễn (không chứa token JWT hết hạn) từ Supabase Storage."""
+        clean_path = (storage_path or "").strip().lstrip("/")
+        if not clean_path:
+            return None
+        bucket_ref = self.client.storage.from_(self.settings.photos_bucket)
+        if self._ensure_public_bucket():
+            try:
+                pub = bucket_ref.get_public_url(clean_path)
+                if isinstance(pub, str) and pub.startswith("http"):
+                    return pub.rstrip("?")
+            except Exception:
+                pass
+        try:
+            signed = bucket_ref.create_signed_url(
+                clean_path, SIGNED_URL_FALLBACK_EXPIRES_IN
+            )
+            return signed.get("signedURL") or signed.get("signedUrl")
+        except Exception:
+            base = self.settings.url.rstrip("/")
+            return f"{base}/storage/v1/object/public/{self.settings.photos_bucket}/{clean_path}"
+
     def list_all_files(
         self,
         task_code: str | None = None,
@@ -687,13 +731,7 @@ class SupabaseService:
                 if filter_val in ("image", "hình ảnh", "ảnh") and ftype != "image":
                     continue
 
-            try:
-                signed = self.client.storage.from_(self.settings.photos_bucket).create_signed_url(
-                    spath, 7200
-                )
-                url = signed.get("signedURL") or signed.get("signedUrl")
-            except Exception:
-                url = None
+            url = self.get_file_url(spath)
 
             uploader_id = file.get("uploaded_by")
             uploader_name = user_names.get(uploader_id, "Hệ thống") if uploader_id else "Chưa xác định"
@@ -744,10 +782,7 @@ class SupabaseService:
             spath = photo.get("storage_path", "")
             is_pdf = fname.lower().endswith(".pdf") or spath.lower().endswith(".pdf")
             photo["file_type"] = "pdf" if is_pdf else "image"
-            signed = self.client.storage.from_(self.settings.photos_bucket).create_signed_url(
-                photo["storage_path"], 3600
-            )
-            photo["url"] = signed.get("signedURL") or signed.get("signedUrl")
+            photo["url"] = self.get_file_url(spath)
             uid = str(photo["update_id"])
             by_update_all.setdefault(uid, []).append(photo)
             if is_pdf:
