@@ -5,6 +5,9 @@ from PIL import Image
 
 from supabase_service import (
     DEFAULT_DELETE_PIN_HASH,
+    SIGNED_URL_FALLBACK_EXPIRES_IN,
+    OnlineSettings,
+    SupabaseService,
     hash_delete_pin,
     hash_password,
     prepare_image,
@@ -76,5 +79,33 @@ def test_prepare_pdf_rejects_oversized():
     fake_large_pdf = b"%PDF-1.4\n" + b"0" * (26 * 1024 * 1024)
     with pytest.raises(ValueError, match="vượt quá 25 MB"):
         prepare_pdf(fake_large_pdf)
+
+
+def test_get_file_url_returns_non_expiring_public_url():
+    assert SIGNED_URL_FALLBACK_EXPIRES_IN >= 315_360_000
+
+    class DummyBucketRef:
+        def get_public_url(self, path: str) -> str:
+            return f"https://example.supabase.co/storage/v1/object/public/progress-photos/{path}?"
+
+    class DummyStorage:
+        def update_bucket(self, bucket: str, opts: dict) -> None:
+            assert opts.get("public") is True
+
+        def from_(self, bucket: str) -> DummyBucketRef:
+            return DummyBucketRef()
+
+    class DummyClient:
+        storage = DummyStorage()
+
+    svc = object.__new__(SupabaseService)
+    svc.settings = OnlineSettings(url="https://example.supabase.co", service_role_key="dummy")
+    svc.client = DummyClient()
+
+    url = svc.get_file_url("PL-01/2026-09-04/test.pdf")
+    assert url == "https://example.supabase.co/storage/v1/object/public/progress-photos/PL-01/2026-09-04/test.pdf"
+    assert "token=" not in url
+    assert svc.get_file_url("") is None
+
 
 
