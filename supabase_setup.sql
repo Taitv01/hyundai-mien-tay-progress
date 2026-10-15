@@ -84,7 +84,7 @@ insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_typ
 values (
     'progress-photos',
     'progress-photos',
-    false,
+    true,
     26214400,
     array['image/jpeg', 'image/png', 'image/webp', 'application/pdf']
 )
