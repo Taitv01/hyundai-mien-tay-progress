@@ -9,6 +9,7 @@ import streamlit as st
 import pandas as pd
 import datetime
 import hashlib
+import time
 import plotly.express as px
 import html
 from pathlib import Path
@@ -486,30 +487,126 @@ def cached_pdf(progress, report_date, data_version):
 # 3. ĐĂNG NHẬP, ONLINE BACKEND & SESSION STATE
 # ==============================================================================
 
+FALLBACK_RETRY_COOLDOWN_SECONDS = 60
+
+
+def is_dns_lookup_error(error_text: str) -> bool:
+    """Nhận diện lỗi không phân giải được tên miền (thường gặp khi Supabase Free bị Pause)."""
+    lowered = (error_text or "").lower()
+    markers = (
+        "name or service not known",
+        "getaddrinfo failed",
+        "temporary failure in name resolution",
+        "nodename nor servname provided",
+        "no address associated with hostname",
+        "nxdomain",
+    )
+    return any(marker in lowered for marker in markers)
+
+
+def is_server_booting_or_down_error(error_text: str) -> bool:
+    """Nhận diện lỗi máy chủ Supabase đang khởi động lại sau khi Restore (Cloudflare 521/502/503/504)."""
+    lowered = (error_text or "").lower()
+    markers = (
+        "status 521",
+        "error code 521",
+        "web server is down",
+        "status 502",
+        "status 503",
+        "status 504",
+        "bad gateway",
+        "service unavailable",
+    )
+    return any(marker in lowered for marker in markers)
+
+
+def summarize_error_detail(error_text: str, max_len: int = 240) -> str:
+    """Rút gọn chuỗi lỗi kỹ thuật, loại bỏ mã HTML thô từ trang lỗi Cloudflare."""
+    cleaned = (error_text or "").strip()
+    if "<!doctype html" in cleaned.lower() or "<html" in cleaned.lower():
+        if "521" in cleaned or "web server is down" in cleaned.lower():
+            return "HTTP 521 (Cloudflare: Máy chủ đích Supabase đang khởi động hoặc tạm ngưng phản hồi)"
+        cleaned = cleaned.split("<!DOCTYPE")[0].split("<!doctype")[0].split("<html")[0].strip()
+    cleaned = " ".join(cleaned.split())
+    if len(cleaned) > max_len:
+        return cleaned[:max_len].rstrip() + "..."
+    return cleaned or "Không rõ chi tiết lỗi"
+
+
+def format_online_fallback_message(error_text: str) -> str:
+    """Tạo thông báo tiếng Việt rõ nguyên nhân khi chuyển sang chế độ dự phòng."""
+    if is_dns_lookup_error(error_text):
+        return (
+            "⚠️ **Không thể kết nối cơ sở dữ liệu Supabase (lỗi phân giải tên miền).** "
+            "Dự án Supabase có thể đang tạm dừng (**Paused** trên gói Free) hoặc DNS chưa cập nhật. "
+            "Ứng dụng đã tự động chuyển sang **Chế độ dự phòng — Chỉ xem dữ liệu cam kết gốc** "
+            "để bạn vẫn tra cứu được biểu đồ Gantt, danh mục công việc và xuất báo cáo."
+        )
+    if is_server_booting_or_down_error(error_text):
+        return (
+            "⚠️ **Máy chủ cơ sở dữ liệu Supabase đang khởi động lại (mã lỗi 521/5xx).** "
+            "Nếu vừa nhấn **Restore project**, vui lòng đợi 1–3 phút rồi bấm **Thử kết nối lại**. "
+            "Trong lúc chờ, ứng dụng đang mở ở **Chế độ dự phòng — Chỉ xem dữ liệu cam kết gốc**."
+        )
+    return (
+        "⚠️ **Tạm thời gián đoạn kết nối tới cơ sở dữ liệu Supabase.** "
+        "Ứng dụng đã tự động chuyển sang **Chế độ dự phòng — Chỉ xem dữ liệu cam kết gốc** "
+        "để không làm gián đoạn việc xem tiến độ và xuất báo cáo."
+    )
+
+
+def activate_online_fallback(exc: BaseException | str) -> str:
+    """Ghi nhận trạng thái dự phòng trong phiên hiện tại để tránh treo lặp lại mỗi thao tác."""
+    detail = str(exc).strip() or type(exc).__name__
+    st.session_state["online_fallback_error"] = detail
+    st.session_state["online_fallback_at"] = time.monotonic()
+    return detail
+
+
+def reset_online_fallback_state() -> None:
+    """Xóa cờ dự phòng để thử kết nối lại Supabase ngay lập tức."""
+    st.session_state.pop("online_fallback_error", None)
+    st.session_state.pop("online_fallback_at", None)
+    st.session_state.pop("online_data_loaded", None)
+
+
 st.session_state.setdefault("project_today", datetime.date.today())
 online_settings = get_online_settings()
-ONLINE_MODE = online_settings is not None
-online_service = get_online_service(online_settings) if ONLINE_MODE else None
+ONLINE_CONFIGURED = online_settings is not None
+ONLINE_MODE = False
+FALLBACK_READONLY_MODE = False
+FALLBACK_ERROR_DETAIL = ""
+online_service = None
 CURRENT_USER = st.session_state.get("current_user")
 
-if ONLINE_MODE and PUBLIC_ACCESS_MODE:
-    try:
-        CURRENT_USER = online_service.get_or_create_public_editor()
-        st.session_state.current_user = CURRENT_USER
-    except Exception as exc:
-        st.error(f"Không thể khởi tạo quyền cập nhật công khai: {exc}")
-        st.stop()
-elif ONLINE_MODE and CURRENT_USER is None:
+if ONLINE_CONFIGURED:
+    cached_fallback_err = st.session_state.get("online_fallback_error")
+    cached_fallback_at = float(st.session_state.get("online_fallback_at", 0.0))
+    within_cooldown = bool(
+        cached_fallback_err
+        and (time.monotonic() - cached_fallback_at) < FALLBACK_RETRY_COOLDOWN_SECONDS
+    )
+    if within_cooldown:
+        FALLBACK_READONLY_MODE = True
+        FALLBACK_ERROR_DETAIL = str(cached_fallback_err)
+    else:
+        try:
+            online_service = get_online_service(online_settings)
+            if PUBLIC_ACCESS_MODE:
+                CURRENT_USER = online_service.get_or_create_public_editor()
+                st.session_state.current_user = CURRENT_USER
+            elif CURRENT_USER is None:
+                online_service.bootstrap_admin()
+        except Exception as exc:
+            FALLBACK_READONLY_MODE = True
+            FALLBACK_ERROR_DETAIL = activate_online_fallback(exc)
+            online_service = None
+        else:
+            ONLINE_MODE = True
+
+if ONLINE_MODE and not PUBLIC_ACCESS_MODE and CURRENT_USER is None:
     st.title("Đăng nhập hệ thống tiến độ Hyundai Miền Tây")
     st.caption("Dành cho Ban QLDA, Đại lý và người được cấp quyền.")
-    try:
-        online_service.bootstrap_admin()
-    except Exception:
-        st.error(
-            "Kho dữ liệu online chưa được khởi tạo. Quản trị viên cần chạy "
-            "tệp `supabase_setup.sql` trong Supabase SQL Editor."
-        )
-        st.stop()
 
     with st.form("login_form", border=True):
         login_username = st.text_input("Tên đăng nhập", autocomplete="username")
@@ -520,7 +617,11 @@ elif ONLINE_MODE and CURRENT_USER is None:
             "Đăng nhập", type="primary", icon=":material/login:", width="stretch"
         )
     if login_submit:
-        user = online_service.authenticate(login_username, login_password)
+        try:
+            user = online_service.authenticate(login_username, login_password)
+        except Exception as exc:
+            activate_online_fallback(exc)
+            st.rerun()
         if user is None:
             st.error("Tên đăng nhập hoặc mật khẩu không đúng.")
         else:
@@ -536,10 +637,23 @@ if ONLINE_MODE:
         online_service.seed_if_empty(get_initial_progress_data(), get_qcvn121_items())
         if not st.session_state.get("online_data_loaded"):
             reload_online_data(online_service, st.session_state.project_today)
+        st.session_state.pop("online_fallback_error", None)
+        st.session_state.pop("online_fallback_at", None)
     except Exception as exc:
-        st.error(f"Không thể kết nối kho dữ liệu online: {exc}")
-        st.stop()
-else:
+        ONLINE_MODE = False
+        FALLBACK_READONLY_MODE = True
+        FALLBACK_ERROR_DETAIL = activate_online_fallback(exc)
+        online_service = None
+
+if FALLBACK_READONLY_MODE:
+    CURRENT_USER = AppUser(
+        id="fallback-readonly",
+        username="fallback-viewer",
+        display_name="Chế độ dự phòng (Chỉ xem)",
+        role="viewer",
+    )
+
+if not ONLINE_MODE:
     st.session_state.setdefault("progress_df", get_initial_progress_data())
     st.session_state.setdefault("qcvn_df", get_qcvn121_items())
     if st.session_state.get("commitment_version") != COMMITMENT_VERSION:
@@ -548,6 +662,12 @@ else:
         missing = commitment_data().loc[lambda d: ~d['Mã'].isin(previous['Mã'])]
         st.session_state.progress_df = active_progress(pd.concat([previous, missing], ignore_index=True))
         st.session_state.commitment_version = COMMITMENT_VERSION
+
+CAN_EDIT = (
+    bool(CURRENT_USER and CURRENT_USER.can_edit)
+    if ONLINE_MODE
+    else (not FALLBACK_READONLY_MODE)
+)
 
 
 # ==============================================================================
@@ -613,12 +733,29 @@ with st.sidebar:
         else:
             st.caption(f"**{CURRENT_USER.display_name}** · {ROLE_LABELS[CURRENT_USER.role]}")
         if st.button("Làm mới dữ liệu", icon=":material/refresh:", width="stretch"):
-            reload_online_data(online_service, PROJECT_TODAY)
+            try:
+                reload_online_data(online_service, PROJECT_TODAY)
+            except Exception as exc:
+                activate_online_fallback(exc)
             st.rerun()
         if not PUBLIC_ACCESS_MODE and st.button(
             "Đăng xuất", icon=":material/logout:", width="stretch"
         ):
             st.session_state.clear()
+            st.rerun()
+    elif FALLBACK_READONLY_MODE:
+        st.warning("Chế độ dự phòng · Chỉ xem", icon=":material/cloud_off:")
+        st.caption(
+            "Đang hiển thị dữ liệu cam kết dự phòng do mất kết nối Supabase. "
+            "Chỉnh sửa tạm khóa để bảo toàn dữ liệu hiện trường."
+        )
+        if st.button(
+            "Thử kết nối lại Supabase",
+            icon=":material/refresh:",
+            width="stretch",
+            key="sidebar_retry_supabase",
+        ):
+            reset_online_fallback_state()
             st.rerun()
     else:
         with st.expander("Đồng bộ Google Sheets", icon=":material/cloud_sync:"):
@@ -692,6 +829,28 @@ st.markdown(f"""
     </div>
 </div>
 """, unsafe_allow_html=True)
+
+if FALLBACK_READONLY_MODE:
+    with st.container(border=True):
+        fb_col_msg, fb_col_btn = st.columns([5, 1.5])
+        with fb_col_msg:
+            st.warning(format_online_fallback_message(FALLBACK_ERROR_DETAIL))
+        with fb_col_btn:
+            if st.button(
+                "Thử kết nối lại",
+                type="primary",
+                icon=":material/refresh:",
+                width="stretch",
+                key="banner_retry_supabase",
+            ):
+                reset_online_fallback_state()
+                st.rerun()
+        with st.expander("🔧 Chi tiết kỹ thuật & Hướng dẫn khôi phục kết nối", expanded=False):
+            st.caption(f"Chi tiết lỗi từ máy chủ: `{summarize_error_detail(FALLBACK_ERROR_DETAIL)}`")
+            st.markdown(
+                "1. Quản trị viên mở **Supabase Dashboard**, kiểm tra nếu dự án đang ở trạng thái **Paused** thì nhấn **Restore project**.\n"
+                "2. Đợi 2–5 phút để hệ thống và DNS hoạt động trở lại, sau đó bấm nút **Thử kết nối lại** ở trên."
+            )
 
 # 🚨 TRUNG TÂM CẢNH BÁO CHẬM TIẾN ĐỘ & SẮP ĐẾN HẠN
 if len(overdue_items) > 0 or len(urgent_items) > 0 or len(delayed_items) > 0:
@@ -1017,6 +1176,11 @@ with tab_progress:
         st.dataframe(st.session_state.get("legacy_progress_df", pd.DataFrame()), hide_index=True)
 
     # Bảng Master editor
+    if FALLBACK_READONLY_MODE:
+        st.info(
+            "🔒 Bảng đang ở **Chế độ dự phòng (Chỉ xem)** với dữ liệu cam kết gốc. "
+            "Khôi phục kết nối Supabase để chỉnh sửa và lưu cập nhật trực tiếp."
+        )
     display_cols = ["Mã", "Hạng mục công việc", "Phân khu", "Bắt đầu", "Hoàn thành", "Tiến độ (%)", "Trạng thái", "Cảnh báo Tiến độ", "Người phụ trách", "Ghi chú"]
     edited_progress = st.data_editor(
         st.session_state.progress_df[display_cols],
@@ -1024,12 +1188,12 @@ with tab_progress:
         width="stretch",
         hide_index=True,
         num_rows="fixed",
-        disabled=not (ONLINE_MODE and CURRENT_USER.can_edit) if ONLINE_MODE else False,
+        disabled=not CAN_EDIT,
         key="master_progress_editor_20260915"
     )
 
     # Cập nhật khi có thay đổi
-    if not edited_progress[display_cols].equals(st.session_state.progress_df[display_cols]):
+    if CAN_EDIT and not edited_progress[display_cols].equals(st.session_state.progress_df[display_cols]):
         try:
             normalized_progress = calculate_progress_alerts(edited_progress, current_date=PROJECT_TODAY)
             if ONLINE_MODE:
@@ -1062,7 +1226,12 @@ with tab_update:
     st.subheader("📷 Cập nhật hiện trường")
     st.caption("Ghi nhận tiến độ thi công thực tế, cập nhật trạng thái hạng mục và theo dõi nhật ký hiện trường.")
 
-    if not ONLINE_MODE:
+    if FALLBACK_READONLY_MODE:
+        st.warning(
+            "🔒 **Cập nhật hiện trường & Tải tệp đang tạm khóa** do chưa kết nối được cơ sở dữ liệu Supabase. "
+            "Sau khi dự án Supabase hoạt động trở lại, hãy bấm **Thử kết nối lại** ở đầu trang để tiếp tục gửi báo cáo hiện trường."
+        )
+    elif not ONLINE_MODE:
         st.info("Tính năng này sẽ hoạt động sau khi cấu hình Supabase trên bản online.")
     else:
         subtab_form, subtab_log = st.tabs([
@@ -1278,7 +1447,13 @@ with tab_files:
     st.caption("Thư viện lưu trữ tập trung toàn bộ bản vẽ thiết kế, hồ sơ pháp lý, biên bản nghiệm thu và hình ảnh hiện trường thi công.")
 
     if not ONLINE_MODE:
-        st.info("Tính năng quản lý file tập trung trên đám mây hoạt động khi kết nối Supabase.")
+        if FALLBACK_READONLY_MODE:
+            st.warning(
+                "🔒 Kho lưu trữ hồ sơ đám mây Supabase tạm thời chưa kết nối được. "
+                "Dưới đây là các tệp tài liệu cam kết dự phòng sẵn có trong hệ thống."
+            )
+        else:
+            st.info("Tính năng quản lý file tập trung trên đám mây hoạt động khi kết nối Supabase.")
         st.markdown("##### 📁 Các tệp tài liệu dự án có sẵn tại thư mục gốc:")
         local_docs = [
             ("260915_Tiến độ xây dựng Hyundai Cần Thơ.pdf", "Cam kết tiến độ xây dựng của Chủ đầu tư (15/09/2026)", "📄 PDF"),
@@ -1619,6 +1794,12 @@ with tab_qcvn:
     if SHOW_EV_HYBRID_CHECKLIST:
         qcvn_display_cols.insert(3, "Đặc thù EV")
 
+    if FALLBACK_READONLY_MODE:
+        st.info(
+            "🔒 Checklist đang ở **Chế độ dự phòng (Chỉ xem)**. "
+            "Khôi phục kết nối Supabase để cập nhật trạng thái đánh giá."
+        )
+
     edited_qcvn = st.data_editor(
         display_qcvn[qcvn_display_cols],
         column_config=qcvn_config,
@@ -1626,11 +1807,11 @@ with tab_qcvn:
         hide_index=True,
         num_rows="fixed",
         column_order=qcvn_display_cols,
-        disabled=not (ONLINE_MODE and CURRENT_USER.can_edit) if ONLINE_MODE else False,
+        disabled=not CAN_EDIT,
         key=f"master_qcvn_editor_v3_{selected_nhom}"
     )
 
-    if not edited_qcvn[qcvn_display_cols].equals(display_qcvn[qcvn_display_cols]):
+    if CAN_EDIT and not edited_qcvn[qcvn_display_cols].equals(display_qcvn[qcvn_display_cols]):
         try:
             updated_qcvn = apply_qcvn_updates(st.session_state.qcvn_df, edited_qcvn)
             if ONLINE_MODE:
@@ -1649,6 +1830,12 @@ with tab_qcvn:
 # ------------------------------------------------------------------------------
 with tab_report:
     st.subheader("📑 Lộ Trình Cột Mốc Trọng Tâm & Xuất Hồ Sơ Báo Cáo")
+
+    if FALLBACK_READONLY_MODE:
+        st.warning(
+            "⚠️ Báo cáo xuất ra hiện đang tổng hợp từ **dữ liệu cam kết dự phòng** "
+            "(chưa bao gồm các cập nhật hiện trường trên Supabase cho đến khi kết nối lại)."
+        )
 
     st.info("Cam kết 15/09/2026: chuẩn bị hồ sơ GPXD từ tuần 3 tháng 9; xin phép đến tuần 2 tháng 10; san lấp từ tuần 4 tháng 9; khai trương tuần 4 tháng 12/2026. Mục 15: cấp chứng nhận tuần 4 tháng 3/2027, tạm ẩn trên Gantt.")
     st.caption(WEEK_NOTE)
@@ -1775,6 +1962,11 @@ with tab_report:
 # ------------------------------------------------------------------------------
 with tab_users:
     st.subheader("Hướng dẫn truy cập")
+    if FALLBACK_READONLY_MODE:
+        st.warning(
+            "🔒 Hệ thống hiện đang chạy ở **Chế độ dự phòng (Chỉ xem)** do chưa kết nối được Supabase. "
+            "Quản trị viên cần khôi phục dự án trên Supabase Dashboard (**Restore project**) rồi bấm **Thử kết nối lại** để mở lại quyền cập nhật."
+        )
     if PUBLIC_ACCESS_MODE:
         st.success("Không cần đăng nhập. Mở link là có thể xem, cập nhật tiến độ và tải tệp hiện trường lên.")
         st.info(

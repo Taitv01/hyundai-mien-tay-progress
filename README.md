@@ -90,18 +90,25 @@ Không dán khóa Service Account vào giao diện và không commit `.streamlit
 ├── app.py                         # Giao diện Streamlit
 ├── data_service.py                # Chuẩn hóa dữ liệu và Google Sheets
 ├── supabase_service.py            # Tài khoản, dữ liệu online và xử lý ảnh
+├── supabase_keepalive.py          # Tác vụ giữ kết nối định kỳ chống tạm dừng Supabase Free
 ├── supabase_setup.sql              # Lược đồ database/storage chạy một lần
 ├── requirements.txt               # Thư viện chạy ứng dụng
 ├── credentials_sample.json        # Khóa mẫu, không dùng để đăng nhập
 ├── reports/                       # Form báo cáo chuẩn (PDF điều hành & HTML in ấn A4)
+├── .github/workflows/             # GitHub Actions chạy Keep-Alive định kỳ mỗi 3 ngày
 ├── .streamlit/config.toml          # Giao diện và cấu hình máy chủ
 ├── .streamlit/secrets.toml.example # Mẫu secrets an toàn
 └── tests/                          # Kiểm thử logic và smoke test
 ```
 
-## Triển khai Streamlit Community Cloud
+## Triển khai Streamlit Community Cloud & Giữ kết nối Supabase (Keep-Alive)
 
-1. Đẩy nội dung thư mục này lên kho GitHub không chứa secrets.
-2. Chọn entry point `app.py`.
-3. Sao chép `SUPABASE_URL` và `SUPABASE_SERVICE_ROLE_KEY` vào phần **Advanced settings → Secrets**.
-4. Không đưa khóa JSON thật vào kho mã nguồn.
+1. Đẩy nội dung thư mục này (bao gồm cả thư mục ẩn `.github/`) lên kho GitHub không chứa secrets.
+2. Chọn entry point `app.py` trên Streamlit Community Cloud.
+3. Sao chép `SUPABASE_URL` và `SUPABASE_SERVICE_ROLE_KEY` vào phần **Advanced settings → Secrets** trên Streamlit Cloud.
+4. **Cấu hình chống tự động Pause gói Free (GitHub Actions Keep-Alive):**
+   - Trên kho GitHub, mở **Settings → Secrets and variables → Actions → New repository secret**.
+   - Tạo 2 Repository Secrets: `SUPABASE_URL` và `SUPABASE_SERVICE_ROLE_KEY` (giống giá trị trên Streamlit Secrets).
+   - Mở tab **Actions → Supabase Keep-Alive → Run workflow** để kiểm tra lần đầu. Sau đó workflow `.github/workflows/supabase-keepalive.yml` sẽ tự động gửi truy vấn nhẹ mỗi 3 ngày để Supabase không tự động Pause sau 7 ngày.
+5. **Chế độ dự phòng (Read-only Fallback):** Nếu Supabase tạm dừng hoặc gián đoạn mạng, ứng dụng tự động hiển thị cảnh báo rõ nguyên nhân và chuyển sang chế độ **chỉ xem dữ liệu cam kết gốc** (vẫn xem được Gantt, bảng tiến độ, checklist và xuất báo cáo PDF/HTML/Excel) thay vì dừng trắng trang.
+6. Không đưa khóa JSON hoặc `secrets.toml` thật vào kho mã nguồn.
