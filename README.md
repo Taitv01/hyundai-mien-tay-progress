@@ -24,6 +24,8 @@ Kiểm thử: `py -m pytest tests -q` (chạy từ thư mục ứng dụng).
 - Chỉnh sửa tiến độ, ngày thực hiện, tỷ lệ hoàn thành, người phụ trách và ghi chú.
 - Tự chuẩn hóa tỷ lệ/trạng thái, phát hiện quá hạn và nhắc việc đến hạn trong 7 ngày.
 - Chọn ngày theo dõi để xem lại trạng thái dự án tại một mốc bất kỳ.
+- **Theo dõi Hiện trạng Dịch vụ (`🛠️ HIỆN TRẠNG DỊCH VỤ`):** Tích hợp 32 đầu việc chuẩn bị trước khai trương của Phòng Dịch vụ (Cơ sở vật chất, Nhân sự Dịch vụ, Chỉ tiêu Phụ tùng & Dầu, Hoạt động đào tạo), hỗ trợ lọc, chỉnh sửa trạng thái và ghi chú trực tiếp.
+- **Báo cáo Nhân sự Đại lý (`👥 NHÂN SỰ ĐẠI LÝ`):** Theo dõi định biên nhân sự 3S (53 vị trí) và danh sách nhân sự thực tế theo từng phòng ban, tích hợp cột **📝 Ghi chú** cho phép ghi chú trực tiếp trên bảng hoặc qua biểu mẫu ghi chú nhanh.
 - Checklist nội bộ tham chiếu QCVN 121:2024/BGTVT; 9 điều kiện đặc thù xe điện/hybrid đang tạm ẩn nhưng vẫn được bảo lưu trong dữ liệu.
 - Gantt tương tác, đường mốc ngày theo dõi, biểu đồ trạng thái và tiến độ theo phân khu.
 - Báo cáo giám sát hiện trường: PDF và HTML A4 khổ ngang, Gantt theo tuần và bảng WBS chi tiết theo cam kết CĐT.

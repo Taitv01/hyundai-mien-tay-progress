@@ -665,9 +665,14 @@ def build_pdf(df, report_date):
     return content
 
 
-def build_excel(df, qcvn):
+def build_excel(df, qcvn, hr_df=None, service_df=None):
     from openpyxl.styles import PatternFill, Font, Alignment
+    from dealer_status_data import get_initial_hr_data, get_initial_service_status_data
     output = io.BytesIO()
+    if hr_df is None:
+        hr_df = get_initial_hr_data()
+    if service_df is None:
+        service_df = get_initial_service_status_data()
     with pd.ExcelWriter(output, engine='openpyxl') as writer:
         (df if is_summary(df) else commitment_details(df)).to_excel(
             writer,
@@ -675,6 +680,8 @@ def build_excel(df, qcvn):
             index=False
         )
         qcvn.to_excel(writer, sheet_name='QCVN_121_Checklist', index=False)
+        service_df.to_excel(writer, sheet_name='Hien_Trang_Dich_Vu', index=False)
+        hr_df.to_excel(writer, sheet_name='Ho_So_Nhan_Su', index=False)
         for sheet in writer.book:
             sheet.freeze_panes = 'C2'
             sheet.auto_filter.ref = sheet.dimensions

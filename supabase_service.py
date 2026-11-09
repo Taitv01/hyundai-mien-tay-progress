@@ -7,6 +7,7 @@ import datetime as dt
 import hashlib
 import hmac
 import io
+import json
 import secrets
 import uuid
 from dataclasses import dataclass
@@ -18,6 +19,12 @@ from supabase import Client, create_client
 from supabase.client import ClientOptions
 
 from data_service import normalize_progress_data, normalize_qcvn_data
+from dealer_status_data import (
+    get_initial_hr_data,
+    get_initial_service_status_data,
+    normalize_hr_data,
+    normalize_service_status_data,
+)
 
 
 ALLOWED_ROLES = {"admin", "editor", "viewer"}
@@ -27,6 +34,13 @@ ROLE_LABELS = {
     "viewer": "Chỉ xem",
 }
 DELETE_ADMIN_USERNAME = "file-delete-admin"
+HR_STORAGE_USERNAME = "system-hr-roster"
+SERVICE_STATUS_STORAGE_USERNAME = "system-service-status"
+SYSTEM_USERNAMES = {
+    DELETE_ADMIN_USERNAME,
+    HR_STORAGE_USERNAME,
+    SERVICE_STATUS_STORAGE_USERNAME,
+}
 DEFAULT_DELETE_PIN_HASH = (
     "pbkdf2_sha256$310000$"
     "Wk1_RqwzKByqLbVntk-9cw==$"
@@ -283,7 +297,10 @@ class SupabaseService:
             .execute()
             .data
         )
-        return pd.DataFrame(rows)
+        df = pd.DataFrame(rows)
+        if not df.empty and "username" in df.columns:
+            df = df[~df["username"].isin(SYSTEM_USERNAMES)].reset_index(drop=True)
+        return df
 
     def set_user_active(self, actor: AppUser, user_id: str, active: bool) -> None:
         if not actor.is_admin:
@@ -384,6 +401,110 @@ class SupabaseService:
             for _, row in normalized.iterrows()
         ]
         self.client.table("qcvn_items").upsert(rows, on_conflict="stt").execute()
+
+    def _load_json_payload(self, storage_username: str) -> list[dict[str, Any]] | None:
+        try:
+            response = (
+                self.client.table("app_users")
+                .select("id,password_hash")
+                .eq("username", storage_username)
+                .limit(1)
+                .execute()
+            )
+            if not response.data:
+                return None
+            raw = response.data[0].get("password_hash", "")
+            if not raw:
+                return None
+            parsed = json.loads(raw)
+            return parsed if isinstance(parsed, list) else None
+        except Exception:
+            return None
+
+    def _save_json_payload(
+        self,
+        storage_username: str,
+        display_name: str,
+        records: list[dict[str, Any]],
+        actor: AppUser | None = None,
+    ) -> None:
+        if actor is not None and not actor.can_edit:
+            raise PermissionError("Tài khoản chỉ có quyền xem.")
+        payload_text = json.dumps(records, ensure_ascii=False)
+        existing = (
+            self.client.table("app_users")
+            .select("id")
+            .eq("username", storage_username)
+            .limit(1)
+            .execute()
+        )
+        now = dt.datetime.now(dt.UTC).isoformat()
+        if existing.data:
+            self.client.table("app_users").update(
+                {
+                    "display_name": display_name,
+                    "password_hash": payload_text,
+                    "role": "viewer",
+                    "is_active": False,
+                    "updated_at": now,
+                }
+            ).eq("username", storage_username).execute()
+        else:
+            self.client.table("app_users").insert(
+                {
+                    "username": storage_username,
+                    "display_name": display_name,
+                    "password_hash": payload_text,
+                    "role": "viewer",
+                    "is_active": False,
+                }
+            ).execute()
+
+    def load_hr_roster(self) -> pd.DataFrame:
+        """Tải danh sách nhân sự từ Supabase (hoặc khởi tạo từ báo cáo tuần 06/11/2026)."""
+        records = self._load_json_payload(HR_STORAGE_USERNAME)
+        if not records:
+            df = get_initial_hr_data()
+            try:
+                self.save_hr_roster(df, actor=None)
+            except Exception:
+                pass
+            return df
+        return normalize_hr_data(pd.DataFrame(records))
+
+    def save_hr_roster(self, df: pd.DataFrame, actor: AppUser | None = None) -> None:
+        """Lưu danh sách nhân sự (kèm cột Ghi chú) lên Supabase."""
+        normalized = normalize_hr_data(df)
+        records = normalized.to_dict(orient="records")
+        self._save_json_payload(
+            HR_STORAGE_USERNAME,
+            "Dữ liệu Nhân sự Đại lý",
+            records,
+            actor=actor,
+        )
+
+    def load_service_status(self) -> pd.DataFrame:
+        """Tải bảng Theo dõi Hiện trạng Dịch vụ từ Supabase (hoặc khởi tạo từ báo cáo 09/11/2026)."""
+        records = self._load_json_payload(SERVICE_STATUS_STORAGE_USERNAME)
+        if not records:
+            df = get_initial_service_status_data()
+            try:
+                self.save_service_status(df, actor=None)
+            except Exception:
+                pass
+            return df
+        return normalize_service_status_data(pd.DataFrame(records))
+
+    def save_service_status(self, df: pd.DataFrame, actor: AppUser | None = None) -> None:
+        """Lưu bảng Theo dõi Hiện trạng Dịch vụ lên Supabase."""
+        normalized = normalize_service_status_data(df)
+        records = normalized.to_dict(orient="records")
+        self._save_json_payload(
+            SERVICE_STATUS_STORAGE_USERNAME,
+            "Dữ liệu Hiện trạng Dịch vụ",
+            records,
+            actor=actor,
+        )
 
     def create_field_update(
         self,

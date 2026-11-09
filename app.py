@@ -25,9 +25,21 @@ from data_service import (
 )
 import importlib
 import supabase_service as _supabase_service_mod
+import dealer_status_data as _dealer_status_mod
 importlib.invalidate_caches()
+importlib.reload(_dealer_status_mod)
 importlib.reload(_supabase_service_mod)
 from supabase_service import AppUser, OnlineSettings, ROLE_LABELS, SupabaseService
+from dealer_status_data import (
+    HR_STATUSES,
+    SERVICE_STATUS_OPTIONS,
+    apply_hr_updates,
+    apply_service_status_updates,
+    get_initial_hr_data,
+    get_initial_service_status_data,
+    normalize_hr_data,
+    normalize_service_status_data,
+)
 from commitment_schedule import (
     VERSION as COMMITMENT_VERSION, BROWN, WEEK_NOTE, LEGACY_CODES,
     commitment_data, commitment_details, active_progress, gantt_progress, bar_color,
@@ -456,6 +468,14 @@ def reload_online_data(service, current_date):
     st.session_state.legacy_progress_df = all_progress.loc[all_progress['Mã'].isin(LEGACY_CODES)].copy()
     st.session_state.progress_df = active_progress(all_progress)
     st.session_state.qcvn_df = service.load_qcvn()
+    if hasattr(service, "load_hr_roster"):
+        st.session_state.hr_df = service.load_hr_roster()
+    else:
+        st.session_state.hr_df = get_initial_hr_data()
+    if hasattr(service, "load_service_status"):
+        st.session_state.service_status_df = service.load_service_status()
+    else:
+        st.session_state.service_status_df = get_initial_service_status_data()
     st.session_state.online_data_loaded = True
     # Xóa cache để toàn bộ biểu đồ, báo cáo PDF & HTML luôn cập nhật dữ liệu hiện trường mới nhất
     try:
@@ -656,12 +676,17 @@ if FALLBACK_READONLY_MODE:
 if not ONLINE_MODE:
     st.session_state.setdefault("progress_df", get_initial_progress_data())
     st.session_state.setdefault("qcvn_df", get_qcvn121_items())
+    st.session_state.setdefault("hr_df", get_initial_hr_data())
+    st.session_state.setdefault("service_status_df", get_initial_service_status_data())
     if st.session_state.get("commitment_version") != COMMITMENT_VERSION:
         previous = st.session_state.progress_df
         st.session_state.legacy_progress_df = previous.loc[previous['Mã'].isin(LEGACY_CODES)].copy()
         missing = commitment_data().loc[lambda d: ~d['Mã'].isin(previous['Mã'])]
         st.session_state.progress_df = active_progress(pd.concat([previous, missing], ignore_index=True))
         st.session_state.commitment_version = COMMITMENT_VERSION
+
+st.session_state.setdefault("hr_df", get_initial_hr_data())
+st.session_state.setdefault("service_status_df", get_initial_service_status_data())
 
 CAN_EDIT = (
     bool(CURRENT_USER and CURRENT_USER.can_edit)
@@ -681,6 +706,8 @@ PROJECT_TODAY = st.session_state.project_today
 df_analyzed = calculate_progress_alerts(st.session_state.progress_df, current_date=PROJECT_TODAY)
 st.session_state.progress_df = df_analyzed
 st.session_state.qcvn_df = normalize_qcvn_data(st.session_state.qcvn_df)
+st.session_state.hr_df = normalize_hr_data(st.session_state.hr_df)
+st.session_state.service_status_df = normalize_service_status_data(st.session_state.service_status_df)
 
 overdue_items = df_analyzed[df_analyzed["_alert_type"] == "OVERDUE"]
 urgent_items = df_analyzed[df_analyzed["_alert_type"] == "URGENT"]
@@ -803,6 +830,8 @@ with st.sidebar:
         if st.button("Khôi phục dữ liệu gốc", icon=":material/restart_alt:", width="stretch"):
             st.session_state.progress_df = get_initial_progress_data()
             st.session_state.qcvn_df = get_qcvn121_items()
+            st.session_state.hr_df = get_initial_hr_data()
+            st.session_state.service_status_df = get_initial_service_status_data()
             st.toast("Đã khôi phục dữ liệu gốc!", icon="🔄")
             st.rerun()
 
@@ -916,9 +945,11 @@ st.markdown("<br>", unsafe_allow_html=True)
 # 7. CÁC PHÂN HỆ TAB CHỨC NĂNG CHÍNH
 # ==============================================================================
 
-tab_gantt, tab_progress, tab_update, tab_files, tab_qcvn, tab_report, tab_users = st.tabs([
+tab_gantt, tab_progress, tab_service, tab_hr, tab_update, tab_files, tab_qcvn, tab_report, tab_users = st.tabs([
     "📊 BIỂU ĐỒ GANTT",
     "📋 TIẾN ĐỘ CHI TIẾT",
+    "🛠️ HIỆN TRẠNG DỊCH VỤ",
+    "👥 NHÂN SỰ ĐẠI LÝ",
     "📷 CẬP NHẬT HIỆN TRƯỜNG",
     "📂 QUẢN LÝ FILE",
     "⚡ CHECKLIST QCVN 121",
@@ -1217,6 +1248,447 @@ with tab_progress:
             mime="text/csv",
             width="stretch"
         )
+
+
+# ------------------------------------------------------------------------------
+# TAB 2B: THEO DÕI HIỆN TRẠNG ĐẠI LÝ (KHỐI DỊCH VỤ & CƠ SỞ VẬT CHẤT 3S)
+# ------------------------------------------------------------------------------
+with tab_service:
+    st.subheader("🛠️ Theo dõi Hiện trạng Đại lý — Khối Dịch vụ & Cơ sở vật chất 3S")
+    st.caption(
+        "Tích hợp từ hồ sơ **Theo dõi Hiện trạng Đại lý.xlsx** (Phòng Dịch vụ cập nhật đến **09/11/2026**). "
+        "Chỉnh sửa trực tiếp các cột **Hiện trạng (09/11/2026)**, **Dự kiến hoàn thành**, **Chịu trách nhiệm** và **📝 Ghi chú** trên bảng để lưu đồng bộ."
+    )
+
+    df_svc_all = st.session_state.service_status_df
+    svc_total = len(df_svc_all)
+    svc_done = int((df_svc_all["Hiện trạng (09/11/2026)"] == "Hoàn thành").sum())
+    svc_inprog = int((df_svc_all["Hiện trạng (09/11/2026)"] == "Đang thực hiện").sum())
+    svc_pending = int(df_svc_all["Hiện trạng (09/11/2026)"].isin(["Chưa thực hiện", "Chưa hoàn thành", "Dời tiến độ"]).sum())
+
+    with st.container(horizontal=True):
+        st.metric("Tổng đầu việc Dịch vụ", f"{svc_total} hạng mục", "4 nhóm trước khai trương", border=True)
+        st.metric("Đã hoàn thành", f"{svc_done} / {svc_total}", f"{(svc_done / max(svc_total, 1)) * 100:.0f}% hoàn tất", border=True)
+        st.metric("Đang thực hiện", f"{svc_inprog} hạng mục", "Xây dựng, TTB 121, SST, HCC", border=True)
+        st.metric("Chưa thực hiện / Chưa HT", f"{svc_pending} hạng mục", "Nhân sự Kho PT, Phụ tùng & Đào tạo", delta_color="inverse", border=True)
+
+    with st.expander("📌 Tóm tắt điểm nhấn Hiện trạng Dịch vụ cập nhật đến 09/11/2026", expanded=False):
+        st.markdown(
+            "- **1. Cơ sở vật chất & Thiết bị (20 đầu việc):** Cốt thép và bê tông móng/đà kiềng đạt **100%**, đã tập kết vật tư thép hộp tại công trường ngày **05/11/2026** để dựng khung nhà thép (dự kiến hoàn thiện phần thô **20/11/2026**). Đã lên hợp đồng đầu tư thiết bị xưởng 121, 02 khoang sửa chữa nhanh (QS), Xe sửa chữa lưu động (đã xong xe nền, đang đóng thùng & lắp thiết bị). Đơn hàng SST đã tách riêng với PT tồn (**OK**). Đã trang bị xong **04 bộ máy tính + 04 máy in kho phụ tùng**, máy tính khu tiếp nhận DV/HCC, GDS Mobile; đã cài đặt xong **DMS** và cấp tài khoản **CCC, CSIS, HTACV**.\n"
+            "- **2. Nhân sự Dịch vụ (4 nhóm):** Đã có **TP Dịch vụ** (Nguyễn Công Thành), **01 CVDV đạt CL1** (Lê Quốc Khánh), **05 KTV** (trong đó **04 KTV đạt CL1**), **01 CSKH DV** (Võ Lê Dung), **01 Kế toán DV** (Nguyễn Trúc Ngân). Còn thiếu **Trưởng nhóm Phụ tùng**, **Nhân viên Kho Phụ tùng** và **Nhân viên Bảo hành** (hạn hoàn tất **25/12/2026**).\n"
+            "- **3. Chỉ tiêu Phụ tùng & Dầu (3 mục):** HTC-HTCV đã hoàn thành danh mục phụ tùng tồn kho ban đầu; Đại lý đang ký lại hợp đồng mới tách riêng với SST và chờ thông báo từ HTCV.\n"
+            "- **4. Hoạt động đào tạo (5 mục):** 01 CVDV và 04 KTV đã có chứng chỉ **CL1**; lịch đào tạo tập trung các vị trí (DMS, Bravo, Quy trình DV 6 bước, HCC, KTV mới) dự kiến từ **01/12/2026 – 15/12/2026**."
+        )
+
+    f_svc1, f_svc2, f_svc3 = st.columns([2, 1.5, 2.5])
+    with f_svc1:
+        svc_groups = ["Tất cả"] + list(df_svc_all["Nhóm hạng mục"].unique())
+        sel_svc_group = st.selectbox("Lọc theo Nhóm hạng mục Dịch vụ:", options=svc_groups, key="svc_group_filter")
+    with f_svc2:
+        svc_statuses = ["Tất cả"] + SERVICE_STATUS_OPTIONS
+        sel_svc_status = st.selectbox("Lọc theo Hiện trạng:", options=svc_statuses, key="svc_status_filter")
+    with f_svc3:
+        svc_search = st.text_input(
+            "Tìm kiếm nội dung / ghi chú Dịch vụ:",
+            placeholder="Nhập từ khóa: GDS, DMS, SST, phụ tùng, bảo hành, xe SCLĐ...",
+            key="svc_search_input",
+        )
+
+    display_svc = df_svc_all.copy()
+    if sel_svc_group != "Tất cả":
+        display_svc = display_svc[display_svc["Nhóm hạng mục"] == sel_svc_group]
+    if sel_svc_status != "Tất cả":
+        display_svc = display_svc[display_svc["Hiện trạng (09/11/2026)"] == sel_svc_status]
+    if svc_search.strip():
+        kw = svc_search.strip().lower()
+        mask = (
+            display_svc["Nội dung công việc"].str.lower().str.contains(kw, na=False)
+            | display_svc["Hạng mục chính"].str.lower().str.contains(kw, na=False)
+            | display_svc["Ghi chú"].str.lower().str.contains(kw, na=False)
+        )
+        display_svc = display_svc[mask]
+    display_svc = display_svc.reset_index(drop=True)
+
+    svc_cols = [
+        "Mã DV",
+        "Nhóm hạng mục",
+        "Hạng mục chính",
+        "Nội dung công việc",
+        "Thời gian bắt đầu",
+        "Dự kiến hoàn thành",
+        "Chịu trách nhiệm",
+        "Hiện trạng kỳ trước",
+        "Hiện trạng (09/11/2026)",
+        "Ghi chú",
+    ]
+    svc_col_config = {
+        "Mã DV": st.column_config.TextColumn("Mã DV", width="small", disabled=True),
+        "Nhóm hạng mục": st.column_config.TextColumn("Nhóm hạng mục", width="medium", disabled=True),
+        "Hạng mục chính": st.column_config.TextColumn("Hạng mục chính", width="medium"),
+        "Nội dung công việc": st.column_config.TextColumn("Nội dung công việc", width="large"),
+        "Thời gian bắt đầu": st.column_config.TextColumn("Bắt đầu", width="small"),
+        "Dự kiến hoàn thành": st.column_config.TextColumn("Dự kiến hoàn thành", width="small"),
+        "Chịu trách nhiệm": st.column_config.TextColumn("P.I.C", width="small"),
+        "Hiện trạng kỳ trước": st.column_config.TextColumn("Hiện trạng kỳ trước", width="small", disabled=True),
+        "Hiện trạng (09/11/2026)": st.column_config.SelectboxColumn(
+            "Hiện trạng (09/11/2026)",
+            options=SERVICE_STATUS_OPTIONS,
+            required=True,
+            width="medium",
+        ),
+        "Ghi chú": st.column_config.TextColumn("📝 Ghi chú chi tiết", width="large"),
+    }
+
+    if FALLBACK_READONLY_MODE:
+        st.info("🔒 Bảng Hiện trạng Dịch vụ đang ở **Chế độ dự phòng (Chỉ xem)**.")
+
+    edited_svc = st.data_editor(
+        display_svc[svc_cols],
+        column_config=svc_col_config,
+        width="stretch",
+        hide_index=True,
+        num_rows="fixed",
+        disabled=not CAN_EDIT,
+        key=f"service_status_editor_{sel_svc_group}_{sel_svc_status}",
+    )
+
+    if CAN_EDIT and not edited_svc[svc_cols].equals(display_svc[svc_cols]):
+        try:
+            updated_svc = apply_service_status_updates(st.session_state.service_status_df, edited_svc, is_filtered=True)
+            if ONLINE_MODE and hasattr(online_service, "save_service_status"):
+                online_service.save_service_status(updated_svc, CURRENT_USER)
+                reload_online_data(online_service, PROJECT_TODAY)
+            else:
+                st.session_state.service_status_df = updated_svc
+            st.toast("Đã lưu cập nhật Hiện trạng Dịch vụ!", icon="✅")
+            st.rerun()
+        except Exception as exc:
+            st.error(f"Không thể lưu Hiện trạng Dịch vụ: {exc}")
+
+    with st.expander("➕ Thêm hạng mục theo dõi Dịch vụ mới", expanded=False):
+        with st.form("add_service_item_form", border=True):
+            c_sv1, c_sv2, c_sv3 = st.columns([2, 2, 1.5])
+            with c_sv1:
+                new_svc_group = st.selectbox(
+                    "Nhóm hạng mục",
+                    options=[
+                        "1. Cơ sở vật chất",
+                        "2. Nhân sự Dịch vụ",
+                        "3. Chỉ tiêu Phụ tùng & Dầu",
+                        "4. Hoạt động đào tạo",
+                    ],
+                )
+                new_svc_main = st.text_input("Hạng mục chính", placeholder="VD: 3. Cơ sở vật chất xưởng")
+            with c_sv2:
+                new_svc_name = st.text_input("Nội dung công việc")
+                new_svc_eta = st.text_input("Ngày dự kiến hoàn thành", placeholder="VD: 30/11/2026")
+            with c_sv3:
+                new_svc_pic = st.text_input("Chịu trách nhiệm", value="ĐL")
+                new_svc_state = st.selectbox("Hiện trạng (09/11/2026)", options=SERVICE_STATUS_OPTIONS, index=1)
+            new_svc_note = st.text_input("Ghi chú")
+            submit_new_svc = st.form_submit_button(
+                "Thêm hạng mục Dịch vụ",
+                type="primary",
+                icon=":material/add_circle:",
+                disabled=not CAN_EDIT,
+            )
+        if submit_new_svc:
+            if not new_svc_name.strip():
+                st.warning("Vui lòng nhập Nội dung công việc.")
+            else:
+                new_row = pd.DataFrame([{
+                    "Mã DV": "",
+                    "Nhóm hạng mục": new_svc_group,
+                    "Hạng mục chính": new_svc_main.strip() or new_svc_group,
+                    "Nội dung công việc": new_svc_name.strip(),
+                    "Thời gian bắt đầu": PROJECT_TODAY.strftime("%d/%m/%Y"),
+                    "Dự kiến hoàn thành": new_svc_eta.strip(),
+                    "Chịu trách nhiệm": new_svc_pic.strip(),
+                    "Hiện trạng kỳ trước": "Chưa thực hiện",
+                    "Hiện trạng (09/11/2026)": new_svc_state,
+                    "Ghi chú": new_svc_note.strip(),
+                }])
+                updated_svc = normalize_service_status_data(
+                    pd.concat([st.session_state.service_status_df, new_row], ignore_index=True)
+                )
+                try:
+                    if ONLINE_MODE and hasattr(online_service, "save_service_status"):
+                        online_service.save_service_status(updated_svc, CURRENT_USER)
+                        reload_online_data(online_service, PROJECT_TODAY)
+                    else:
+                        st.session_state.service_status_df = updated_svc
+                    st.toast("Đã thêm hạng mục Dịch vụ mới!", icon="✅")
+                    st.rerun()
+                except Exception as exc:
+                    st.error(f"Không thể thêm hạng mục: {exc}")
+
+    csv_svc = st.session_state.service_status_df[svc_cols].to_csv(index=False).encode("utf-8-sig")
+    st.download_button(
+        "📥 Tải CSV Theo Dõi Hiện Trạng Dịch Vụ",
+        data=csv_svc,
+        file_name=f"Theo_doi_Hien_trang_Dich_vu_HDMT_{datetime.date.today().strftime('%Y%m%d')}.csv",
+        mime="text/csv",
+        key="download_csv_service_status",
+    )
+
+
+# ------------------------------------------------------------------------------
+# TAB 2C: BÁO CÁO NHÂN SỰ ĐẠI LÝ & GHI CHÚ TRỰC TIẾP
+# ------------------------------------------------------------------------------
+with tab_hr:
+    st.subheader("👥 Báo cáo Nhân sự Đại lý 3S & Ghi chú Quản lý")
+    st.caption(
+        "Tổng hợp từ **HDMT - Báo cáo cập nhật nhân sự tuần (06/11/2026)** & Định biên nhân sự tiêu chuẩn 3S. "
+        "Bạn có thể **nhấp đúp vào cột `📝 Ghi chú`** (hoặc các cột thông tin nhân sự) ngay trên bảng dưới đây để thêm/sửa ghi chú; dữ liệu tự động lưu lên hệ thống."
+    )
+
+    df_hr_all = st.session_state.hr_df
+    hr_active_count = int(df_hr_all["Trạng thái"].isin(["Đã nhận việc", "Chờ đào tạo"]).sum())
+    hr_target_total = 53
+    hr_missing_count = max(0, hr_target_total - hr_active_count)
+    hr_cl1_count = int(df_hr_all["Chứng chỉ Hyundai"].str.upper().str.contains("CL1", na=False).sum())
+
+    with st.container(horizontal=True):
+        st.metric("Tổng nhân sự hiện có", f"{hr_active_count} / {hr_target_total} người", f"Đạt {(hr_active_count / hr_target_total) * 100:.1f}% định biên 3S", border=True)
+        st.metric("Khối Kinh doanh & MKT", "17 nhân sự", "01 GĐ, 14 PKD, 02 MKT/CSKH", border=True)
+        st.metric("Khối Dịch vụ - Phụ tùng", "07 / 18 nhân sự", f"{hr_cl1_count} nhân sự đạt chứng chỉ CL1", border=True)
+        st.metric("Cần tuyển bổ sung", f"{hr_missing_count} vị trí", "Ưu tiên: Kho PT, Bảo hành, TVBH Bus", delta_color="inverse", border=True)
+
+    with st.expander("📊 Tổng hợp Định biên & Thực tế theo Phòng ban (Cập nhật 06/11–09/11/2026)", expanded=False):
+        dept_summary_df = pd.DataFrame([
+            {"Bộ phận": "Ban Giám đốc", "Định biên 3S": 1, "Hiện có": 1, "Còn thiếu": 0, "Tỷ lệ đạt": "100%", "Ghi chú trọng tâm": "Đã có Giám đốc Đại lý (Đào Huy Đạt)"},
+            {"Bộ phận": "I. Phòng Kinh doanh", "Định biên 3S": 19, "Hiện có": 14, "Còn thiếu": 5, "Tỷ lệ đạt": "74%", "Ghi chú trọng tâm": "Đã có TP Bán hàng (Vũ Thanh Cảnh), Sales Admin, Admin mua hàng, 11 TVBH Truck; cần tuyển TN Truck, TN Bus, 03 TVBH Bus"},
+            {"Bộ phận": "II. Phòng Dịch vụ - Phụ tùng", "Định biên 3S": 23, "Hiện có": 7, "Còn thiếu": 16, "Tỷ lệ đạt": "30%", "Ghi chú trọng tâm": "Đã có TP DV (Nguyễn Công Thành), 01 CVDV CL1 (Lê Quốc Khánh), 05 KTV (4 CL1); CẦN GẤP TN Phụ tùng, NV Kho PT & NV Bảo hành"},
+            {"Bộ phận": "III. Phòng Marketing & CSKH", "Định biên 3S": 4, "Hiện có": 2, "Còn thiếu": 2, "Tỷ lệ đạt": "50%", "Ghi chú trọng tâm": "Đã có NV Marketing (Nguyễn Thị Thảo) & CSKH DV (Võ Lê Dung); còn thiếu TP MKT & CSKH Bán hàng"},
+            {"Bộ phận": "IV. Phòng Kế toán", "Định biên 3S": 5, "Hiện có": 3, "Còn thiếu": 2, "Tỷ lệ đạt": "60%", "Ghi chú trọng tâm": "Đã có Kế toán trưởng (Nguyễn Thị Thanh Hoa), KT Bán hàng, KT Dịch vụ; cần tuyển Thu ngân & Thủ quỹ"},
+            {"Bộ phận": "V. Phòng HCNS tổng hợp", "Định biên 3S": 5, "Hiện có": 4, "Còn thiếu": 1, "Tỷ lệ đạt": "80%", "Ghi chú trọng tâm": "Đã có HCNS (Trần Thu Trang), Lái xe, Vệ sinh, Bảo vệ; còn trống 01 Trông kho xe"},
+        ])
+        st.dataframe(dept_summary_df, hide_index=True, width="stretch")
+
+    # Bộ lọc danh sách nhân sự
+    f_hr1, f_hr2, f_hr3 = st.columns([2, 1.5, 2.5])
+    with f_hr1:
+        hr_depts = ["Tất cả"] + list(df_hr_all["Bộ phận"].unique())
+        sel_hr_dept = st.selectbox("Lọc theo Bộ phận / Phòng ban:", options=hr_depts, key="hr_dept_filter")
+    with f_hr2:
+        hr_statuses = ["Tất cả"] + HR_STATUSES
+        sel_hr_status = st.selectbox("Lọc theo Trạng thái nhân sự:", options=hr_statuses, key="hr_status_filter")
+    with f_hr3:
+        hr_search = st.text_input(
+            "Tìm kiếm theo Họ tên / Chức danh / Chứng chỉ / Ghi chú:",
+            placeholder="Nhập tên nhân sự, CL1, KTV, CVDV, ghi chú...",
+            key="hr_search_input",
+        )
+
+    display_hr = df_hr_all.copy()
+    if sel_hr_dept != "Tất cả":
+        display_hr = display_hr[display_hr["Bộ phận"] == sel_hr_dept]
+    if sel_hr_status != "Tất cả":
+        display_hr = display_hr[display_hr["Trạng thái"] == sel_hr_status]
+    if hr_search.strip():
+        kw_hr = hr_search.strip().lower()
+        mask_hr = (
+            display_hr["Họ tên"].str.lower().str.contains(kw_hr, na=False)
+            | display_hr["Chức danh"].str.lower().str.contains(kw_hr, na=False)
+            | display_hr["Chứng chỉ Hyundai"].str.lower().str.contains(kw_hr, na=False)
+            | display_hr["Ghi chú"].str.lower().str.contains(kw_hr, na=False)
+        )
+        display_hr = display_hr[mask_hr]
+    display_hr = display_hr.reset_index(drop=True)
+
+    hr_cols = [
+        "Mã NS",
+        "Bộ phận",
+        "Chức danh",
+        "Nhóm vị trí",
+        "Họ tên",
+        "Trạng thái",
+        "Ghi chú",
+        "Chứng chỉ Hyundai",
+        "Trình độ",
+        "Ngày sinh",
+        "Năm tuyển",
+        "Số điện thoại",
+        "Email",
+    ]
+    hr_col_config = {
+        "Mã NS": st.column_config.TextColumn("Mã NS", width="small", disabled=True),
+        "Bộ phận": st.column_config.TextColumn("Bộ phận", width="medium"),
+        "Chức danh": st.column_config.TextColumn("Chức danh", width="medium"),
+        "Nhóm vị trí": st.column_config.TextColumn("Nhóm vị trí", width="small"),
+        "Họ tên": st.column_config.TextColumn("Họ và tên nhân sự", width="medium"),
+        "Trạng thái": st.column_config.SelectboxColumn(
+            "Trạng thái",
+            options=HR_STATUSES,
+            required=True,
+            width="medium",
+        ),
+        "Ghi chú": st.column_config.TextColumn(
+            "📝 Ghi chú (Nhấp để ghi chú thêm)",
+            width="large",
+            help="Nhập ghi chú trực tiếp cho từng nhân sự hoặc vị trí tuyển dụng. Hệ thống tự động lưu khi nhấn Enter.",
+        ),
+        "Chứng chỉ Hyundai": st.column_config.TextColumn("Chứng chỉ HTCV", width="small"),
+        "Trình độ": st.column_config.TextColumn("Trình độ", width="small"),
+        "Ngày sinh": st.column_config.TextColumn("Ngày sinh", width="small"),
+        "Năm tuyển": st.column_config.TextColumn("Năm tuyển", width="small"),
+        "Số điện thoại": st.column_config.TextColumn("Số điện thoại", width="medium"),
+        "Email": st.column_config.TextColumn("Email", width="medium"),
+    }
+
+    if FALLBACK_READONLY_MODE:
+        st.info("🔒 Bảng Nhân sự đang ở **Chế độ dự phòng (Chỉ xem)**.")
+
+    edited_hr = st.data_editor(
+        display_hr[hr_cols],
+        column_config=hr_col_config,
+        width="stretch",
+        hide_index=True,
+        num_rows="fixed",
+        disabled=not CAN_EDIT,
+        key=f"hr_roster_editor_{sel_hr_dept}_{sel_hr_status}",
+    )
+
+    if CAN_EDIT and not edited_hr[hr_cols].equals(display_hr[hr_cols]):
+        try:
+            updated_hr = apply_hr_updates(st.session_state.hr_df, edited_hr, is_filtered=True)
+            if ONLINE_MODE and hasattr(online_service, "save_hr_roster"):
+                online_service.save_hr_roster(updated_hr, CURRENT_USER)
+                reload_online_data(online_service, PROJECT_TODAY)
+            else:
+                st.session_state.hr_df = updated_hr
+            st.toast("Đã lưu cập nhật Nhân sự & Ghi chú!", icon="✅")
+            st.rerun()
+        except Exception as exc:
+            st.error(f"Không thể lưu bảng nhân sự: {exc}")
+
+    # Công cụ ghi chú nhanh & thêm nhân sự mới
+    col_hr_tool1, col_hr_tool2 = st.columns(2)
+    with col_hr_tool1:
+        with st.expander("📝 Ghi chú nhanh cho Nhân sự / Vị trí tuyển dụng", expanded=False):
+            hr_label_to_code = {
+                f"[{row['Mã NS']}] {row['Chức danh']} — {row['Họ tên'] or '(Đang tuyển dụng)'}": row["Mã NS"]
+                for _, row in st.session_state.hr_df.iterrows()
+            }
+            with st.form("quick_hr_note_form", border=True):
+                selected_hr_label = st.selectbox(
+                    "Chọn nhân sự hoặc vị trí cần ghi chú",
+                    options=list(hr_label_to_code.keys()),
+                )
+                selected_hr_code = hr_label_to_code[selected_hr_label]
+                curr_hr_row = st.session_state.hr_df.loc[st.session_state.hr_df["Mã NS"] == selected_hr_code].iloc[0]
+                quick_hr_name = st.text_input("Họ tên nhân sự (nếu mới bổ sung)", value=str(curr_hr_row["Họ tên"]))
+                quick_hr_status = st.selectbox(
+                    "Trạng thái",
+                    options=HR_STATUSES,
+                    index=HR_STATUSES.index(curr_hr_row["Trạng thái"]) if curr_hr_row["Trạng thái"] in HR_STATUSES else 0,
+                )
+                quick_hr_note = st.text_area(
+                    "Nội dung Ghi chú",
+                    value=str(curr_hr_row["Ghi chú"]),
+                    placeholder="Nhập ghi chú về lịch đào tạo, hồ sơ, phỏng vấn, đánh giá năng lực...",
+                    height=80,
+                )
+                save_quick_note = st.form_submit_button(
+                    "Lưu ghi chú nhân sự",
+                    type="primary",
+                    icon=":material/edit_note:",
+                    disabled=not CAN_EDIT,
+                    width="stretch",
+                )
+            if save_quick_note:
+                updated_hr = st.session_state.hr_df.copy()
+                idx_mask = updated_hr["Mã NS"] == selected_hr_code
+                updated_hr.loc[idx_mask, "Họ tên"] = quick_hr_name.strip()
+                updated_hr.loc[idx_mask, "Trạng thái"] = quick_hr_status
+                updated_hr.loc[idx_mask, "Ghi chú"] = quick_hr_note.strip()
+                updated_hr = normalize_hr_data(updated_hr)
+                try:
+                    if ONLINE_MODE and hasattr(online_service, "save_hr_roster"):
+                        online_service.save_hr_roster(updated_hr, CURRENT_USER)
+                        reload_online_data(online_service, PROJECT_TODAY)
+                    else:
+                        st.session_state.hr_df = updated_hr
+                    st.toast("Đã cập nhật ghi chú nhân sự!", icon="✅")
+                    st.rerun()
+                except Exception as exc:
+                    st.error(f"Không thể lưu ghi chú: {exc}")
+
+    with col_hr_tool2:
+        with st.expander("➕ Thêm nhân sự mới vào danh sách Đại lý", expanded=False):
+            with st.form("add_hr_member_form", border=True):
+                c_nh1, c_nh2 = st.columns(2)
+                with c_nh1:
+                    new_hr_dept = st.selectbox(
+                        "Bộ phận",
+                        options=[
+                            "Ban Giám đốc",
+                            "I. Phòng Kinh doanh",
+                            "II. Phòng Dịch vụ - Phụ tùng",
+                            "III. Phòng Marketing & CSKH",
+                            "IV. Phòng Kế toán",
+                            "V. Phòng HCNS tổng hợp",
+                        ],
+                    )
+                    new_hr_title = st.text_input("Chức danh", placeholder="VD: Nhân viên kho phụ tùng")
+                    new_hr_name = st.text_input("Họ và tên", placeholder="VD: Nguyễn Văn A")
+                    new_hr_dob = st.text_input("Ngày sinh", placeholder="VD: 15/05/1995")
+                with c_nh2:
+                    new_hr_status = st.selectbox("Trạng thái", options=HR_STATUSES, index=0)
+                    new_hr_group_role = st.selectbox("Nhóm vị trí", options=["Tiêu chuẩn", "Chủ chốt ⭐"])
+                    new_hr_edu = st.text_input("Trình độ", placeholder="VD: Đại học / Cao đẳng")
+                    new_hr_cert = st.text_input("Chứng chỉ Hyundai", placeholder="VD: CL1 / Chưa có")
+                new_hr_phone = st.text_input("Số điện thoại")
+                new_hr_email = st.text_input("Email")
+                new_hr_note = st.text_input("Ghi chú ban đầu", placeholder="Ghi chú về ngày nhận việc, kinh nghiệm...")
+                submit_new_hr = st.form_submit_button(
+                    "Thêm nhân sự",
+                    type="primary",
+                    icon=":material/person_add:",
+                    disabled=not CAN_EDIT,
+                    width="stretch",
+                )
+            if submit_new_hr:
+                if not new_hr_title.strip():
+                    st.warning("Vui lòng nhập Chức danh nhân sự.")
+                else:
+                    new_hr_row = pd.DataFrame([{
+                        "Mã NS": "",
+                        "Bộ phận": new_hr_dept,
+                        "Chức danh": new_hr_title.strip(),
+                        "Nhóm vị trí": new_hr_group_role,
+                        "Họ tên": new_hr_name.strip(),
+                        "Ngày sinh": new_hr_dob.strip(),
+                        "Năm tuyển": str(PROJECT_TODAY.year),
+                        "Trình độ": new_hr_edu.strip(),
+                        "Chứng chỉ Hyundai": new_hr_cert.strip() or "Chưa có",
+                        "Số điện thoại": new_hr_phone.strip(),
+                        "Email": new_hr_email.strip(),
+                        "Trạng thái": new_hr_status,
+                        "Ghi chú": new_hr_note.strip(),
+                    }])
+                    updated_hr = normalize_hr_data(
+                        pd.concat([st.session_state.hr_df, new_hr_row], ignore_index=True)
+                    )
+                    try:
+                        if ONLINE_MODE and hasattr(online_service, "save_hr_roster"):
+                            online_service.save_hr_roster(updated_hr, CURRENT_USER)
+                            reload_online_data(online_service, PROJECT_TODAY)
+                        else:
+                            st.session_state.hr_df = updated_hr
+                        st.toast("Đã thêm nhân sự mới!", icon="✅")
+                        st.rerun()
+                    except Exception as exc:
+                        st.error(f"Không thể thêm nhân sự: {exc}")
+
+    csv_hr = st.session_state.hr_df[hr_cols].to_csv(index=False).encode("utf-8-sig")
+    st.download_button(
+        "📥 Tải CSV Danh Sách Nhân Sự & Ghi Chú",
+        data=csv_hr,
+        file_name=f"Bao_cao_Nhan_su_HD_Mien_Tay_{datetime.date.today().strftime('%Y%m%d')}.csv",
+        mime="text/csv",
+        key="download_csv_hr_roster",
+    )
 
 
 # ------------------------------------------------------------------------------
@@ -1929,18 +2401,23 @@ with tab_report:
             <div>
                 <h4 style="color:#002C6C; margin:0 0 8px 0;">📊 Dữ Liệu Báo Cáo (.XLSX)</h4>
                 <p style="font-size:0.85rem; color:#475569; margin-bottom:8px;">
-                    Hai bảng: Tiến độ theo mức báo cáo đã chọn và Checklist đánh giá QCVN 121:2024.
+                    Bốn bảng: Tiến độ thi công, Checklist QCVN 121:2024, Hiện trạng Dịch vụ và Hồ sơ Nhân sự Đại lý.
                 </p>
                 <div style="font-size:0.8rem; color:#64748B;">
                     • Định dạng: <b>Excel (.xlsx)</b><br>
-                    • Số sheet: <b>2 worksheets</b><br>
+                    • Số sheet: <b>4 worksheets</b><br>
                     • Dữ liệu: <b>Thời gian thực</b>
                 </div>
             </div>
         </div>
         """, unsafe_allow_html=True)
 
-        excel_binary = build_excel(report_df, df_q)
+        excel_binary = build_excel(
+            report_df,
+            df_q,
+            st.session_state.hr_df,
+            st.session_state.service_status_df,
+        )
         st.download_button(
             label="📥 TẢI DỮ LIỆU EXCEL",
             data=excel_binary,
