@@ -316,7 +316,18 @@ def report_sections(df, report_date):
             else:
                 for w in weeks:
                     overlaps = r['Bắt đầu'] <= week_date(w, True) and r['Hoàn thành'] >= week_date(w)
-                    color = BROWN if item and item.get('group', 7) >= 7 else GREEN_OK if r['Tiến độ (%)'] == 100 else '#64748B'
+                    pct_val = r.get('Tiến độ (%)') or 0
+                    st_val = str(r.get('Trạng thái', ''))
+                    if pct_val >= 100 or st_val == 'Đã hoàn thiện':
+                        color = GREEN_OK
+                    elif st_val == 'Đang thi công':
+                        color = '#0284C7'
+                    elif st_val == 'Dời tiến độ':
+                        color = RED_LATE
+                    elif item and item.get('group', 7) >= 7:
+                        color = BROWN
+                    else:
+                        color = '#64748B'
                     in_week = week_date(w) <= report_date <= week_date(w, True)
                     style = f'background:{color};' if overlaps else 'background:#F8FAFC;'
                     if in_week:
@@ -572,9 +583,18 @@ def build_pdf(df, report_date):
                     f'✔ Đã hoàn thiện theo mốc cũ; chưa có mốc mới.</span>'
                 )
             else:
-                fill_color = (BROWN_RGB if item and item.get('group', 7) >= 7
-                              else GREEN_RGB if r['Tiến độ (%)'] == 100
-                              else SLATE_RGB)
+                pct_val = r.get('Tiến độ (%)') or 0
+                st_val = str(r.get('Trạng thái', ''))
+                if pct_val >= 100 or st_val == 'Đã hoàn thiện':
+                    fill_color = GREEN_RGB
+                elif st_val == 'Đang thi công':
+                    fill_color = color('#0284C7')
+                elif st_val == 'Dời tiến độ':
+                    fill_color = RED_RGB
+                elif item and item.get('group', 7) >= 7:
+                    fill_color = BROWN_RGB
+                else:
+                    fill_color = SLATE_RGB
                 for j, w in enumerate(weeks):
                     wx = x0 + LABEL_W + j * cell_w
                     overlaps = r['Bắt đầu'] <= week_date(w, True) and r['Hoàn thành'] >= week_date(w)

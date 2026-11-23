@@ -966,7 +966,7 @@ with tab_gantt:
 
     with st.expander("ℹ️ Chú thích & Quy ước biểu đồ (Nhấn để xem)", expanded=False):
         st.caption("🔴 **Đường Line đỏ thẳng đứng** thể hiện mốc thời gian thực. Các hạng mục nằm bên trái đường đỏ mà chưa hoàn thành sẽ được cảnh báo chậm tiến độ.")
-        st.caption("Cam kết CĐT 15/09/2026: thanh màu nâu từ mục 7. Mục 15 tạm ẩn trên Gantt, vẫn giữ ở bảng chi tiết.")
+        st.caption("Quy ước màu thanh Gantt: 🟢 **Xanh lá:** Đã hoàn thiện (100%). 🔵 **Xanh dương:** Đang thi công. 🔴 **Đỏ:** Dời tiến độ. 🟤 **Màu nâu:** Cam kết áp dụng từ mục 7 (chưa bắt đầu). Mục 15 tạm ẩn trên Gantt, vẫn giữ ở bảng chi tiết.")
         st.caption(WEEK_NOTE)
         st.caption(SUMMARY_NOTE)
 
@@ -1030,7 +1030,25 @@ with tab_gantt:
         "Dời tiến độ": "#EF4444"      # Red
     }
 
-    gantt_data["Màu kế hoạch"] = gantt_data["Mã"].map(lambda c: "Cam kết áp dụng (màu nâu)" if bar_color(c) == BROWN else "Mốc trước / đã hoàn thiện")
+    def get_gantt_color_group(row):
+        pct = row.get("Tiến độ (%)")
+        try:
+            pct_num = float(pct) if pct is not None else 0
+        except (ValueError, TypeError):
+            pct_num = 0
+        status = str(row.get("Trạng thái", ""))
+        code = str(row.get("Mã", ""))
+        if pct_num >= 100 or status == "Đã hoàn thiện":
+            return "Đã hoàn thiện (100%)"
+        if status == "Đang thi công":
+            return "Đang thi công"
+        if status == "Dời tiến độ":
+            return "Dời tiến độ"
+        if bar_color(code) == BROWN:
+            return "Cam kết áp dụng (màu nâu)"
+        return "Mốc trước / đã hoàn thiện"
+
+    gantt_data["Màu kế hoạch"] = gantt_data.apply(get_gantt_color_group, axis=1)
     # Inclusive end dates: a one-week task covers its entire final day.
     gantt_data["Kết thúc thanh"] = gantt_data["Hoàn thành_dt"] + pd.Timedelta(days=1)
     fig_timeline = px.timeline(
@@ -1040,7 +1058,13 @@ with tab_gantt:
         y="Trục Y",
         color="Màu kế hoạch",
         text="Nhãn thanh",
-        color_discrete_map={"Cam kết áp dụng (màu nâu)": BROWN, "Mốc trước / đã hoàn thiện": "#059669"},
+        color_discrete_map={
+            "Đã hoàn thiện (100%)": "#059669",
+            "Đang thi công": "#0284C7",
+            "Dời tiến độ": "#EF4444",
+            "Cam kết áp dụng (màu nâu)": BROWN,
+            "Mốc trước / đã hoàn thiện": "#059669",
+        },
         custom_data=["Bắt đầu_str", "Hoàn thành_str", "Số ngày", "Tiến độ (%)", "Trạng thái", "Người phụ trách", "Ghi chú", "Phân khu", "Cảnh báo Tiến độ"]
     )
     
